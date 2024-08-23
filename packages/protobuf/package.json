@@ -1,0 +1,21 @@
+{
+	"name": "@cmmv/protobuf",
+	"version": "0.0.1",
+	"description": "CMMV (@protobuf)",
+	"publishConfig": {
+		"access": "public"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/andrehrferreira/cmmv.git"
+	},
+	"author": "Andre Ferreira",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/andrehrferreira/cmmv/issues"
+	},
+	"homepage": "https://cmmv.io/",
+	"dependencies": {
+		"protobufjs": "^7.3.2"
+	}
+}

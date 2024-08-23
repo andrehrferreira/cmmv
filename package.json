@@ -1,0 +1,83 @@
+{
+	"name": "@cmmv/skeleton",
+	"version": "0.1.0",
+	"description": "CMMV (@skeleton)",
+	"main": "dist/index.js",
+	"private": false,
+	"scripts": {
+		"prebuild": "rimraf dist",
+		"build:server": "tsc",
+		"build:packages": "rm -rf ./packages/**/*.tsbuildinfo && tsc -b -v packages && gulp move",
+		"build": "npm-run-all --parallel build:*",
+		"benchmarks": "ts-node ./tools/benchmarks/check-benchmarks.ts",
+		"dev": "nodemon",
+		"clean:tsfiles": "find ./src -name \"*.d.ts,*.js\" -delete",
+		"clean:packages": "find ./packages -name \"*.d.ts,*.js\" -delete",
+		"clean": "yarn clean:tsfiles && yarn clean:packages > /dev/null 2>&1",
+		"format": "prettier \"**/*.ts\" \"packages/**/*.json\" --ignore-path ./.prettierignore --write && git status",
+		"test": "mocha -r ts-node/register packages/**/*.spec.ts",
+		"test:dev": "mocha -w --watch-files \"packages\" packages/**/*.spec.ts",
+		"start": "node dist/index.js"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/andrehrferreira/cmmv.git"
+	},
+	"author": "Andre Ferreira",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/andrehrferreira/cmmv/issues"
+	},
+	"homepage": "https://github.com/andrehrferreira/cmmv#readme",
+	"publishConfig": {
+		"access": "public"
+	},
+	"engines": {
+		"node": ">= 18.0.0"
+	},
+	"mocha": {
+		"require": [
+			"ts-node/register",
+			"tsconfig-paths/register",
+			"node_modules/reflect-metadata/Reflect.js",
+			"hooks/mocha-init-hook.ts"
+		],
+		"exit": true
+	},
+	"devDependencies": {
+		"@codechecks/client": "^0.1.12",
+		"@hapi/hapi": "^21.3.10",
+		"@types/bytes": "^3.1.4",
+		"@types/chai": "^4.3.17",
+		"@types/chai-as-promised": "^7.1.8",
+		"@types/jest": "^29.5.12",
+		"@types/mocha": "^10.0.7",
+		"@types/sinon": "^17.0.3",
+		"@types/supertest": "^6.0.2",
+		"bytes": "^3.1.2",
+		"chai": "^5.1.1",
+		"delete-empty": "^3.0.0",
+		"gulp": "^5.0.0",
+		"gulp-clean": "^0.4.0",
+		"hapi": "^18.1.0",
+		"jest": "^29.7.0",
+		"koa": "^2.15.3",
+		"lerna": "^8.1.8",
+		"markdown-table": "^3.0.3",
+		"mocha": "^10.7.3",
+		"nodemon": "^3.1.4",
+		"npm-run-all": "^4.1.5",
+		"ts-node": "^10.9.2",
+		"typescript": "^5.5.4",
+		"wrk": "^1.2.1"
+	},
+	"dependencies": {
+		"@fastify/view": "^9.1.0",
+		"dotenv": "^16.4.5",
+		"express": "^4.19.2",
+		"fastify": "^4.28.1",
+		"reflect-metadata": "^0.2.2",
+		"rxjs": "^7.8.1",
+		"uuid": "^10.0.0"
+	}
+}

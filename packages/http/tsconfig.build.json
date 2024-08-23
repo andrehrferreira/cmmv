@@ -1,0 +1,18 @@
+{
+    "extends": "../tsconfig.build.json",
+    "compilerOptions": {
+        "outDir": ".",
+        "rootDir": ".",
+        "paths": {
+            "@cmmv/core": ["../core"],
+            "@cmmv/core/*": ["../core/*"],
+            "@cmmv/view": ["../view"],
+            "@cmmv/view/*": ["../view/*"],
+        }
+    },
+    "exclude": ["node_modules", "dist", "test/**/*", "*.spec.ts"],
+    "references": [
+        { "path": "../core/tsconfig.build.json"},
+        { "path": "../view/tsconfig.build.json"},
+    ]
+}
