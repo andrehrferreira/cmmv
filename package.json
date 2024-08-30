@@ -13,14 +13,14 @@
 		"dev": "NODE_ENV=dev nodemon",
 		"clean:tsfiles": "find ./src -type f \\( -name '*.d.ts' -o -name '*.js' \\) -exec rm -f {} +",
 		"clean:packages": "find ./packages -name 'node_modules' -prune -o -type f \\( -name '*.d.ts' -o -name '*.js' \\) -exec rm -f {} +",
-		"clean": "yarn clean:tsfiles && yarn clean:packages > /dev/null 2>&1",
+		"clean": "npm run clean:tsfiles && npm run clean:packages > /dev/null 2>&1",
 		"format": "prettier \"**/*.ts\" \"packages/**/*.json\" --ignore-path ./.prettierignore --write && git status",
 		"test": "mocha packages/**/*.spec.ts",
 		"test:dev": "mocha -w --watch-files \"packages\" packages/**/*.spec.ts",
 		"lint": "concurrently 'yarn lint:packages' 'yarn lint:spec'",
 		"lint:fix": "concurrently 'yarn lint:packages -- --fix' 'yarn lint:spec -- --fix'",
 		"lint:packages": "eslint 'packages/**/**.ts' --no-ignore",
-		"lint:spec": "eslint 'packages/**/**.spec.ts'",
+		"lint:spec": "eslint 'packages/**/**.spec.ts' --no-ignore",
 		"start": "NODE_ENV=prod node dist/index.js"
 	},
 	"repository": {
@@ -38,15 +38,6 @@
 	},
 	"engines": {
 		"node": ">= 18.0.0"
-	},
-	"mocha": {
-		"require": [
-			"ts-node/register",
-			"tsconfig-paths/register",
-			"node_modules/reflect-metadata/Reflect.js",
-			"hooks/mocha-init-hook.ts"
-		],
-		"exit": true
 	},
 	"devDependencies": {
 		"@codechecks/client": "^0.1.12",
@@ -69,6 +60,7 @@
 		"eslint": "^9.9.1",
 		"eslint-config-prettier": "^9.1.0",
 		"eslint-plugin-import": "^2.29.1",
+		"esm": "^3.2.25",
 		"gulp": "^5.0.0",
 		"gulp-clean": "^0.4.0",
 		"hapi": "^18.1.0",
@@ -82,6 +74,7 @@
 		"sinon": "^18.0.0",
 		"supertest": "^7.0.0",
 		"ts-node": "^10.9.2",
+		"tsconfig-paths": "^4.2.0",
 		"typescript": "^5.5.4",
 		"wrk": "^1.2.1"
 	},
@@ -89,7 +82,9 @@
 		"@fastify/view": "^9.1.0",
 		"dotenv": "^16.4.5",
 		"express": "^4.19.2",
+		"fast-glob": "^3.3.2",
 		"fastify": "^4.28.1",
+		"protobufjs": "^7.4.0",
 		"reflect-metadata": "^0.2.2",
 		"rxjs": "^7.8.1",
 		"uuid": "^10.0.0"

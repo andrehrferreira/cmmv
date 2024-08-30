@@ -5,7 +5,7 @@ module.exports = [
     js.configs.recommended,
     {
         ignores: ['**/node_modules/**', '*.d.ts', '*.js', '**/*.spec.ts'],
-        files: ['packages/**/*.ts'],
+        files: ['packages/**/*.ts', 'packages/**/**.spec.ts'],
         rules: {},
     },
 ];

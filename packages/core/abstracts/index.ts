@@ -1,2 +1,2 @@
-export * from "./contract-abstract";
-export * from "./singleton-abstract"
+export * from "./contract.abstract";
+export * from "./singleton.abstract";
