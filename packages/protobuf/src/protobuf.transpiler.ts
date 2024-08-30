@@ -47,12 +47,12 @@ export class ProtobufTranspile implements ITranspile {
 
             const protoContent = this.generateProtoContent(contract);
             fs.writeFileSync(outputPath, protoContent, 'utf8');
-            this.logger.log(`Generated .proto file for ${contract.controllerName} at ${outputPath}`);
+            //this.logger.log(`Generated .proto file for ${contract.controllerName} at ${outputPath}`);
 
             const contractJSON = root.toJSON();
             contractsJson[contract.controllerName] = contractJSON;
             fs.writeFileSync(outputPathJson, JSON.stringify(contractJSON), 'utf8');
-            this.logger.log(`Generated JSON file for ${contract.controllerName} at ${outputPathJson}`);
+            //this.logger.log(`Generated JSON file for ${contract.controllerName} at ${outputPathJson}`);
         });
 
         this.generateContractsJs(contractsJson);
@@ -169,7 +169,6 @@ export class ProtobufTranspile implements ITranspile {
         const minifiedJsContent = UglifyJS.minify(jsContent).code;
     
         fs.writeFileSync(outputFile, minifiedJsContent, 'utf8');
-        this.logger.log(`Generated public contracts JS file at ${outputFile}`);
-    }
-    
+        //this.logger.log(`Generated public contracts JS file at ${outputFile}`);
+    }    
 }

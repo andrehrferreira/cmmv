@@ -1,7 +1,7 @@
 //@see https://github.com/mde/ejs/blob/main/lib/utils.js
 
 import * as fs from 'fs';
-import { Template } from "./template";
+import { Template } from "./cmmv.template";
 
 let hasOwnProperty = Object.prototype.hasOwnProperty;
 let hasOwn = function (obj, key) { return hasOwnProperty.apply(obj, [key]); };
