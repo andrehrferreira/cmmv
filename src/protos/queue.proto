@@ -1,0 +1,12 @@
+// Generated automatically by CMMV
+syntax = "proto3";
+import "google/protobuf/any.proto";
+
+message queue {
+  string key = 1;
+  google.protobuf.Any payload = 2;
+}
+
+message queueList {
+  repeated queue items = 1;
+}

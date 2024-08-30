@@ -1,5 +1,6 @@
 export interface ContractFieldOptions {
     protoType: string;
+    protoRepeated?: boolean;
     defaultValue?: any;
     index?: boolean;
     unique?: boolean;
@@ -8,33 +9,43 @@ export interface ContractFieldOptions {
 export interface ContractOptions {
     controllerName: string;
     protoPath: string;
-    databaseType: 'mongodb' | 'typeorm';
+    protoPackage?: string;
+    databaseType?: 'mongodb' | 'typeorm';
+    directMessage?: boolean;
 }
 
-const CONTRACT_WATERMARK = Symbol("contract_watermark");
-const CONTROLLER_NAME_METADATA = Symbol("controller_name_metadata");
-const PROTO_PATH_METADATA = Symbol("proto_path_metadata");
-const DATABASE_TYPE_METADATA = Symbol("database_type_metadata");
-const FIELD_METADATA = Symbol("contract_field_metadata");
+export const CONTRACT_WATERMARK = Symbol("contract_watermark");
+export const CONTROLLER_NAME_METADATA = Symbol("controller_name_metadata");
+export const PROTO_PATH_METADATA = Symbol("proto_path_metadata");
+export const PROTO_PACKAGE_METADATA = Symbol("proto_package_metadata");
+export const DATABASE_TYPE_METADATA = Symbol("database_type_metadata");
+export const FIELD_METADATA = Symbol("contract_field_metadata");
+export const DIRECTMESSAGE_METADATA = Symbol("contract_directmessage_metadata");
 
 export function Contract(options?: ContractOptions): ClassDecorator {
     const defaultControllerName = 'DefaultContract';
     const defaultProtoPath = 'contract.proto';
+    const defaultProtoPackage = '';
     const defaultDatabaseType = 'mongodb';
+    const defaultDirectMessage = false;
 
-    const [controllerName, protoPath, databaseType] = !options
-        ? [defaultControllerName, defaultProtoPath, defaultDatabaseType]
+    const [controllerName, protoPath, databaseType, directMessage, protoPackage] = !options
+        ? [defaultControllerName, defaultProtoPath, defaultDatabaseType, defaultDirectMessage, defaultProtoPackage]
         : [
             options.controllerName || defaultControllerName,
             options.protoPath || defaultProtoPath,
             options.databaseType || defaultDatabaseType,
+            options.directMessage || defaultDirectMessage,
+            options.protoPackage || defaultProtoPackage,
         ];
 
     return (target: object) => {
         Reflect.defineMetadata(CONTRACT_WATERMARK, true, target);
         Reflect.defineMetadata(CONTROLLER_NAME_METADATA, controllerName, target);
-        Reflect.defineMetadata(PROTO_PATH_METADATA, protoPath, target);
+        Reflect.defineMetadata(PROTO_PATH_METADATA, protoPath, target);        
+        Reflect.defineMetadata(PROTO_PACKAGE_METADATA, protoPackage, target);
         Reflect.defineMetadata(DATABASE_TYPE_METADATA, databaseType, target);
+        Reflect.defineMetadata(DIRECTMESSAGE_METADATA, directMessage, target);
     };
 }
 

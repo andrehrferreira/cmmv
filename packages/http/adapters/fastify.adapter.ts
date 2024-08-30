@@ -44,7 +44,15 @@ export class FastifyAdapter implements AbstractHttpAdapter {
         this.setMiddleware(publicDir);
     }
 
-    setMiddleware(publicDir: string) {
+    public use(middlaware: any) {
+        this.server.register(middlaware);
+    }
+
+    public getHttpServer() {
+        return this.server;
+    }
+
+    private setMiddleware(publicDir: string) {
         this.server.get('/*', async (req, reply: any) => {
             try{
                 const requestPath = req.url === '/' ? 'index' : req.url.substring(1);
@@ -101,7 +109,7 @@ export class FastifyAdapter implements AbstractHttpAdapter {
         });
     }
 
-    listen(bind: string): Promise<void> {
+    public listen(bind: string): Promise<void> {
         return new Promise((resolve, reject) => {
             const [host, port] = bind.split(':');
 

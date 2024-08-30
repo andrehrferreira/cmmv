@@ -16,6 +16,8 @@
 	},
 	"homepage": "https://cmmv.io/",
 	"dependencies": {
-		"protobufjs": "^7.3.2"
+		"fast-glob": "^3.3.2",
+		"protobufjs": "^7.3.2",
+		"uglify-js": "^3.19.2"
 	}
 }

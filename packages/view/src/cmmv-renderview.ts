@@ -10,6 +10,7 @@ let _OPTS_PASSABLE_WITH_DATA = [
     'delimiter', 'scope', 'context', 'debug', 'compileDebug',
     'client', '_with', 'rmWhitespace', 'strict', 'filename', 'async'
 ];
+
 let _OPTS_PASSABLE_WITH_DATA_EXPRESS = _OPTS_PASSABLE_WITH_DATA.concat('cache');
 
 function createNullProtoObjWherePossible() {
@@ -129,8 +130,11 @@ exports.compile = (template, opts) => {
 exports.compiledPage = exports.compile;
 
 exports.render = function (template, d, o) {
+    console.log("Render");
     var data = d || createNullProtoObjWherePossible();
     var opts = o || createNullProtoObjWherePossible();
+
+    console.log(data);
   
     if (arguments.length == 2) 
         shallowCopyFromList(opts, data, _OPTS_PASSABLE_WITH_DATA);

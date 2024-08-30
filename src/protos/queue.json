@@ -1,0 +1,1 @@
+{"nested":{"queue":{"nested":{"queue":{"fields":{"id":{"type":"int32","id":1},"key":{"type":"string","id":2},"payload":{"type":"google.protobuf.Any","id":3}}},"queueList":{"fields":{"items":{"rule":"repeated","type":"queue","id":1}}}}}}}

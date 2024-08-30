@@ -1,7 +1,9 @@
-import { ITranspile } from "@cmmv/core";
+import { ITranspile, Logger } from "@cmmv/core";
 
 export class ExpressTranspile implements ITranspile {
-    run(): Promise<any> {
-        throw new Error("Method not implemented.");
+    private logger: Logger = new Logger('ExpressTranspile');
+
+    run(): void {
+        this.logger.log("Run ExpressTranspile")
     }
 }

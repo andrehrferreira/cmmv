@@ -1,7 +1,7 @@
 import { Logger } from "./logger-utils";
 
 export interface ITranspile {
-    run(): Promise<any>;
+    run(): void;
 }
 
 export class Transpile {

@@ -5,7 +5,7 @@ import { AbstractContract, Contract, ContractField } from "@cmmv/core";
     databaseType: "mongodb",
     protoPath: "src/protos/tasks.proto"
 })
-export class Tasks extends AbstractContract {
+export class TasksContract extends AbstractContract {
     @ContractField({ 
         protoType: 'string', 
         unique: true 

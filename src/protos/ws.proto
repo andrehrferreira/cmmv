@@ -1,0 +1,9 @@
+// Generated automatically by CMMV
+syntax = "proto3";
+package ws;
+
+message wscall {
+  int32 contract = 1;
+  int32 message = 2;
+  bytes data = 3;
+}

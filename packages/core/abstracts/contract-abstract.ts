@@ -1,3 +1,1 @@
-export abstract class AbstractContract {
-
-}
+export abstract class AbstractContract {}

@@ -1,0 +1,12 @@
+// Generated automatically by CMMV
+syntax = "proto3";
+
+message tasks {
+  string label = 1;
+  bool checked = 2;
+  bool removed = 3;
+}
+
+message tasksList {
+  repeated tasks items = 1;
+}

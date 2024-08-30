@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title s-i18n="title"></title>
+        <title s-i18n="title">CMMV</title>
     </head>
     <body>
         <h1 s-i18n="todo"></h1>
@@ -28,6 +28,10 @@
             ></button>
         </div>
 
-        <script src="/assets/mv.js"></script>
+        <script src="/assets/bundle.min.js"></script>
+        <script>
+            console.log(window.cmmv.contracts)
+        </script>
+        <script s-data="debug"></script>
     </body>
 </html>

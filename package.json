@@ -10,14 +10,14 @@
 		"build:packages": "rm -rf ./packages/**/*.tsbuildinfo && tsc -b -v packages && gulp move",
 		"build": "npm-run-all --parallel build:*",
 		"benchmarks": "ts-node ./tools/benchmarks/check-benchmarks.ts",
-		"dev": "nodemon",
+		"dev": "NODE_ENV=dev nodemon",
 		"clean:tsfiles": "find ./src -name \"*.d.ts,*.js\" -delete",
 		"clean:packages": "find ./packages -name \"*.d.ts,*.js\" -delete",
 		"clean": "yarn clean:tsfiles && yarn clean:packages > /dev/null 2>&1",
 		"format": "prettier \"**/*.ts\" \"packages/**/*.json\" --ignore-path ./.prettierignore --write && git status",
 		"test": "mocha -r ts-node/register packages/**/*.spec.ts",
 		"test:dev": "mocha -w --watch-files \"packages\" packages/**/*.spec.ts",
-		"start": "node dist/index.js"
+		"start": "NODE_ENV=prod node dist/index.js"
 	},
 	"repository": {
 		"type": "git",

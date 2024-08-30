@@ -35,9 +35,13 @@
             "@cmmv/http": ["packages/http"],
             "@cmmv/http/*": ["packages/http/*"],
             "@cmmv/protobuf": ["packages/protobuf"],
-            "@cmmv/protobuf/*": ["packages/protobuf/*"]
+            "@cmmv/protobuf/*": ["packages/protobuf/*"],
+            "@cmmv/view": ["packages/view"],
+            "@cmmv/view/*": ["packages/view/*"],
+            "@cmmv/ws": ["packages/ws"],
+            "@cmmv/ws/*": ["packages/ws/*"]
         },
     },
     "include": ["packages/**/*", "src/**/*.ts",],
-    "exclude": ["node_modules", "dist", "**/*.spec.ts"]
+    "exclude": ["node_modules", "dist", "src/protos", "**/*.spec.ts"]
 }

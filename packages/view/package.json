@@ -14,5 +14,8 @@
 	"bugs": {
 		"url": "https://github.com/andrehrferreira/cmmv/issues"
 	},
-	"homepage": "https://cmmv.io/"	
+	"homepage": "https://cmmv.io/",
+	"dependencies": {
+		"uglify-js": "^3.19.2"
+	}
 }
