@@ -31,3 +31,25 @@ export function Delete(path: string = ''): MethodDecorator {
 export function Patch(path: string = ''): MethodDecorator {
     return createMethodDecorator('patch', path);
 }
+
+function createParamDecorator(paramType: string): ParameterDecorator {
+    return (target, propertyKey: string | symbol, parameterIndex: number) => {
+        ControllerRegistry.registerParam(target, propertyKey as string, paramType, parameterIndex);
+    };
+}
+
+export function Body(): ParameterDecorator {
+    return createParamDecorator('body');
+}
+
+export function Param(paramName: string): ParameterDecorator {
+    return createParamDecorator(`param:${paramName}`);
+}
+
+export function Query(queryName: string): ParameterDecorator {
+    return createParamDecorator(`query:${queryName}`);
+}
+
+export function Header(headerName: string): ParameterDecorator {
+    return createParamDecorator(`header:${headerName}`);
+}

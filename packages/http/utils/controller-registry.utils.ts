@@ -14,6 +14,17 @@ export class ControllerRegistry {
         }
     }
 
+    public static registerParam(target: any, handlerName: string, paramType: string, index: number) {
+        const controller = this.controllers.get(target.constructor);
+        if (controller) {
+            const route = controller.routes.find(route => route.handlerName === handlerName);
+            if (route) {
+                route.params = route.params || [];
+                route.params.push({ paramType, index });
+            }
+        }
+    }
+
     public static getControllers() {
         return Array.from(this.controllers.entries());
     }

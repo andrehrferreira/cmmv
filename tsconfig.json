@@ -39,7 +39,9 @@
             "@cmmv/view": ["packages/view"],
             "@cmmv/view/*": ["packages/view/*"],
             "@cmmv/ws": ["packages/ws"],
-            "@cmmv/ws/*": ["packages/ws/*"]
+            "@cmmv/ws/*": ["packages/ws/*"],
+            "@cmmv/repository": ["packages/repository"],
+            "@cmmv/repository/*": ["packages/repository/*"]
         },
     },
     "include": ["packages/**/*", "src/**/*.ts",],

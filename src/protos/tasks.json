@@ -1,1 +1,1 @@
-{"nested":{"tasks":{"nested":{"tasks":{"fields":{"id":{"type":"int32","id":1},"label":{"type":"string","id":2},"checked":{"type":"bool","id":3},"removed":{"type":"bool","id":4}}},"tasksList":{"fields":{"items":{"rule":"repeated","type":"tasks","id":1}}}}}}}
+{"nested":{"Task":{"nested":{"Task":{"fields":{"id":{"type":"int32","id":1},"label":{"type":"string","id":2},"checked":{"type":"bool","id":3},"removed":{"type":"bool","id":4}}},"TaskList":{"fields":{"items":{"rule":"repeated","type":"Task","id":1}}}}}}}

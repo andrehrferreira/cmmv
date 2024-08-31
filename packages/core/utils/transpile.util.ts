@@ -1,4 +1,4 @@
-import { Logger } from "./logger-utils";
+import { Logger } from "./logger.utils";
 
 export interface ITranspile {
     run(): void;

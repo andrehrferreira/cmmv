@@ -11,17 +11,20 @@ import { Module } from "./module";
 import { 
     CONTROLLER_NAME_METADATA, DATABASE_TYPE_METADATA, 
     FIELD_METADATA, PROTO_PATH_METADATA, DIRECTMESSAGE_METADATA,
-    PROTO_PACKAGE_METADATA 
+    PROTO_PACKAGE_METADATA, GENERATE_CONTROLLER_METADATA,
+    AUTH_METADATA, CONTROLLER_CUSTOM_PATH_METADATA
 } from "./decorators";
+
+import { Config } from './utils/config.util';
 
 export interface IApplicationSettings {
     wsAdapter: new (appOrHttpServer: any) => AbstractWSAdapter,
     httpAdapter: new (settings: IHTTPSettings) => AbstractHttpAdapter,
-    httpBind: string,
     httpOptions?: IHTTPSettings;
     transpilers?: Array<new () => ITranspile>;
     modules?: Array<Module>;
     contracts?: Array<new () => AbstractContract>;
+    services?: Array<any>
 }
 
 export class Application {
@@ -39,22 +42,30 @@ export class Application {
     private submodules: Array<Module> = [];
     private contracts: Array<AbstractContract>;
 
+    private host: string;
+    private port: number;
+
     private constructor(settings: IApplicationSettings) {
+        this.logger.log("Initialize application");
+
+        Config.loadConfig();
+                
         this.httpOptions = settings.httpOptions || {};
         this.httpAdapter = new settings.httpAdapter(this.httpOptions);
         this.wsAdapter = new settings.wsAdapter(this.httpAdapter);
-        this.httpBind = settings.httpBind;
+        this.host = Config.get<string>('server.host') || '0.0.0.0';
+        this.port = Config.get<number>('server.port') || 3000;
         this.transpilers = settings.transpilers || [];
         this.modules = settings.modules || [];
         this.contracts = settings.contracts?.map(contractClass => new contractClass()) || [];
-        this.initialize();
+        this.initialize(settings);
     }
 
-    private async initialize(): Promise<void> {
+    private async initialize(settings: IApplicationSettings): Promise<void> {
         try {
             this.loadModules(this.modules);
             this.processContracts();
-            
+                        
             if (this.transpilers.length > 0) {
                 const transpile = new Transpile(this.transpilers);
                 await transpile.transpile();
@@ -65,6 +76,7 @@ export class Application {
             }
 
             this.createScriptBundle();
+            settings.services?.forEach(async (service) => await service?.loadConfig());
             this.wsServer = this.wsAdapter.create(this.httpAdapter);
 
             this.wsAdapter.bindClientConnect(this.wsServer, (socket) => {                
@@ -81,8 +93,8 @@ export class Application {
                 //socket.send(stringToArrayBuffer(id), { binary: true });
             });
 
-            await this.httpAdapter.listen(this.httpBind).then(() => {
-                this.logger.log(`Server HTTP successfully started on ${this.httpBind}`);
+            await this.httpAdapter.listen(`${this.host}:${this.port}`).then(() => {
+                this.logger.log(`Server HTTP successfully started on ${this.host}:${this.port}`);
             }).catch((error) => {
                 this.logger.error(`Failed to start HTTP server on ${this.httpBind}: ${error.message || error}`);
             });
@@ -128,19 +140,26 @@ export class Application {
             const databaseType = Reflect.getMetadata(DATABASE_TYPE_METADATA, contract.constructor);
             const fields = Reflect.getMetadata(FIELD_METADATA, contract.constructor.prototype);
             const directMessage = Reflect.getMetadata(DIRECTMESSAGE_METADATA, contract.constructor);
-
+            const generateController = Reflect.getMetadata(GENERATE_CONTROLLER_METADATA, contract.constructor);
+            const auth = Reflect.getMetadata(AUTH_METADATA, contract.constructor);
+            const controllerCustomPath = Reflect.getMetadata(CONTROLLER_CUSTOM_PATH_METADATA, contract.constructor);
+    
             const contractStructure = {
                 controllerName,
                 protoPath,
                 protoPackage,
                 databaseType,
                 fields,
-                directMessage
+                directMessage,
+                generateController,
+                auth,
+                controllerCustomPath
             };
-
+    
             Scope.addToArray("__contracts", contractStructure);
         });
     }
+    
 
     public getHttpAdapter(): AbstractHttpAdapter {
         return this.httpAdapter as AbstractHttpAdapter;

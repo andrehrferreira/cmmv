@@ -3,6 +3,7 @@ import { ITranspile } from "./utils";
 
 export interface IModuleOptions {
     controllers?: Array<any>; 
+    providers?: Array<any>; 
     transpilers?: Array<new () => ITranspile>;
     submodules?: Array<Module>;
     contracts?: Array<new () => AbstractContract>
@@ -16,9 +17,11 @@ export class Module implements IModule{
     private controllers: Array<any>;
     private transpilers: Array<new () => ITranspile>;
     private submodules: Array<Module>;
-    private contracts: Array<AbstractContract>
+    private contracts: Array<AbstractContract>;
+    private providers: Array<any>;
 
     constructor(options: IModuleOptions) {
+        this.providers = options.providers || [];
         this.controllers = options.controllers || [];
         this.transpilers = options.transpilers || [];
         this.submodules = options.submodules || [];

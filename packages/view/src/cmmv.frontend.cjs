@@ -1,20 +1,31 @@
 (function(global) {
-    const cmmv = {
+    let cmmvMiddleware = {
+        app: null,
+
         socket: null,
 
         contractIndex: {},
 
         contracts: {},
 
-        initialize(){
+        context: {}, 
+
+        contextApp: null,
+
+        initialize(context, methods, mounted) {
             this.socket = new WebSocket(
-                window.location.href.            
-                replace("https", "wss").
-                replace("http", "ws")
+                window.location.href
+                    .replace("https", "wss")
+                    .replace("http", "ws")
             );
 
-            this.socket.addEventListener("message", this.parseMessage);
-            this.socket.binaryType = 'arraybuffer';
+            this.socket.addEventListener("message", this.parseMessage.bind(this));
+            this.socket.binaryType = 'arraybuffer';             
+
+            if(typeof context == 'object')
+                this.context = Object.assign(this.context, context);
+
+            document.addEventListener('DOMContentLoaded', this.processExpressions.bind(this));
         },
 
         addContracts: function(jsonContracts) {
@@ -22,7 +33,7 @@
                 this.contractIndex = jsonContracts.index;
 
                 for (let contractName in jsonContracts.contracts) {
-                    if (jsonContracts.contracts.hasOwnProperty(contractName)){
+                    if (jsonContracts.contracts.hasOwnProperty(contractName)) {
                         let contract = protobuf.Root.fromJSON(jsonContracts.contracts[contractName]);
                         this.contracts[contractName] = contract;         
                     }             
@@ -38,8 +49,8 @@
             return this.contracts[contractName];
         },
 
-        parseMessage(event){
-
+        parseMessage(event) {
+            // Implementação de tratamento de mensagens
         },
 
         pack(contractName, messageName, data) {
@@ -59,18 +70,64 @@
                 }).finish();
     
                 return (buffer) ? new Uint8Array(buffer) : null;
-            }
-            else{
+            } else {
                 console.error(`Not found in contract list ${contractName}.${messageName}`);
                 return null;
             }
         },
 
-        rpc: {
+        processExpressions() {
+            this.contextApp = this.reactive({ 
+                $template: "#app",
+                rpc: this.rpc, 
+                ...this.context,
+                mounted: this.mounted,
+                created: this.created 
+            })
 
+            const app = this.createApp(this.contextApp);
+
+            if(typeof this.contextApp?.created === "function")
+                this.contextApp?.created();
+
+            this.app = app.mount();
+
+            if(typeof this.contextApp?.mounted === "function")
+                this.contextApp?.mounted();
+        },
+
+        rpc: {
+            
+            get: (name) => {
+                if (name === 'tasks') {
+                    return [
+                        { key: 1, label: 'Task 1' },
+                        { key: 2, label: 'Task 2' },
+                        { key: 3, label: 'Task 3' }
+                    ];
+                }
+                return [];
+            },
+
+            add: (contract, data) => {
+                console.log(contract, data);
+            },
+
+            on: (contract, cb) => {
+
+            }
         }
     };
 
-    global.cmmv = cmmv;
-    global.cmmv.initialize();
+    let methods = {};
+
+    if(typeof __methods === "object"){
+        for(let key in __methods)
+            methods[key] = new Function(`return (${__methods[key]})`)()
+    }
+
+    let mounted = (__mounted) ? new Function(`return (${__mounted})`)() : null;
+    
+    global.cmmv = Object.assign({ ...methods, mounted }, cmmv, cmmvMiddleware);;
+    global.cmmv.initialize(__data || {});
 })(typeof window !== "undefined" ? window : global);

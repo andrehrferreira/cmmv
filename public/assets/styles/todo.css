@@ -1,0 +1,71 @@
+body{
+    font: 14px 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background: #f5f5f5;
+	color: #111111;
+    line-height: 1.4em;
+    -webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	font-weight: 300;
+}
+
+h1 { 
+    font-size: 60px;
+	font-weight: 200;
+	text-align: center;
+	color: #b83f45;
+	-webkit-text-rendering: optimizeLegibility;
+	-moz-text-rendering: optimizeLegibility;
+	text-rendering: optimizeLegibility;
+}
+
+.todo-box{
+    width: 500px;
+    margin: auto;
+    border: 1px solid #CCC;
+    background-color: #FFF;
+    padding: 10px;
+    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2),
+	            0 25px 50px 0 rgba(0, 0, 0, 0.1);
+}
+
+.todo-item{
+    border: 1px solid #CCC;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+}
+
+.todo-input-box {
+    width: calc(100% - 2.5px);
+    border: 1px solid #CCC;
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+}
+
+.todo-input {
+    width: 70%;
+    margin: auto;
+    border: none; 
+    outline: none;
+    padding: 10px;
+    font-size: 15px;
+}
+
+.todo-btn {
+    width: 30%;
+    height: 40px;
+    margin: auto;
+    background-color: #28a745; 
+    color: #fff;
+    border: 1px solid #28a745;
+    padding: 5px; 
+    cursor: pointer; 
+    text-align: center; 
+    font-size: 15px;
+}
+
+.todo-btn:hover {
+    background-color: #218838; 
+    border-color: #1e7e34; 
+}

@@ -4,7 +4,8 @@ import { AbstractContract, Contract, ContractField } from "@cmmv/core";
     controllerName: "wscall",
     protoPath: "src/protos/ws.proto",
     protoPackage: "ws",
-    directMessage: true 
+    directMessage: true,
+    generateController: false 
 })
 export class WSContract extends AbstractContract {
     @ContractField({ protoType: 'int32' })

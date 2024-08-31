@@ -79,22 +79,65 @@ export class ProtobufTranspile implements ITranspile {
             
         lines.push('');
     
+        // Gerando a mensagem principal
         lines.push(`message ${contract.controllerName} {`);
-
+    
         contract.fields.forEach((field: any, index: number) => {
             const protoType = this.mapToProtoType(field.protoType);
             const repeatedPrefix = field.protoRepeated ? 'repeated ' : '';
             lines.push(`  ${repeatedPrefix}${protoType} ${field.propertyKey} = ${index + 1};`);
         });
-
+    
         lines.push(`}`);
     
+        // Gerando a lista de mensagens
         if (!contract.directMessage) {
             lines.push('');
             lines.push(`message ${contract.controllerName}List {`);
             lines.push(`  repeated ${contract.controllerName} items = 1;`);
             lines.push(`}`);
         }
+    
+        // Gerando mensagens para operações CRUD
+        lines.push('');
+        lines.push(`message Add${contract.controllerName}Request {`);
+        lines.push(`  ${contract.controllerName} item = 1;`);
+        lines.push(`}`);
+        lines.push(`message Add${contract.controllerName}Response {`);
+        lines.push(`  ${contract.controllerName} item = 1;`);
+        lines.push(`}`);
+        
+        lines.push('');
+        lines.push(`message Update${contract.controllerName}Request {`);
+        lines.push(`  string id = 1;`); // ID do registro a ser alterado
+        lines.push(`  ${contract.controllerName} item = 2;`);
+        lines.push(`}`);
+        lines.push(`message Update${contract.controllerName}Response {`);
+        lines.push(`  ${contract.controllerName} item = 1;`);
+        lines.push(`}`);
+    
+        lines.push('');
+        lines.push(`message Delete${contract.controllerName}Request {`);
+        lines.push(`  string id = 1;`);
+        lines.push(`}`);
+        lines.push(`message Delete${contract.controllerName}Response {`);
+        lines.push(`  bool success = 1;`);
+        lines.push(`}`);
+    
+        lines.push('');
+        lines.push(`message GetAll${contract.controllerName}Request {}`);
+        lines.push(`message GetAll${contract.controllerName}Response {`);
+        lines.push(`  ${contract.controllerName}List items = 1;`);
+        lines.push(`}`);
+    
+        // Gerando o serviço CRUD
+        lines.push('');
+        lines.push(`service ${contract.controllerName}Service {`);
+        lines.push(`  rpc Add${contract.controllerName} (Add${contract.controllerName}Request) returns (Add${contract.controllerName}Response);`);
+        lines.push(`  rpc Update${contract.controllerName} (Update${contract.controllerName}Request) returns (Update${contract.controllerName}Response);`);
+        lines.push(`  rpc Delete${contract.controllerName} (Delete${contract.controllerName}Request) returns (Delete${contract.controllerName}Response);`);
+        lines.push(`  rpc GetAll${contract.controllerName} (GetAll${contract.controllerName}Request) returns (GetAll${contract.controllerName}Response);`);
+        lines.push(`}`);
     
         return lines.join('\n');
     }
@@ -106,11 +149,19 @@ export class ProtobufTranspile implements ITranspile {
             bool: 'bool',
             int: 'int32',
             int32: 'int32',
-            number: 'int32',
+            int64: 'int64',
             float: 'float',
             double: 'double',
             bytes: 'bytes',
-            int64: 'int64',
+            date: 'string',          
+            timestamp: 'string',     
+            text: 'string',          
+            json: 'string',          
+            jsonb: 'string',         
+            uuid: 'string',          
+            time: 'string',          
+            simpleArray: 'string',   
+            simpleJson: 'string',    
             bigint: 'int64',
             uint32: 'uint32',
             uint64: 'uint64',
@@ -122,9 +173,9 @@ export class ProtobufTranspile implements ITranspile {
             sfixed64: 'sfixed64',
             any: 'google.protobuf.Any'
         };
-
+    
         return typeMapping[type] || 'string';
-    }
+    }   
 
     private async generateContractsJs(contractsJson: { [key: string]: any }): Promise<void> {
         const outputFile = path.resolve('public/core/contracts.min.js');

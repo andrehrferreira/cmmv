@@ -1,0 +1,64 @@
+<div class="todo-box" scope>
+    <h1 s-i18n="todo"></h1>
+
+    <div if="todolist.length">
+        <div 
+            for="(item, key) in todolist"
+            :key="key"
+            class="todo-item"
+        >{{ item.label }}</div>
+    </div>
+
+    <div class="todo-input-box">
+        <input c-model="label" class="todo-input">
+        
+        <button 
+            s-i18n="add" 
+            @click="add"
+            class="todo-btn"
+        ></button>
+    </div>
+</div>
+
+<script s-setup>
+export default {
+    layout: "default",
+
+    head: {
+        meta: [
+            { name: "description", content: "CMMV Todolist sample" },
+            { name: "keywords", content: "cmmv, contract model, websocket" }
+        ],
+        link: [
+            { rel: "stylesheet", href: "/assets/styles/todo.css" },
+            { rel: "canonical", href: "https://cmmv.io/" },
+        ]
+    },
+
+    data(){
+        return {
+            tt: true,
+            todolist: [],
+            label: ""
+        }
+    },
+
+    mounted() {
+        console.log(`I'm mounted!`);
+        this.rpc.get('tasks');        
+        this.rpc.on('tasks', this.updateList);
+    },
+
+    methods: {
+        add(){
+            this.rpc.add('tasks', { label: this.label })
+        },
+
+        updateList(data) {
+            this.todolist = data;
+        }   
+    }
+}
+</script>
+
+        

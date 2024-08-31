@@ -1,12 +1,46 @@
 // Generated automatically by CMMV
 syntax = "proto3";
 
-message tasks {
+message Task {
   string label = 1;
   bool checked = 2;
   bool removed = 3;
 }
 
-message tasksList {
-  repeated tasks items = 1;
+message TaskList {
+  repeated Task items = 1;
+}
+
+message AddTaskRequest {
+  Task item = 1;
+}
+message AddTaskResponse {
+  Task item = 1;
+}
+
+message UpdateTaskRequest {
+  string id = 1;
+  Task item = 2;
+}
+message UpdateTaskResponse {
+  Task item = 1;
+}
+
+message DeleteTaskRequest {
+  string id = 1;
+}
+message DeleteTaskResponse {
+  bool success = 1;
+}
+
+message GetAllTaskRequest {}
+message GetAllTaskResponse {
+  TaskList items = 1;
+}
+
+service TaskService {
+  rpc AddTask (AddTaskRequest) returns (AddTaskResponse);
+  rpc UpdateTask (UpdateTaskRequest) returns (UpdateTaskResponse);
+  rpc DeleteTask (DeleteTaskRequest) returns (DeleteTaskResponse);
+  rpc GetAllTask (GetAllTaskRequest) returns (GetAllTaskResponse);
 }
