@@ -6,7 +6,6 @@
 <p align="center">
     <a href="https://www.npmjs.com/package/@cmmv/core"><img src="https://img.shields.io/npm/v/@cmmv/core.svg" alt="NPM Version" /></a>
     <a href="https://www.npmjs.com/package/@cmmv/core"><img src="https://img.shields.io/npm/l/@cmmv/core.svg" alt="Package License" /></a>
-    <a href="https://github.com/andrehrferreira/cmmv/actions"><img src="https://github.com/andrehrferreira/cmmv/workflows/CI/badge.svg" alt="Build Status" /></a>
     <a href="https://coveralls.io/github/andrehrferreira/cmmv?branch=main"><img src="https://coveralls.io/repos/github/andrehrferreira/cmmv/badge.svg?branch=main" alt="Coverage" /></a>
 </p>
 
@@ -38,7 +37,7 @@ CMMV aims to simplify the development process by leveraging TypeScript's powerfu
 CMMV is available as a collection of npm packages. To install the core package, use npm:
 
 ```bash
-$ npm install @cmmv/core
+$ npm install @cmmv/core @cmmv/http @cmmv/protobuf @cmmv/ws @cmmv/view @cmmv/repository
 ```
 
 ## Quick Start
