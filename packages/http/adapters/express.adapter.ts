@@ -39,7 +39,7 @@ export class ExpressAdapter extends AbstractHttpAdapter<http.Server | https.Serv
         this.instance.set('views', publicDir);
         this.instance.set('view engine', 'html');
         this.instance.engine('html', (filePath, options, callback) => {
-            this.render.renderFile(filePath, options, {}, callback);
+            this.render.renderFile(filePath, options, { nonce: options.nonce || "" }, callback);
         });
         this.instance.use(express.json());
         this.instance.use(bodyParser.json({limit: "50mb"}));
@@ -48,19 +48,6 @@ export class ExpressAdapter extends AbstractHttpAdapter<http.Server | https.Serv
             extended: true
         }));
         this.instance.use(cors());
-
-        this.instance.use((req, res, next) => {
-            res.locals.nonce = uuidv4();
-            res.locals.nonceData =  uuidv4();
-
-            res.setHeader(
-                "Content-Security-Policy", 
-                `default-src 'self'; script-src 'self' 'nonce-${res.locals.nonce}' 'nonce-${res.locals.nonceData}' 'unsafe-eval';`
-            );
-
-            next();
-        });
-
         this.instance.use(helmet({ contentSecurityPolicy: false }));
 
         this.setMiddleware();
@@ -103,8 +90,8 @@ export class ExpressAdapter extends AbstractHttpAdapter<http.Server | https.Serv
             req.requestId = uuidv4();
             Telemetry.start('Request Process', req.requestId);
             
-            res.locals.nonce = uuidv4();
-            res.locals.nonceData = uuidv4();
+            res.locals.nonce = uuidv4().substring(0, 8);
+            res.locals.nonceData = uuidv4().substring(0, 8);
     
             if (req.method === 'GET') {
                 res.setHeader(

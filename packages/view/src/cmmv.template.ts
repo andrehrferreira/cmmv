@@ -16,11 +16,13 @@ export class Template {
     templateText: string;
 
     private directives: Directive[] = [];
+    private nonce: string;
 
     constructor(text: string, optsParam: any) {
         const opts = hasOwnOnlyObject(optsParam);
         const options = createNullProtoObjWherePossible();
         this.templateText = text;
+        this.nonce = opts.nonce || '';
     }
 
     use(directives: Directive | Directive[]) {
@@ -134,7 +136,10 @@ export class Template {
 
                 for (const [key, value] of Object.entries(link)) 
                     linkString += `${key}="${value}" `;
-                
+
+                if (this.nonce) 
+                    linkString += `nonce="${this.nonce}" `;
+                                
                 linkString += '/>\n';
                 headContent += linkString;
             });
@@ -153,7 +158,10 @@ export class Template {
                 
                 for (const [key, value] of Object.entries(script)) 
                     scriptString += `${key}="${value}" `;
-                
+
+                if (this.nonce) 
+                    scriptString += `nonce="${this.nonce}" `;
+                                
                 scriptString += '></script>\n';
                 scriptsContent += scriptString;
             });
@@ -161,7 +169,6 @@ export class Template {
     
         return scriptsContent;
     }
-
 
     deepMerge(target: any, ...sources: any[]): any {
         sources.forEach(source => {

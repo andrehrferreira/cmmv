@@ -38,6 +38,6 @@ module.exports = {
     },
 
     scripts: [
-        { type: "text/javascript", src: '/assets/bundle.min.js', body: true }
+        { type: "text/javascript", src: '/assets/bundle.min.js' }
     ]
 };

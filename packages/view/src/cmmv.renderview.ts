@@ -39,9 +39,9 @@ export class CMMVRenderer {
         if ((to !== null) && (to !== undefined)) {
             for (let i = 0; i < list.length; i++) {
                 let p = list[i];
-                if (typeof from[p] !== 'undefined') {
+
+                if (typeof from[p] !== 'undefined') 
                     to[p] = from[p];
-                }
             }
         }
 
@@ -55,9 +55,9 @@ export class CMMVRenderer {
 
         if (options.cache && filename) {
             func = this.cache.get(filename);
-            if (func) {
+
+            if (func) 
                 return func;
-            }
         }
 
         if (!hasTemplate) {
