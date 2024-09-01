@@ -92,4 +92,20 @@ export abstract class AbstractHttpAdapter<
     public getInstance<T = any>(): T {
         return this.instance as T;
     }
+
+    public isJson(result: any): boolean {
+        if (typeof result === "object" && result !== null) 
+          return true;
+              
+        if (typeof result === "string") {
+            try {
+                const parsed = JSON.parse(result);
+                return typeof parsed === "object" && parsed !== null;
+            } catch (e) {
+                return false;
+            }
+        }
+      
+        return false;
+    }
 }

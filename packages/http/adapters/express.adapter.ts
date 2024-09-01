@@ -186,6 +186,7 @@ export class ExpressAdapter extends AbstractHttpAdapter<http.Server | https.Serv
                     
                     try {
                         const args = this.buildRouteArgs(req, res, route.params);
+    
                         Telemetry.start('Controller Handler', req.requestId);
                         const result = await instance[route.handlerName](...args);
                         Telemetry.end('Controller Handler', req.requestId);
@@ -194,19 +195,24 @@ export class ExpressAdapter extends AbstractHttpAdapter<http.Server | https.Serv
                         Telemetry.end('Request Process', req.requestId);
                         const telemetry = Telemetry.getTelemetry(req.requestId);
 
-                        let response = {
-                            status: 200,
-                            processingTime,
-                            data: result
+                        if(this.isJson(result)) {
+                            let response = {
+                                status: 200,
+                                processingTime,
+                                data: result
+                            }
+    
+                            if(req.query.debug){
+                                response['requestId'] = req.requestId;
+                                response['telemetry'] = telemetry;
+                            }
+                                    
+                            res.json(response);
                         }
-
-                        if(req.query.debug){
-                            response['requestId'] = req.requestId;
-                            response['telemetry'] = telemetry;
-                        }
-                                
-                        res.json(response);
-                    } catch (error) {
+                        else if(result) 
+                            res.status(200).send(result);                        
+                    } 
+                    catch (error) {
                         const processingTime = Date.now() - startTime; 
                         Telemetry.end('Request Process', req.requestId);
                         const telemetry = Telemetry.getTelemetry(req.requestId);

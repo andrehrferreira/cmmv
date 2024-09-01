@@ -36,7 +36,13 @@ export class ControllerRegistry {
     }
     
     public static registerParam(target: any, handlerName: string, paramType: string, index: number, paramName?: string) {
-        const controller = this.controllers.get(target.constructor);
+        let controller = this.controllers.get(target.constructor);
+
+        if (!controller) {
+            const prefix = Reflect.getMetadata('controller_prefix', target.constructor) || '';
+            this.registerController(target.constructor, prefix);
+            controller = this.controllers.get(target.constructor);
+        }
 
         if (controller) {
             let route = controller.routes.find(route => route.handlerName === handlerName);
@@ -48,6 +54,9 @@ export class ControllerRegistry {
     
             route.params = route.params || [];
             route.params.push({ paramType, index, paramName });
+        }
+        else {
+            console.log(`${target.constructor.name} not found`)
         }
     }   
 
