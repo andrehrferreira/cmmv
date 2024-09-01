@@ -1,0 +1,82 @@
+
+<p align="center">
+  <a href="https://github.com/andrehrferreira/cmmv" target="blank"><img src="https://example.com/logo.png" width="120" alt="CMMV Logo" /></a>
+</p>
+<p align="center">Contract-Model-Model-View (CMMV) - A minimalistic framework for building scalable and modular applications using TypeScript contracts.</p>
+<p align="center">
+    <a href="https://www.npmjs.com/package/@cmmv/core"><img src="https://img.shields.io/npm/v/@cmmv/core.svg" alt="NPM Version" /></a>
+    <a href="https://www.npmjs.com/package/@cmmv/core"><img src="https://img.shields.io/npm/l/@cmmv/core.svg" alt="Package License" /></a>
+    <a href="https://github.com/andrehrferreira/cmmv/actions"><img src="https://github.com/andrehrferreira/cmmv/workflows/CI/badge.svg" alt="Build Status" /></a>
+    <a href="https://coveralls.io/github/andrehrferreira/cmmv?branch=main"><img src="https://coveralls.io/repos/github/andrehrferreira/cmmv/badge.svg?branch=main" alt="Coverage" /></a>
+</p>
+
+<p align="center">
+  <a href="https://andrehrferreira.github.io/cmmv">Documentation</a> &bull;
+  <a href="https://github.com/andrehrferreira/cmmv/tree/main/examples">Examples</a> &bull;
+  <a href="https://github.com/andrehrferreira/cmmv/discussions">Discussions</a> &bull;
+  <a href="https://github.com/andrehrferreira/cmmv/issues">Report Issue</a>
+</p>
+
+## Description
+
+CMMV (Contract-Model-Model-View) is a minimalistic and modular framework for building scalable applications in TypeScript. Inspired by modern design patterns, CMMV uses contracts to define the entire application, from ORM entities to REST controllers and WebSocket endpoints, allowing for a highly structured and maintainable codebase.
+
+## Philosophy
+
+CMMV aims to simplify the development process by leveraging TypeScript's powerful type system and decorators. It eliminates the need for heavy frontend frameworks by focusing on direct control over data binding and interactions, while maintaining flexibility through modular design.
+
+## Features
+
+- **Contract-Driven Development:** Use TypeScript contracts to define models, controllers, and more.
+- **Modular Architecture:** Compose your application using modules, making it easy to manage and scale.
+- **RPC & REST Support:** Integrated support for both binary RPC via WebSocket and traditional REST APIs.
+- **Express Integration:** Seamless integration with Express for a familiar and robust HTTP server environment.
+- **Extensible:** Highly customizable and easy to extend with your own modules and components.
+
+## Installation
+
+CMMV is available as a collection of npm packages. To install the core package, use npm:
+
+```bash
+$ npm install @cmmv/core
+```
+
+## Quick Start
+
+Below is a simple example of how to create a new CMMV application:
+
+```typescript
+import { Application } from '@cmmv/core';
+import { ExpressAdapter } from '@cmmv/express';
+import { HttpModule } from '@cmmv/http';
+
+const app = Application.create({
+  httpAdapter: new ExpressAdapter(),
+  httpOptions: {
+    host: '0.0.0.0',
+    port: 3000,
+  },
+  modules: [
+    new HttpModule(),
+  ],
+});
+
+app.initialize();
+```
+
+## Documentation
+
+The complete documentation is available [here](https://andrehrferreira.github.io/cmmv).
+
+## Support
+
+CMMV is an open-source project, and we are always looking for contributors to help improve it. If you encounter a bug or have a feature request, please open an issue on [GitHub](https://github.com/andrehrferreira/cmmv/issues).
+
+## Stay in Touch
+
+- Author - [André Ferreira](https://github.com/andrehrferreira)
+- Twitter - [@andrehrferreira](https://twitter.com/andrehrferreira)
+
+## License
+
+CMMV is [MIT licensed](LICENSE).

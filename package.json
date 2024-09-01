@@ -32,7 +32,7 @@
 	"bugs": {
 		"url": "https://github.com/andrehrferreira/cmmv/issues"
 	},
-	"homepage": "https://github.com/andrehrferreira/cmmv#readme",
+	"homepage": "https://cmmv.io",
 	"publishConfig": {
 		"access": "public"
 	},

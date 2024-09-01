@@ -14,7 +14,7 @@
 	"bugs": {
 		"url": "https://github.com/andrehrferreira/cmmv/issues"
 	},
-	"homepage": "https://cmmv.io/",
+	"homepage": "https://cmmv.io",
 	"dependencies": {
 		"@fastify/compress": "^7.0.3",
 		"@fastify/cors": "^9.0.1",

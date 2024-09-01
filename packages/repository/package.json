@@ -14,7 +14,7 @@
 	"bugs": {
 		"url": "https://github.com/andrehrferreira/cmmv/issues"
 	},
-	"homepage": "https://cmmv.io/",
+	"homepage": "https://cmmv.io",
 	"dependencies": {
 		"mssql": "^11.0.1",
 		"mysql": "^2.18.1",
