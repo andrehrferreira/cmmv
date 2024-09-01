@@ -69,7 +69,7 @@ Application.create({
 
 ## Documentation
 
-The complete documentation is available [here](https://andrehrferreira.github.io/cmmv).
+The complete documentation is available [here](https://docs.cmmv.io).
 
 ## Support
 

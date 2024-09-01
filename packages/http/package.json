@@ -1,7 +1,7 @@
 {
-	"name": "@cmmv/express",
+	"name": "@cmmv/http",
 	"version": "0.1.0",
-	"description": "CMMV (@express)",
+	"description": "CMMV (@http)",
 	"publishConfig": {
 		"access": "public"
 	},
