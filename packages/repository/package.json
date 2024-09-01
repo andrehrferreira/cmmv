@@ -23,5 +23,6 @@
 		"sql.js": "^1.11.0",
 		"sqlite3": "^5.1.7",
 		"typeorm": "^0.3.20"
-	}
+	},
+	"gitHead": "5ffa72d12d3cdec224b7324e2f2003d2f44afde1"
 }

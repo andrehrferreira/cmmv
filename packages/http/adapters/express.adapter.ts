@@ -11,7 +11,7 @@ import * as compression from "compression";
 import * as cors from 'cors';
 import helmet from "helmet";
 
-import { AbstractHttpAdapter, IHTTPSettings, Logger, Application, Telemetry } from "@cmmv/core";
+import { AbstractHttpAdapter, IHTTPSettings, Logger, Application, Telemetry, Config } from "@cmmv/core";
 import { CMMVRenderer } from "@cmmv/view";
 import { ControllerRegistry } from '../utils/controller-registry.utils';
 
@@ -90,14 +90,28 @@ export class ExpressAdapter extends AbstractHttpAdapter<http.Server | https.Serv
             req.requestId = uuidv4();
             Telemetry.start('Request Process', req.requestId);
             
-            res.locals.nonce = uuidv4().substring(0, 8);
-            res.locals.nonceData = uuidv4().substring(0, 8);
+            res.locals.nonce = uuidv4().substring(0, 8);    
+            const customHeaders = Config.get("headers") || {};
+    
+            for (const headerName in customHeaders) {
+                let headerValue = customHeaders[headerName];
+    
+                if (Array.isArray(headerValue)) {
+                    headerValue = headerValue.map(value => {
+                        if (headerName === "Content-Security-Policy") 
+                            return `${value} 'nonce-${res.locals.nonce}'`;
+                        
+                        return value;
+                    }).join("; ");
+                } else if (typeof headerValue === "string") {
+                    if (headerName === "Content-Security-Policy") 
+                        headerValue = `${headerValue} 'nonce-${res.locals.nonce}'`;                    
+                }
+    
+                res.setHeader(headerName, headerValue);
+            }
     
             if (req.method === 'GET') {
-                res.setHeader(
-                    "Content-Security-Policy",
-                    `default-src 'self'; script-src 'self' 'nonce-${res.locals.nonce}' 'nonce-${res.locals.nonceData}' 'unsafe-eval';`
-                );
                 res.setHeader("Strict-Transport-Security", "max-age=15552000; includeSubDomains");
                 res.setHeader("X-Content-Type-Options", "nosniff");
                 res.setHeader("X-Frame-Options", "SAMEORIGIN");
@@ -142,8 +156,7 @@ export class ExpressAdapter extends AbstractHttpAdapter<http.Server | https.Serv
     
                     return res.render(filePath, {
                         debug: debugContent,
-                        nonce: res.locals.nonce,
-                        nonceData: res.locals.nonceData
+                        nonce: res.locals.nonce
                     });
                 }
             }
@@ -151,7 +164,7 @@ export class ExpressAdapter extends AbstractHttpAdapter<http.Server | https.Serv
             if (!fileFound)
                 res.status(404).send('Page not found');
         });
-    }   
+    }     
 
     private registerControllers() {
         const controllers = ControllerRegistry.getControllers();

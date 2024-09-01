@@ -18,6 +18,8 @@
             class="todo-btn"
         ></button>
     </div>
+
+     <!-- include('public/views/teste') -->
 </div>
 
 <script s-setup>
@@ -44,7 +46,7 @@ export default {
     },
 
     mounted() {
-        console.log(`I'm mounted!`);
+        //console.log(`I'm mounted!`);
         this.rpc.get('tasks');        
         this.rpc.on('tasks', this.updateList);
     },

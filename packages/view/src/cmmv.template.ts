@@ -34,6 +34,37 @@ export class Template {
             this.directives.push(directives);
     }
 
+    private async loadIncludes(templateText: string): Promise<string> {
+        const includeRegex = /<!--\s*include\(['"]([^'"]+)['"]\)[^;]+\s*-->/g;
+        let match;
+        let resultText = templateText;
+
+        while ((match = includeRegex.exec(templateText)) !== null) {
+            const includePath = match[1];
+            const resolvedPath = path.resolve(cwd(), includePath);
+
+            if (!templateCache[resolvedPath]) {
+                if (fs.existsSync(resolvedPath)) {
+                    let includeContent = fs.readFileSync(resolvedPath, 'utf-8');
+                    includeContent = await this.loadIncludes(includeContent);
+                    templateCache[resolvedPath] = includeContent;
+                }
+                if (fs.existsSync(`${resolvedPath}.html`)) {
+                    let includeContent = fs.readFileSync(`${resolvedPath}.html`, 'utf-8');
+                    includeContent = await this.loadIncludes(includeContent);
+                    templateCache[resolvedPath] = includeContent;
+                }
+            }
+
+            resultText = resultText.replace(match[0], (templateCache[resolvedPath]) ? 
+                templateCache[resolvedPath] : 
+                `<!-- file not found: ${includePath} -->`
+            );
+        }
+
+        return resultText;
+    }
+
     async processSetup(result) {
         let pageContents = result.html;
 
@@ -65,7 +96,7 @@ export class Template {
                         : null;
 
                     pageContents += `\r\n
-                    <script nonce="{nonceData}">
+                    <script nonce="{nonce}">
                         let __data = ${JSON.stringify(data)};
                         let __methods = ${methodsAsString};
                         let __mounted = ${JSON.stringify(mountedAsString)};
@@ -190,6 +221,8 @@ export class Template {
 
         return async function(data: Record<string, any>) {
             let processedText = self.templateText;
+
+            processedText = await self.loadIncludes(processedText);
 
             for (const directive of self.directives) {
                 const result: any = directive(processedText, data);

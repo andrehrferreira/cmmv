@@ -1,16 +1,28 @@
+import * as fs from 'fs';
 import * as path from 'path';
+import { Duplex } from 'stream';
+
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
-import { AbstractHttpAdapter, IHTTPSettings, Logger, Application } from '@cmmv/core';
 import fastifyStatic from '@fastify/static';
 import fastifyCompress from '@fastify/compress';
 import fastifyCors from '@fastify/cors';
 import fastifyHelmet from '@fastify/helmet';
 import fastifyView from '@fastify/view';
+
+import { AbstractHttpAdapter, IHTTPSettings, Logger, Application, Telemetry, Config } from "@cmmv/core";
+import { CMMVRenderer } from "@cmmv/view";
 import { ControllerRegistry } from '../utils/controller-registry.utils';
 import { v4 as uuidv4 } from 'uuid';
 
+export interface FastifyRequestCustom extends FastifyRequest {
+    requestId?: string;
+    nonce?: string;
+}
+
 export class FastifyAdapter extends AbstractHttpAdapter<FastifyInstance> {
-    private logger: Logger = new Logger('FastifyAdapter');
+    private logger: Logger = new Logger("FastifyAdapter");
+    protected readonly openConnections = new Set<Duplex>();
+    protected render: CMMVRenderer = new CMMVRenderer();
 
     constructor(instance?: FastifyInstance) {
         super(instance || require('fastify')());
@@ -21,42 +33,63 @@ export class FastifyAdapter extends AbstractHttpAdapter<FastifyInstance> {
         this.application = application;
 
         this.instance.register(fastifyCompress);
-        this.instance.register(fastifyCors);
-        this.instance.register(fastifyHelmet, { contentSecurityPolicy: false });
         this.instance.register(fastifyStatic, {
-            root: path.join(publicDir, "assets"),
+            root: publicDir,
             prefix: '/assets',
         });
-
         this.instance.register(fastifyView, {
             engine: { ejs: require("@cmmv/view") },
             root: publicDir,
             defaultContext: {},
-            propertyName: 'view'
+            propertyName: 'view',
         });
+        this.instance.register(require('@fastify/formbody'));
+        this.instance.register(fastifyCors);
+        this.instance.register(fastifyHelmet, { contentSecurityPolicy: false });
 
         this.setMiddleware();
         this.registerControllers();
         this.initHttpServer(settings);
     }
 
-    public initHttpServer(options?: any) {
-        const isHttpsEnabled = options && options.httpsOptions;
-        this.httpServer = isHttpsEnabled
-            ? require('https').createServer(options.httpsOptions, this.instance)
-            : require('http').createServer(this.instance);
+    public async initHttpServer(options: any) {
+        await this.instance.listen(options.port || 3000, options.host || '0.0.0.0');
     }
 
     private setMiddleware() {
-        this.instance.addHook('onRequest', async (request, reply) => {
-            const nonce = uuidv4();
-            const nonceData = uuidv4();
+        this.instance.addHook('onRequest', async (request: FastifyRequestCustom, reply: FastifyReply) => {
+            request.requestId = uuidv4();
+            Telemetry.start('Request Process', request.requestId);
 
-            reply.header('Content-Security-Policy', `default-src 'self'; script-src 'self' 'nonce-${nonce}' 'nonce-${nonceData}' 'unsafe-eval';`);
-            reply.header('Strict-Transport-Security', 'max-age=15552000; includeSubDomains');
-            reply.header('X-Content-Type-Options', 'nosniff');
-            reply.header('X-Frame-Options', 'SAMEORIGIN');
-            reply.header('X-XSS-Protection', '0');
+            const nonce = uuidv4().substring(0, 8);
+            request.nonce = nonce;
+
+            const customHeaders = Config.get("headers") || {};
+
+            for (const headerName in customHeaders) {
+                let headerValue = customHeaders[headerName];
+
+                if (Array.isArray(headerValue)) {
+                    headerValue = headerValue.map(value => {
+                        if (headerName === "Content-Security-Policy") 
+                            return `${value} 'nonce-${nonce}'`;
+
+                        return value;
+                    }).join("; ");
+                } else if (typeof headerValue === "string") {
+                    if (headerName === "Content-Security-Policy") 
+                        headerValue = `${headerValue} 'nonce-${nonce}'`;
+                }
+
+                reply.header(headerName, headerValue);
+            }
+
+            if (request.method === 'GET') {
+                reply.header("Strict-Transport-Security", "max-age=15552000; includeSubDomains");
+                reply.header("X-Content-Type-Options", "nosniff");
+                reply.header("X-Frame-Options", "SAMEORIGIN");
+                reply.header("X-XSS-Protection", "0");
+            }
 
             if (['POST', 'PUT', 'DELETE'].includes(request.method)) {
                 reply.removeHeader("X-DNS-Prefetch-Control");
@@ -70,6 +103,36 @@ export class FastifyAdapter extends AbstractHttpAdapter<FastifyInstance> {
                 reply.removeHeader("Referrer-Policy");
             }
         });
+
+        this.instance.get('*', async (request: FastifyRequestCustom, reply: FastifyReply) => {
+            const publicDir = path.join(process.cwd(), 'public/views');
+            const requestPath = request.url === '/' ? 'index' : request.url.substring(1);
+            const ext = path.extname(request.url);
+
+            if ((ext || ext !== ".html") && requestPath !== 'index')
+                return reply.callNotFound();
+
+            const possiblePaths = [
+                path.join(publicDir, `${requestPath}.html`),
+                path.join(publicDir, requestPath, 'index.html')
+            ];
+
+            for (const filePath of possiblePaths) {
+                if (fs.existsSync(filePath)) {
+                    const debugFilePath = path.resolve(require.resolve('@cmmv/view'), '../src/debug.html');
+                    const debugContent = process.env.NODE_ENV === "dev" ? fs.readFileSync(debugFilePath, "utf-8") : "";
+
+                    return reply.type('text/html').send(
+                        await this.render.renderFile(filePath, {
+                            debug: debugContent,
+                            nonce: request.nonce
+                        }, {}, () => {})
+                    );
+                }
+            }
+
+            reply.status(404).send('Page not found');
+        });
     }
 
     private registerControllers() {
@@ -78,16 +141,16 @@ export class FastifyAdapter extends AbstractHttpAdapter<FastifyInstance> {
         controllers.forEach(([controllerClass, metadata]) => {
             const paramTypes = Reflect.getMetadata('design:paramtypes', controllerClass) || [];
             const instances = paramTypes.map((paramType: any) => this.application.providersMap.get(paramType.name));
-    
+
             const instance = new controllerClass(...instances);
             const prefix = metadata.prefix;
             const routes = metadata.routes;
-            
+
             routes.forEach(route => {
                 const fullPath = `/${prefix}${route.path ? '/' + route.path : ''}`;
                 const method = route.method.toLowerCase();
 
-                this.instance[method](fullPath, async (req: FastifyRequest, reply: FastifyReply) => {
+                this.instance[method](fullPath, async (req: FastifyRequestCustom, reply: FastifyReply) => {
                     const startTime = Date.now();
 
                     try {
@@ -139,24 +202,22 @@ export class FastifyAdapter extends AbstractHttpAdapter<FastifyInstance> {
             const [host, port] = bind.split(':');
 
             this.instance.listen(parseInt(port, 10), host, (err?: any) => {
-                if (err) 
+                if (err)
                     return reject(err);
-                
+
                 resolve();
             });
         });
     }
 
     public connected() {
-        return this.instance.server.listening;
+        return this.instance.server && this.instance.server.listening;
     }
 
     public close() {
-        if (!this.httpServer) 
+        if (!this.httpServer)
             return undefined;
 
-        return new Promise((resolve, reject) => {
-            this.httpServer.close(() => resolve(""));
-        });
+        return this.httpServer.close();
     }
 }

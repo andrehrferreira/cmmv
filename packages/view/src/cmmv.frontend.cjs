@@ -38,8 +38,6 @@
                         this.contracts[contractName] = contract;         
                     }             
                 }
-
-                console.log("Loaded contracts:", this.contracts);
             } catch (e) {
                 console.error("Error loading contracts:", e);
             }

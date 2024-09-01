@@ -37,6 +37,15 @@ module.exports = {
         ]
     },
 
+    headers: {
+        "Content-Security-Policy": [
+            "default-src 'self'",
+            "script-src 'self' 'unsafe-eval'",
+            "style-src 'self' 'unsafe-inline'",
+            "font-src 'self'"
+        ]
+    },
+
     scripts: [
         { type: "text/javascript", src: '/assets/bundle.min.js' }
     ]
