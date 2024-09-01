@@ -22,8 +22,8 @@ import {
 import { Config } from './utils/config.util';
 
 export interface IApplicationSettings {
-    wsAdapter: new (appOrHttpServer: any) => AbstractWSAdapter,
-    httpAdapter: new (instance?: any) => AbstractHttpAdapter,
+    wsAdapter?: new (appOrHttpServer: any) => AbstractWSAdapter,
+    httpAdapter?: new (instance?: any) => AbstractHttpAdapter,
     httpOptions?: IHTTPSettings;
     transpilers?: Array<new () => ITranspile>;
     modules?: Array<Module>;
@@ -56,8 +56,11 @@ export class Application {
         Config.loadConfig();
                 
         this.httpOptions = settings.httpOptions || {};
-        this.httpAdapter = new settings.httpAdapter();        
-        this.wsAdapter = new settings.wsAdapter(this.httpAdapter);
+        this.httpAdapter = new settings.httpAdapter();  
+        
+        if(settings.wsAdapter)
+            this.wsAdapter = new settings.wsAdapter(this.httpAdapter);
+
         this.host = Config.get<string>('server.host') || '0.0.0.0';
         this.port = Config.get<number>('server.port') || 3000;
         this.transpilers = settings.transpilers || [];
@@ -83,22 +86,25 @@ export class Application {
             this.createScriptBundle();
             settings.services?.forEach(async (service) => await service?.loadConfig());
             this.httpAdapter.init(this, this.httpOptions); 
-            this.wsServer = this.wsAdapter.create(this.httpAdapter);
 
-            this.wsAdapter.bindClientConnect(this.wsServer, (socket) => {                
-                const id = uuidv4();
-                socket.id = id;
-                this.wSConnections.set(id, socket);
-                this.logger.log(`WS Connection: ${id}`);
-    
-                //if(interceptor && typeof interceptor === "function")
-                //    socket.on("message", (data) => interceptor(this.getHttpAdapter(), socket, data));
-                    
-                socket.on("error", () => this.wSConnections.delete(id));
-                socket.on("close", () => this.wSConnections.delete(id));
-                //socket.send(stringToArrayBuffer(id), { binary: true });
-            });
+            if(this.wsAdapter){
+                this.wsServer = this.wsAdapter.create(this.httpAdapter);
 
+                this.wsAdapter.bindClientConnect(this.wsServer, (socket) => {                
+                    const id = uuidv4();
+                    socket.id = id;
+                    this.wSConnections.set(id, socket);
+                    this.logger.log(`WS Connection: ${id}`);
+        
+                    //if(interceptor && typeof interceptor === "function")
+                    //    socket.on("message", (data) => interceptor(this.getHttpAdapter(), socket, data));
+                        
+                    socket.on("error", () => this.wSConnections.delete(id));
+                    socket.on("close", () => this.wSConnections.delete(id));
+                    //socket.send(stringToArrayBuffer(id), { binary: true });
+                });
+            }
+            
             await this.httpAdapter.listen(`${this.host}:${this.port}`).then(() => {
                 this.logger.log(`Server HTTP successfully started on ${this.host}:${this.port}`);
             }).catch((error) => {
