@@ -1,6 +1,6 @@
 
 <p align="center">
-  <a href="https://github.com/andrehrferreira/cmmv" target="blank"><img src="https://example.com/logo.png" width="120" alt="CMMV Logo" /></a>
+  <a href="https://github.com/andrehrferreira/cmmv" target="blank"><img src="https://raw.githubusercontent.com/andrehrferreira/cmmv/main/public/assets/logo.png" width="120" alt="CMMV Logo" /></a>
 </p>
 <p align="center">Contract-Model-Model-View (CMMV) - A minimalistic framework for building scalable and modular applications using TypeScript contracts.</p>
 <p align="center">
