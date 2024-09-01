@@ -46,22 +46,28 @@ $ npm install @cmmv/core
 Below is a simple example of how to create a new CMMV application:
 
 ```typescript
-import { Application } from '@cmmv/core';
-import { ExpressAdapter } from '@cmmv/express';
-import { HttpModule } from '@cmmv/http';
+import { Application } from "@cmmv/core";
+import { ExpressAdapter, ExpressModule } from "@cmmv/http";
+import { ProtobufModule } from "@cmmv/protobuf";
+import { WSModule, WSAdapter } from "@cmmv/ws";
+import { ViewModule } from "@cmmv/view";
+import { RepositoryModule, Repository } from "@cmmv/repository";
+import { ApplicationModule } from "./app.module";
 
-const app = Application.create({
-  httpAdapter: new ExpressAdapter(),
-  httpOptions: {
-    host: '0.0.0.0',
-    port: 3000,
-  },
-  modules: [
-    new HttpModule(),
-  ],
+Application.create({
+    httpAdapter: ExpressAdapter,    
+    wsAdapter: WSAdapter,
+    modules: [
+        ExpressModule,
+        ProtobufModule,
+        WSModule,
+        ViewModule,
+        RepositoryModule,
+        ApplicationModule
+    ],
+    services: [Repository],
+    contracts: [...]
 });
-
-app.initialize();
 ```
 
 ## Documentation
