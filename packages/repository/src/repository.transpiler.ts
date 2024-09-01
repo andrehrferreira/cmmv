@@ -8,7 +8,7 @@ export class RepositoryTranspile implements ITranspile {
     run(): void {
         const contracts = Scope.getArray<any>("__contracts");
 
-        contracts.forEach((contract: any) => {
+        contracts?.forEach((contract: any) => {
             if(contract.generateController){
                 this.generateEntity(contract);
                 this.generateService(contract);

@@ -15,7 +15,7 @@ export class ProtobufTranspile implements ITranspile {
 
         const contractsJson: { [key: string]: any } = {};
 
-        contracts.forEach((contract: any) => {
+        contracts?.forEach((contract: any) => {
             const outputPath = path.resolve(contract.protoPath);
             const outputPathJson = outputPath.replace('.proto', '.json');
             const outputDir = path.dirname(outputPath);           
