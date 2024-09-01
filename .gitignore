@@ -16,6 +16,7 @@ node_modules/
 # bundle
 packages/**/*.d.ts
 packages/**/*.js
+!packages/**/*.spec.js
 
 # misc
 .DS_Store

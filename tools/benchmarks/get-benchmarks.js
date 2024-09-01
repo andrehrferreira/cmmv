@@ -1,42 +1,40 @@
-import wrkPkg = require('wrk');
-import { spawn } from 'child_process';
-import { join } from 'path';
-import { table } from 'console';
+const wrkPkg = require('wrk');
+const { spawn } = require('child_process');
+const { join } = require('path');
+const { table } = require('console');
 
-export interface Benchmarks {
-  [lib: string]: WrkResults;
-}
-
-const wrk = (options: any) =>
-  new Promise<WrkResults>((resolve, reject) =>
-    wrkPkg(options, (err: any, result: any) =>
+const wrk = (options) =>
+  new Promise((resolve, reject) =>
+    wrkPkg(options, (err, result) =>
       err ? reject(err) : resolve(result),
     ),
   );
 
-const sleep = (time: number) =>
+const sleep = (time) =>
   new Promise(resolve => setTimeout(resolve, time));
 
 const BENCHMARK_PATH = join(process.cwd(), 'benchmarks');
-export const LIBS = ['express', 'fastify', 'koa', 'hapi']; 
+const LIBS = [
+  'express', 'fastify', 'hapi', 'koa'
+];
 
-async function runBenchmarkOfLib(lib: string): Promise<WrkResults> {
+async function runBenchmarkOfLib(lib) {
   const libPath = join(BENCHMARK_PATH, `${lib}.js`);
   const process = spawn('node', [libPath], {
-    detached: true,
+    //detached: true,
   });
 
-  process.stdout!.on('data', data => {
+  process.stdout.on('data', data => {
     console.log(`stdout: ${data}`);
   });
 
-  process.stderr!.on('data', data => {
+  process.stderr.on('data', data => {
     console.log(`stderr: ${data}`);
   });
 
   process.unref();
 
-  await sleep(2000); 
+  await sleep(5000); 
 
   const result = await wrk({
     threads: 8,
@@ -49,9 +47,9 @@ async function runBenchmarkOfLib(lib: string): Promise<WrkResults> {
   return result;
 }
 
-export async function getBenchmarks() {
-  const results: Benchmarks = {};
-  for await (const lib of LIBS) {
+async function getBenchmarks() {
+  const results = {};
+  for (const lib of LIBS) {
     console.log(`Running benchmark for ${lib}`);
     try {
       const result = await runBenchmarkOfLib(lib);
@@ -72,33 +70,14 @@ async function run() {
     'Transfer/sec': result.transferPerSec,
     Latency: result.latencyAvg,
     'Total Requests': result.requestsTotal,
-    'Total Duration': result.durationActual,
     'Transfer Total': result.transferTotal,
     'Latency Stdev': result.latencyStdev,
     'Latency Max': result.latencyMax,
   }));
 
+  tableData.sort((a, b) => b['Requests/sec'] - a['Requests/sec']);
+
   console.table(tableData);
 }
 
 run();
-
-interface WrkResults {
-  transferPerSec: string;
-  requestsPerSec: number;
-  connectErrors: string;
-  readErrors: string;
-  writeErrors: string;
-  timeoutErrors: string;
-  requestsTotal: number;
-  durationActual: string;
-  transferTotal: string;
-  latencyAvg: string;
-  latencyStdev: string;
-  latencyMax: string;
-  latencyStdevPerc: number;
-  rpsAvg: string;
-  rpsStdev: string;
-  rpsMax: string;
-  rpsStdevPerc: number;
-}

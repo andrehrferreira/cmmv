@@ -1,7 +1,7 @@
-import * as bytes from 'bytes';
-import { Benchmarks, getBenchmarks, LIBS } from './get-benchmarks';
+const bytes = require('bytes');
+const { getBenchmarks, LIBS } = require('./get-benchmarks');
 
-export default async function checkBenchmarks() {
+module.default = async function checkBenchmarks() {
   const currentBenchmarks = await getBenchmarks();
   
   const baselineBenchmarks = await loadBaselineBenchmarks();
@@ -13,16 +13,13 @@ export default async function checkBenchmarks() {
   await saveBaselineBenchmarks(currentBenchmarks);
 }
 
-async function loadBaselineBenchmarks(): Promise<Benchmarks | undefined> {
+async function loadBaselineBenchmarks() {
   return undefined;
 }
 
-async function saveBaselineBenchmarks(benchmarks: Benchmarks): Promise<void> {}
+async function saveBaselineBenchmarks(benchmarks) {}
 
-function getBenchmarksReport(
-  current: Benchmarks,
-  baseline: Benchmarks | undefined,
-) {
+function getBenchmarksReport(current, baseline) {
   const diff = getDiff(current, baseline);
 
   const shortDescription = getShortDescription(baseline, diff);
@@ -36,10 +33,7 @@ function getBenchmarksReport(
   };
 }
 
-function getShortDescription(
-  baseline: Benchmarks | undefined,
-  diff: BenchmarksDiff,
-) {
+function getShortDescription(baseline, diff) {
   if (!baseline) {
     return 'New benchmarks generated';
   }
@@ -56,12 +50,8 @@ function getShortDescription(
   }
 }
 
-function getLongDescription(
-  current: Benchmarks,
-  baseline: Benchmarks | undefined,
-  diff: BenchmarksDiff,
-): string {
-  function printTableRow(id: string, label: string): string {
+function getLongDescription(current, baseline, diff) {
+  function printTableRow(id, label) {
     return `${label} | ${current[id].requestsPerSec.toFixed(0)} | ${current[id].transferPerSec} | ${baseline ? formatPerc(diff[id].requestsPerSecDiff) : '-'} | ${baseline ? formatPerc(diff[id].transferPerSecDiff) : '-'}`;
   }
 
@@ -75,11 +65,8 @@ ${printTableRow('fastify', 'Fastify')}
   return table.trim();
 }
 
-function getDiff(
-  current: Benchmarks,
-  baseline: Benchmarks | undefined,
-): BenchmarksDiff {
-  const diff: BenchmarksDiff = {};
+function getDiff(current, baseline) {
+  const diff = {};
   for (const l of LIBS) {
     if (!baseline) {
       diff[l] = {
@@ -106,38 +93,26 @@ function getDiff(
   return diff;
 }
 
-function getTransferDiff(
-  currentTransfer: string,
-  baselineTransfer: string,
-): number {
+function getTransferDiff(currentTransfer, baselineTransfer) {
   return 1 - bytes.parse(currentTransfer) / bytes.parse(baselineTransfer);
 }
 
-function getAverageDiff(diff: BenchmarksDiff) {
+function getAverageDiff(diff) {
   const validDiffs = Object.values(diff).filter(
     (d) => d && d.requestsPerSecDiff !== undefined && d.transferPerSecDiff !== undefined
   );
   
   const totalDiff = validDiffs.reduce((acc, d) => {
-    return acc + (d!.requestsPerSecDiff ?? 0) + (d!.transferPerSecDiff ?? 0);
+    return acc + (d.requestsPerSecDiff ?? 0) + (d.transferPerSecDiff ?? 0);
   }, 0);
   
   return totalDiff / (validDiffs.length * 2);
 }
 
-function getRequestDiff(currentRequest: number, baselineRequest: number) {
+function getRequestDiff(currentRequest, baselineRequest) {
   return 1 - currentRequest / baselineRequest;
 }
 
-function formatPerc(n: number) {
+function formatPerc(n) {
   return (n > 0 ? '+' : '') + (n * 100).toFixed(2) + '%';
-}
-
-interface BenchmarkDiff {
-  transferPerSecDiff: number | undefined;
-  requestsPerSecDiff: number | undefined;
-}
-
-interface BenchmarksDiff {
-  [lib: string]: BenchmarkDiff;
 }
