@@ -1,5 +1,5 @@
 {
-	"name": "@cmmv/websocket",
+	"name": "@cmmv/ws",
 	"version": "0.1.1",
 	"description": "CMMV (@websocket)",
 	"publishConfig": {
