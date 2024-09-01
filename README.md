@@ -1,6 +1,6 @@
 
 <p align="center">
-  <a href="https://github.com/andrehrferreira/cmmv" target="blank"><img src="https://raw.githubusercontent.com/andrehrferreira/cmmv/main/public/assets/logo.png" width="120" alt="CMMV Logo" /></a>
+  <a href="https://github.com/andrehrferreira/cmmv" target="blank"><img src="https://raw.githubusercontent.com/andrehrferreira/cmmv/main/public/assets/logo.png" width="300" alt="CMMV Logo" /></a>
 </p>
 <p align="center">Contract-Model-Model-View (CMMV) - A minimalistic framework for building scalable and modular applications using TypeScript contracts.</p>
 <p align="center">
@@ -81,6 +81,8 @@ CMMV is an open-source project, and we are always looking for contributors to he
 
 - Author - [André Ferreira](https://github.com/andrehrferreira)
 - Twitter - [@andrehrferreira](https://twitter.com/andrehrferreira)
+- Linkdin - [@andrehrf](https://www.linkedin.com/in/andrehrf)
+- Youtube - [@Andrehrferreira](https://www.youtube.com/@Andrehrferreira)
 
 ## License
 
