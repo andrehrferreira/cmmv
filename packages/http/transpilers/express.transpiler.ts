@@ -13,7 +13,7 @@ export class ExpressTranspile implements ITranspile {
         const controllers = [];
         const providers = [];
 
-        contracts.forEach((contract: any) => {
+        contracts?.forEach((contract: any) => {
             if(contract.generateController){
                 this.generateModel(contract);
                 this.generateService(contract);
