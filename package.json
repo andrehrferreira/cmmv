@@ -23,7 +23,7 @@
 		"lint:spec": "eslint 'packages/**/**.spec.ts' --no-ignore",
 		"start": "NODE_ENV=prod node dist/index.js",
 		"prerelease": "gulp copy-misc",
-		"publish": "npm run build && ./node_modules/.bin/lerna publish --force-publish --exact -m \"chore(@cmmv) publish %s release\"",
+		"publish": "npm run build && ./node_modules/.bin/lerna publish --force-publish --exact -m \"chore(@cmmv) publish %s release\""
 	},
 	"repository": {
 		"type": "git",
