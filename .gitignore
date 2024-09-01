@@ -50,3 +50,4 @@ build/config\.gypi
 pnpm-lock.yaml
 
 database.sqlite
+/http

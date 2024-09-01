@@ -3,10 +3,14 @@ import * as path from 'path';
 import * as fg from 'fast-glob';
 import { v4 as uuidv4 } from 'uuid';
 
-import { AbstractHttpAdapter, AbstractWSAdapter, IHTTPSettings } from "./interfaces";
+import { IHTTPSettings } from "./interfaces";
 import { ITranspile, Logger, Scope, Transpile } from './utils';
-import { AbstractContract } from "./abstracts";
 import { Module } from "./module";
+
+import { 
+    AbstractContract, AbstractHttpAdapter, 
+    AbstractWSAdapter 
+} from "./abstracts";
 
 import { 
     CONTROLLER_NAME_METADATA, DATABASE_TYPE_METADATA, 
@@ -19,7 +23,7 @@ import { Config } from './utils/config.util';
 
 export interface IApplicationSettings {
     wsAdapter: new (appOrHttpServer: any) => AbstractWSAdapter,
-    httpAdapter: new (settings: IHTTPSettings) => AbstractHttpAdapter,
+    httpAdapter: new (instance?: any) => AbstractHttpAdapter,
     httpOptions?: IHTTPSettings;
     transpilers?: Array<new () => ITranspile>;
     modules?: Array<Module>;
@@ -41,6 +45,7 @@ export class Application {
     private controllers: Array<any> = [];
     private submodules: Array<Module> = [];
     private contracts: Array<AbstractContract>;
+    public providersMap = new Map<string, any>();
 
     private host: string;
     private port: number;
@@ -51,7 +56,7 @@ export class Application {
         Config.loadConfig();
                 
         this.httpOptions = settings.httpOptions || {};
-        this.httpAdapter = new settings.httpAdapter(this.httpOptions);
+        this.httpAdapter = new settings.httpAdapter();        
         this.wsAdapter = new settings.wsAdapter(this.httpAdapter);
         this.host = Config.get<string>('server.host') || '0.0.0.0';
         this.port = Config.get<number>('server.port') || 3000;
@@ -77,6 +82,7 @@ export class Application {
 
             this.createScriptBundle();
             settings.services?.forEach(async (service) => await service?.loadConfig());
+            this.httpAdapter.init(this, this.httpOptions); 
             this.wsServer = this.wsAdapter.create(this.httpAdapter);
 
             this.wsAdapter.bindClientConnect(this.wsServer, (socket) => {                
@@ -127,6 +133,11 @@ export class Application {
             this.submodules.push(...module.getSubmodules());
             this.contracts.push(...module.getContracts());
 
+            module.getProviders().forEach(provider => {
+                const providerInstance = new provider();
+                this.providersMap.set(provider.name, providerInstance);
+            });
+
             if (module.getSubmodules().length > 0) 
                 this.loadModules(module.getSubmodules());            
         });
@@ -145,14 +156,10 @@ export class Application {
             const controllerCustomPath = Reflect.getMetadata(CONTROLLER_CUSTOM_PATH_METADATA, contract.constructor);
     
             const contractStructure = {
-                controllerName,
-                protoPath,
-                protoPackage,
-                databaseType,
-                fields,
-                directMessage,
-                generateController,
-                auth,
+                controllerName, protoPath,
+                protoPackage, databaseType,
+                fields, directMessage,
+                generateController, auth,
                 controllerCustomPath
             };
     
@@ -160,7 +167,6 @@ export class Application {
         });
     }
     
-
     public getHttpAdapter(): AbstractHttpAdapter {
         return this.httpAdapter as AbstractHttpAdapter;
     }

@@ -55,7 +55,7 @@ ${contract.fields.map((field: any) => `    ${field.propertyKey}: ${this.mapToTsT
         const serviceName = `${contract.controllerName}Service`;
         const modelName = `${contract.controllerName}`;
         const serviceFileName = `${contract.controllerName.toLowerCase()}.service.ts`;
-
+    
         const serviceTemplate = `// Generated automatically by CMMV
 
 import { ${modelName} } from '../models/${modelName.toLowerCase()}.model';
@@ -63,8 +63,19 @@ import { ${modelName} } from '../models/${modelName.toLowerCase()}.model';
 export class ${serviceName} {
     private items: ${modelName}[] = [];
 
-    async getAll(): Promise<${modelName}[]> {
-        return this.items;
+    async getAll(queries: any): Promise<${modelName}[]> {
+        return this.items.filter(item => 
+            Object.keys(queries).every(key => item[key] === queries[key])
+        );
+    }
+
+    async getById(id: string): Promise<${modelName}> {
+        const item = this.items.find(i => i.id === id);
+
+        if (item) 
+            return item;
+        
+        throw new Error('Item not found');
     }
 
     async add(item: ${modelName}): Promise<${modelName}> {
@@ -75,43 +86,48 @@ export class ${serviceName} {
 
     async update(id: string, item: ${modelName}): Promise<${modelName}> {
         const index = this.items.findIndex(i => i.id === parseInt(id));
-        if (index !== -1) {
+
+        if (index !== -1) 
             this.items[index] = { ...this.items[index], ...item };
             return this.items[index];
-        }
+        
         throw new Error('Item not found');
     }
 
-    async delete(id: string): Promise<{ success: boolean }> {
+    async delete(id: string): Promise<{ success: boolean, affected: number }> {
         const index = this.items.findIndex(i => i.id === parseInt(id));
-        if (index !== -1) {
+
+        if (index !== -1) 
             this.items.splice(index, 1);
-            return { success: true };
-        }
+            return { success: true, affected: 1 };
+        
         throw new Error('Item not found');
     }
 }
 `;
-
+    
         const dirname = path.resolve(outputDir, '../services');
-
+    
         if(!fs.existsSync(dirname))
             fs.mkdirSync(dirname, { recursive: true });
-
+    
         const outputFilePath = path.join(outputDir, '../services', serviceFileName);
-        fs.writeFileSync(outputFilePath, serviceTemplate, 'utf8');
-    }
 
+        if(!fs.existsSync(outputFilePath))
+            fs.writeFileSync(outputFilePath, serviceTemplate, 'utf8');
+    }
+    
     private generateController(contract: any): void {        
         const outputPath = path.resolve(contract.protoPath);
         const outputDir = path.dirname(outputPath); 
         const controllerName = `${contract.controllerName}Controller`;
         const serviceName = `${contract.controllerName}Service`;
         const controllerFileName = `${contract.controllerName.toLowerCase()}.controller.ts`;
-
+    
         const controllerTemplate = `// Generated automatically by CMMV
-
-import { Controller, Get, Post, Put, Delete, Body, Param } from '@cmmv/http';
+    
+import { Telemetry } from "@cmmv/core";  
+import { Controller, Get, Post, Put, Delete, Queries, Param, Body, Request } from '@cmmv/http';
 import { ${serviceName} } from '../services/${contract.controllerName.toLowerCase()}.service';
 import { ${contract.controllerName} } from '../models/${contract.controllerName.toLowerCase()}.model';
 
@@ -120,35 +136,57 @@ export class ${controllerName} {
     constructor(private readonly ${serviceName.toLowerCase()}: ${serviceName}) {}
 
     @Get()
-    async getAll(): Promise<${contract.controllerName}[]> {
-        return this.${serviceName.toLowerCase()}.getAll();
+    async getAll(@Queries() queries: any, @Request() req): Promise<${contract.controllerName}[]> {
+        Telemetry.start('Controller Get All', req.requestId);
+        let result = await this.${serviceName.toLowerCase()}.getAll(queries, req);
+        Telemetry.end('Controller Get All', req.requestId);
+        return result;
+    }
+
+    @Get(':id')
+    async getById(@Param('id') id: string, @Request() req): Promise<${contract.controllerName}> {
+        Telemetry.start('Controller Get By Id', req.requestId);
+        let result = await this.${serviceName.toLowerCase()}.getById(id, req);
+        Telemetry.end('Controller Get By Id', req.requestId);
+        return result;
     }
 
     @Post()
-    async add(@Body() item: ${contract.controllerName}): Promise<${contract.controllerName}> {
-        return this.${serviceName.toLowerCase()}.add(item);
+    async add(@Body() item: ${contract.controllerName}, @Request() req): Promise<${contract.controllerName}> {
+        Telemetry.start('Controller Add', req.requestId);
+        let result = await this.${serviceName.toLowerCase()}.add(item, req);
+        Telemetry.end('Controller Add', req.requestId);
+        return result;
     }
 
     @Put(':id')
-    async update(@Param('id') id: string, @Body() item: ${contract.controllerName}): Promise<${contract.controllerName}> {
-        return this.${serviceName.toLowerCase()}.update(id, item);
+    async update(@Param('id') id: string, @Body() item: ${contract.controllerName}, @Request() req): Promise<${contract.controllerName}> {
+        Telemetry.start('Controller Update', req.requestId);
+        let result = await this.${serviceName.toLowerCase()}.update(id, item, req);
+        Telemetry.end('Controller Update', req.requestId);
+        return result;
     }
 
     @Delete(':id')
-    async delete(@Param('id') id: string): Promise<{ success: boolean }> {
-        return this.${serviceName.toLowerCase()}.delete(id);
+    async delete(@Param('id') id: string, @Request() req): Promise<{ success: boolean, affected: number }> {
+        Telemetry.start('Controller Delete', req.requestId);
+        let result = await this.${serviceName.toLowerCase()}.delete(id, req);
+        Telemetry.end('Controller Delete', req.requestId);
+        return result;
     }
 }
 `;
         const dirname = path.resolve(outputDir, '../controllers');
-
+    
         if(!fs.existsSync(dirname))
             fs.mkdirSync(dirname, { recursive: true });
-
+    
         const outputFilePath = path.join(outputDir, '../controllers', controllerFileName);
-        fs.writeFileSync(outputFilePath, controllerTemplate, 'utf8');
-    }
 
+        if(!fs.existsSync(outputFilePath))
+            fs.writeFileSync(outputFilePath, controllerTemplate, 'utf8');
+    }
+    
     private generateModule(moduleName: string, controllers: string[], providers: string[]): void {
         const outputPath = path.resolve('src', `app.module.ts`);
 

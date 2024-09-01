@@ -2,6 +2,7 @@ import { ControllerRegistry } from '../utils/controller-registry.utils';
 
 export function Controller(prefix: string = ''): ClassDecorator {
     return (target: object) => {
+        Reflect.defineMetadata('controller_prefix', prefix, target);
         ControllerRegistry.registerController(target, prefix);
     };
 }
@@ -34,12 +35,19 @@ export function Patch(path: string = ''): MethodDecorator {
 
 function createParamDecorator(paramType: string): ParameterDecorator {
     return (target, propertyKey: string | symbol, parameterIndex: number) => {
-        ControllerRegistry.registerParam(target, propertyKey as string, paramType, parameterIndex);
+        const paramName = paramType.startsWith('param') || paramType.startsWith('query') || paramType.startsWith('header')
+            ? paramType.split(':')[1]
+            : paramType;
+        ControllerRegistry.registerParam(target, propertyKey as string, paramType, parameterIndex, paramName);
     };
 }
 
 export function Body(): ParameterDecorator {
     return createParamDecorator('body');
+}
+
+export function Queries(): ParameterDecorator {
+    return createParamDecorator(`queries`);
 }
 
 export function Param(paramName: string): ParameterDecorator {
@@ -52,4 +60,16 @@ export function Query(queryName: string): ParameterDecorator {
 
 export function Header(headerName: string): ParameterDecorator {
     return createParamDecorator(`header:${headerName}`);
+}
+
+export function Headers(): ParameterDecorator {
+    return createParamDecorator(`headers`);
+}
+
+export function Request(): ParameterDecorator {
+    return createParamDecorator(`request`);
+}
+
+export function Response(): ParameterDecorator {
+    return createParamDecorator(`response`);
 }

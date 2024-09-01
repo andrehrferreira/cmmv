@@ -1,35 +1,58 @@
 // Generated automatically by CMMV
-
-import { Task } from '../models/task.model';
+    
+import { Telemetry } from "@cmmv/core";
+import { Repository } from '@cmmv/repository';
+import { TaskEntity } from '../entities/task.entity';
 
 export class TaskService {
-    private items: Task[] = [];
 
-    async getAll(): Promise<Task[]> {
-        return this.items;
+    async getAll(queries: any, req: any): Promise<TaskEntity[]> {
+        const instance = Repository.getInstance();
+        const repository = instance.dataSource.getRepository(TaskEntity);
+        Telemetry.start('Repository Get All', req.requestId);
+        let result = await repository.find();
+        Telemetry.end('Repository Get All', req.requestId);
+        return result;
     }
 
-    async add(item: Task): Promise<Task> {
-        item['id'] = this.items.length + 1;
-        this.items.push(item);
+    async getById(id: string, req: any): Promise<TaskEntity> {
+        const instance = Repository.getInstance();
+        const repository = instance.dataSource.getRepository(TaskEntity);
+        Telemetry.start('Repository Get By Id', req.requestId);
+        const item = await repository.findOneBy({ id });
+        Telemetry.end('Repository Get By Id', req.requestId);
+
+        if (!item) 
+            throw new Error('Item not found');
+        
         return item;
     }
 
-    async update(id: string, item: Task): Promise<Task> {
-        const index = this.items.findIndex(i => i.id === parseInt(id));
-        if (index !== -1) {
-            this.items[index] = { ...this.items[index], ...item };
-            return this.items[index];
-        }
-        throw new Error('Item not found');
+    async add(item: Partial<TaskEntity>, req: any): Promise<TaskEntity> {
+        const instance = Repository.getInstance();
+        const repository = instance.dataSource.getRepository(TaskEntity);
+        Telemetry.start('Repository Add', req.requestId);
+        const result = await repository.save(item);
+        Telemetry.end('Repository Add', req.requestId);
+        return result;
     }
 
-    async delete(id: string): Promise<{ success: boolean }> {
-        const index = this.items.findIndex(i => i.id === parseInt(id));
-        if (index !== -1) {
-            this.items.splice(index, 1);
-            return { success: true };
-        }
-        throw new Error('Item not found');
+    async update(id: string, item: Partial<TaskEntity>, req: any): Promise<TaskEntity> {
+        const instance = Repository.getInstance();
+        const repository = instance.dataSource.getRepository(TaskEntity);
+        Telemetry.start('Repository Update', req.requestId);
+        await repository.update(id, item);
+        let result = await repository.findOneBy({ id });
+        Telemetry.end('Repository Update', req.requestId);
+        return result;
+    }
+
+    async delete(id: string, req: any): Promise<{ success: boolean, affected: number }> {
+        const instance = Repository.getInstance();
+        const repository = instance.dataSource.getRepository(TaskEntity);
+        Telemetry.start('Repository Delete', req.requestId);
+        const result = await repository.delete(id);
+        Telemetry.end('Repository Delete', req.requestId);
+        return { success: result.affected > 0, affected: result.affected };
     }
 }

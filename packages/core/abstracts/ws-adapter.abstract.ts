@@ -1,5 +1,5 @@
 import { Application } from "../application";
-import { AbstractHttpAdapter } from "./abstract-http-adapter.interface";
+import { AbstractHttpAdapter } from "./http-adapter.abstract";
 
 export abstract class AbstractWSAdapter {  
     protected readonly httpServer: any;

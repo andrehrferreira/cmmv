@@ -10,10 +10,14 @@ export interface IModuleOptions {
 }
 
 export interface IModule {
-
+    getControllers(): Array<any>;
+    getTranspilers(): Array<new () => ITranspile>;
+    getSubmodules(): Array<Module>;
+    getContracts(): Array<AbstractContract>;
+    getProviders(): Array<any>;
 }
 
-export class Module implements IModule{
+export class Module implements IModule {
     private controllers: Array<any>;
     private transpilers: Array<new () => ITranspile>;
     private submodules: Array<Module>;
@@ -42,5 +46,9 @@ export class Module implements IModule{
 
     public getContracts(): Array<AbstractContract>{
         return this.contracts;
+    }
+
+    public getProviders(): Array<any> {
+        return this.providers;
     }
 }
