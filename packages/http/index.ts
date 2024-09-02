@@ -1,5 +1,6 @@
-export * from "./decorators/controller.decorator";
-export * from "./utils/controller-registry.utils";
+export * from "./abstracts";
+export * from "./decorators";
+export * from "./utils";
 
 //Express
 export * from "./adapters/express.adapter";

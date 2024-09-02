@@ -11,41 +11,41 @@ export class TaskController {
 
     @Get()
     async getAll(@Queries() queries: any, @Request() req): Promise<Task[]> {
-        Telemetry.start('Controller Get All', req.requestId);
+        Telemetry.start('TaskController::GetAll', req.requestId);
         let result = await this.taskservice.getAll(queries, req);
-        Telemetry.end('Controller Get All', req.requestId);
+        Telemetry.end('TaskController::GetAll', req.requestId);
         return result;
     }
 
     @Get(':id')
     async getById(@Param('id') id: string, @Request() req): Promise<Task> {
-        Telemetry.start('Controller Get By Id', req.requestId);
+        Telemetry.start('TaskController::GetById', req.requestId);
         let result = await this.taskservice.getById(id, req);
-        Telemetry.end('Controller Get By Id', req.requestId);
+        Telemetry.end('TaskController::GetById', req.requestId);
         return result;
     }
 
     @Post()
     async add(@Body() item: Task, @Request() req): Promise<Task> {
-        Telemetry.start('Controller Add', req.requestId);
+        Telemetry.start('TaskController::Add', req.requestId);
         let result = await this.taskservice.add(item, req);
-        Telemetry.end('Controller Add', req.requestId);
+        Telemetry.end('TaskController::Add', req.requestId);
         return result;
     }
 
     @Put(':id')
     async update(@Param('id') id: string, @Body() item: Task, @Request() req): Promise<Task> {
-        Telemetry.start('Controller Update', req.requestId);
+        Telemetry.start('TaskController::Update', req.requestId);
         let result = await this.taskservice.update(id, item, req);
-        Telemetry.end('Controller Update', req.requestId);
+        Telemetry.end('TaskController::Update', req.requestId);
         return result;
     }
 
     @Delete(':id')
-    async delete(@Param('id') id: string, @Request() req): Promise<{ success: boolean }> {
-        Telemetry.start('Controller Delete', req.requestId);
+    async delete(@Param('id') id: string, @Request() req): Promise<{ success: boolean, affected: number }> {
+        Telemetry.start('TaskController::Delete', req.requestId);
         let result = await this.taskservice.delete(id, req);
-        Telemetry.end('Controller Delete', req.requestId);
+        Telemetry.end('TaskController::Delete', req.requestId);
         return result;
     }
 }

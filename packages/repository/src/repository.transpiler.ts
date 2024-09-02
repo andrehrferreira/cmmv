@@ -59,26 +59,29 @@ ${contract.fields.map((field: any) => this.generateField(field)).join('\n')}
         const serviceTemplate = `// Generated automatically by CMMV
     
 import { Telemetry } from "@cmmv/core";
+import { AbstractService, Service } from '@cmmv/http';
 import { Repository } from '@cmmv/repository';
 import { ${entityName} } from '../entities/${modelName.toLowerCase()}.entity';
 
-export class ${serviceName} {
+@Service("${contract.controllerName.toLowerCase()}")
+export class ${serviceName} extends AbstractService {
+    public override name = "${contract.controllerName.toLowerCase()}";
 
-    async getAll(queries: any, req: any): Promise<${entityName}[]> {
+    async getAll(queries?: any, req?: any): Promise<${entityName}[]> {
         const instance = Repository.getInstance();
         const repository = instance.dataSource.getRepository(${entityName});
-        Telemetry.start('Repository Get All', req.requestId);
+        Telemetry.start('${serviceName}::GetAll', req?.requestId);
         let result = await repository.find();
-        Telemetry.end('Repository Get All', req.requestId);
+        Telemetry.end('${serviceName}::GetAll', req?.requestId);
         return result;
     }
 
-    async getById(id: string, req: any): Promise<${entityName}> {
+    async getById(id: string, req?: any): Promise<${entityName}> {
         const instance = Repository.getInstance();
         const repository = instance.dataSource.getRepository(${entityName});
-        Telemetry.start('Repository Get By Id', req.requestId);
+        Telemetry.start('${serviceName}::GetById', req?.requestId);
         const item = await repository.findOneBy({ id });
-        Telemetry.end('Repository Get By Id', req.requestId);
+        Telemetry.end('${serviceName}::GetById', req?.requestId);
 
         if (!item) 
             throw new Error('Item not found');
@@ -86,31 +89,31 @@ export class ${serviceName} {
         return item;
     }
 
-    async add(item: Partial<${entityName}>, req: any): Promise<${entityName}> {
+    async add(item: Partial<${entityName}>, req?: any): Promise<${entityName}> {
         const instance = Repository.getInstance();
         const repository = instance.dataSource.getRepository(${entityName});
-        Telemetry.start('Repository Add', req.requestId);
+        Telemetry.start('${serviceName}::Add', req?.requestId);
         const result = await repository.save(item);
-        Telemetry.end('Repository Add', req.requestId);
+        Telemetry.end('${serviceName}::Add', req?.requestId);
         return result;
     }
 
-    async update(id: string, item: Partial<${entityName}>, req: any): Promise<${entityName}> {
+    async update(id: string, item: Partial<${entityName}>, req?: any): Promise<${entityName}> {
         const instance = Repository.getInstance();
         const repository = instance.dataSource.getRepository(${entityName});
-        Telemetry.start('Repository Update', req.requestId);
+        Telemetry.start('${serviceName}::Update', req?.requestId);
         await repository.update(id, item);
         let result = await repository.findOneBy({ id });
-        Telemetry.end('Repository Update', req.requestId);
+        Telemetry.end('${serviceName}::Update', req?.requestId);
         return result;
     }
 
-    async delete(id: string, req: any): Promise<{ success: boolean, affected: number }> {
+    async delete(id: string, req?: any): Promise<{ success: boolean, affected: number }> {
         const instance = Repository.getInstance();
         const repository = instance.dataSource.getRepository(${entityName});
-        Telemetry.start('Repository Delete', req.requestId);
+        Telemetry.start('${serviceName}::Delete', req?.requestId);
         const result = await repository.delete(id);
-        Telemetry.end('Repository Delete', req.requestId);
+        Telemetry.end('${serviceName}::Delete', req?.requestId);
         return { success: result.affected > 0, affected: result.affected };
     }
 }

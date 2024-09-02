@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as protobufjs from 'protobufjs';
 import * as UglifyJS from 'uglify-js';
 
-import { GlobalProto } from './protobuf.services';
+import { ProtoRegistry } from './protobuf-registry.utils';
 
 import { ITranspile, Logger, Scope } from "@cmmv/core";
 
@@ -180,14 +180,14 @@ export class ProtobufTranspile implements ITranspile {
     private async generateContractsJs(contractsJson: { [key: string]: any }): Promise<void> {
         const outputFile = path.resolve('public/core/contracts.min.js');
     
-        await GlobalProto.load();
-        const contracts = GlobalProto.retrieveAll();
+        await ProtoRegistry.load();
+        const contracts = ProtoRegistry.retrieveAll();
         let contractsJSON = {};
         let index = {};
         let pointer = 0;
 
         for(let key in contracts){
-            const contract = GlobalProto.retrieve(key);
+            const contract = ProtoRegistry.retrieve(key);
             contractsJSON[key] = contract.toJSON();
             let types = {};
             let pointerTypes = 0;

@@ -88,3 +88,10 @@ export const extractSetupScript = (templateText: string, data: Record<string, an
         return templateText.replace(regex, () => `<!-- setup -->`);
     }
 };
+
+//SSR
+export const ssrDirectives: Directive = (templateText: string, data: Record<string, any>): string => {
+    
+
+    return templateText;
+};

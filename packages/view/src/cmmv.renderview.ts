@@ -4,7 +4,7 @@ import { Template }  from "./cmmv.template";
 
 import { 
     sData, sAttr, i18n, extractSetupScript,
-    sServerData 
+    sServerData, ssrDirectives 
 } from "./cmmv.directives";
 
 export class CMMVRenderer {
@@ -79,7 +79,7 @@ export class CMMVRenderer {
         let templ = new Template(template, opts);
         templ.use([
             extractSetupScript, sServerData, 
-            sData, sAttr, i18n
+            ssrDirectives, sData, sAttr, i18n
         ]); //Extact Setup first 
         return templ.compile();
     }

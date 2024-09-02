@@ -4,6 +4,7 @@
     <div if="todolist.length">
         <div 
             for="(item, key) in todolist"
+            ssr-for="(item, key) in services.task.getAll()"
             :key="key"
             class="todo-item"
         >{{ item.label }}</div>
@@ -18,8 +19,6 @@
             class="todo-btn"
         ></button>
     </div>
-
-     <!-- include('public/views/teste') -->
 </div>
 
 <script s-setup>
@@ -46,7 +45,6 @@ export default {
     },
 
     mounted() {
-        //console.log(`I'm mounted!`);
         this.rpc.get('tasks');        
         this.rpc.on('tasks', this.updateList);
     },

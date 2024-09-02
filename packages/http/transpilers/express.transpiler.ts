@@ -57,10 +57,12 @@ ${contract.fields.map((field: any) => `    ${field.propertyKey}: ${this.mapToTsT
         const serviceFileName = `${contract.controllerName.toLowerCase()}.service.ts`;
     
         const serviceTemplate = `// Generated automatically by CMMV
-
+import { AbstractService, Service } from '@cmmv/http';
 import { ${modelName} } from '../models/${modelName.toLowerCase()}.model';
 
-export class ${serviceName} {
+@Service("${contract.controllerName.toLowerCase()}")
+export class ${serviceName} extends AbstractService {
+    public override name = "${contract.controllerName.toLowerCase()}";
     private items: ${modelName}[] = [];
 
     async getAll(queries: any): Promise<${modelName}[]> {
@@ -111,10 +113,8 @@ export class ${serviceName} {
         if(!fs.existsSync(dirname))
             fs.mkdirSync(dirname, { recursive: true });
     
-        const outputFilePath = path.join(outputDir, '../services', serviceFileName);
-
-        if(!fs.existsSync(outputFilePath))
-            fs.writeFileSync(outputFilePath, serviceTemplate, 'utf8');
+        const outputFilePath = path.join(outputDir, '../services', serviceFileName);        
+        fs.writeFileSync(outputFilePath, serviceTemplate, 'utf8');
     }
     
     private generateController(contract: any): void {        
@@ -137,41 +137,41 @@ export class ${controllerName} {
 
     @Get()
     async getAll(@Queries() queries: any, @Request() req): Promise<${contract.controllerName}[]> {
-        Telemetry.start('Controller Get All', req.requestId);
+        Telemetry.start('${controllerName}::GetAll', req.requestId);
         let result = await this.${serviceName.toLowerCase()}.getAll(queries, req);
-        Telemetry.end('Controller Get All', req.requestId);
+        Telemetry.end('${controllerName}::GetAll', req.requestId);
         return result;
     }
 
     @Get(':id')
     async getById(@Param('id') id: string, @Request() req): Promise<${contract.controllerName}> {
-        Telemetry.start('Controller Get By Id', req.requestId);
+        Telemetry.start('${controllerName}::GetById', req.requestId);
         let result = await this.${serviceName.toLowerCase()}.getById(id, req);
-        Telemetry.end('Controller Get By Id', req.requestId);
+        Telemetry.end('${controllerName}::GetById', req.requestId);
         return result;
     }
 
     @Post()
     async add(@Body() item: ${contract.controllerName}, @Request() req): Promise<${contract.controllerName}> {
-        Telemetry.start('Controller Add', req.requestId);
+        Telemetry.start('${controllerName}::Add', req.requestId);
         let result = await this.${serviceName.toLowerCase()}.add(item, req);
-        Telemetry.end('Controller Add', req.requestId);
+        Telemetry.end('${controllerName}::Add', req.requestId);
         return result;
     }
 
     @Put(':id')
     async update(@Param('id') id: string, @Body() item: ${contract.controllerName}, @Request() req): Promise<${contract.controllerName}> {
-        Telemetry.start('Controller Update', req.requestId);
+        Telemetry.start('${controllerName}::Update', req.requestId);
         let result = await this.${serviceName.toLowerCase()}.update(id, item, req);
-        Telemetry.end('Controller Update', req.requestId);
+        Telemetry.end('${controllerName}::Update', req.requestId);
         return result;
     }
 
     @Delete(':id')
     async delete(@Param('id') id: string, @Request() req): Promise<{ success: boolean, affected: number }> {
-        Telemetry.start('Controller Delete', req.requestId);
+        Telemetry.start('${controllerName}::Delete', req.requestId);
         let result = await this.${serviceName.toLowerCase()}.delete(id, req);
-        Telemetry.end('Controller Delete', req.requestId);
+        Telemetry.end('${controllerName}::Delete', req.requestId);
         return result;
     }
 }
@@ -182,9 +182,7 @@ export class ${controllerName} {
             fs.mkdirSync(dirname, { recursive: true });
     
         const outputFilePath = path.join(outputDir, '../controllers', controllerFileName);
-
-        if(!fs.existsSync(outputFilePath))
-            fs.writeFileSync(outputFilePath, controllerTemplate, 'utf8');
+        fs.writeFileSync(outputFilePath, controllerTemplate, 'utf8');
     }
     
     private generateModule(moduleName: string, controllers: string[], providers: string[]): void {

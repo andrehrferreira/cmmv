@@ -9,7 +9,7 @@ interface Types {
     [key: string]: any
 }
 
-export class GlobalProto extends Singleton {
+export class ProtoRegistry extends Singleton {
     public protos: Map<string, protobuf.Root> = new Map<string, protobuf.Root>();
     public index: Map<number, string> = new Map<number, string>(); 
     public contracts: Map<string, string> = new Map<string, string>();
@@ -32,7 +32,7 @@ export class GlobalProto extends Singleton {
     }
 
     static register(key: string, root: protobuf.Root, contract: string): void {
-        const globalProto = GlobalProto.getInstance();
+        const globalProto = ProtoRegistry.getInstance();
         globalProto.index.set(globalProto.contracts.size, key);
         globalProto.protos.set(key, root);
         globalProto.contracts.set(key, contract);      
@@ -51,12 +51,12 @@ export class GlobalProto extends Singleton {
     }
 
     static retrieve(key: string): protobuf.Root | null {
-        const globalProto = GlobalProto.getInstance();
+        const globalProto = ProtoRegistry.getInstance();
         return (globalProto.protos.has(key)) ? globalProto.protos.get(key) : null;
     }
 
     static retrieveIndex(key: string) : number | null {
-        const globalProto = GlobalProto.getInstance();
+        const globalProto = ProtoRegistry.getInstance();
         
         const keys = Array.from(globalProto.index).
             map((item) => (item[1] === key) ? item[0] : null).
@@ -66,7 +66,7 @@ export class GlobalProto extends Singleton {
     }
 
     static retrieveTypes(key: string | number, message: string | number): string | null {
-        const globalProto = GlobalProto.getInstance();
+        const globalProto = ProtoRegistry.getInstance();
 
         if(typeof key === 'number'){
             const keys = Array.from(globalProto.index).
@@ -89,25 +89,25 @@ export class GlobalProto extends Singleton {
     }
 
     static retrieveByIndex(index: number) : protobuf.Root | null {
-        const globalProto = GlobalProto.getInstance();
+        const globalProto = ProtoRegistry.getInstance();
         const contractKey = (globalProto.index.has(index)) ? globalProto.index.get(index) : null;
         const proto = (contractKey && globalProto.protos.has(contractKey)) ? globalProto.protos.get(contractKey) : null;
         return proto;
     }
 
     static retrieveContractName(index: number): string {
-        const globalProto = GlobalProto.getInstance();
+        const globalProto = ProtoRegistry.getInstance();
         const contractKey = (globalProto.index.has(index)) ? globalProto.index.get(index) : null;
         return contractKey;
     }
 
     static retrieveContract(key: string): string | null {
-        const globalProto = GlobalProto.getInstance();
+        const globalProto = ProtoRegistry.getInstance();
         return (globalProto.contracts.has(key)) ? globalProto.contracts.get(key) : null
     }
 
     static retrieveAll(): object {
-        const globalProto = GlobalProto.getInstance();
+        const globalProto = ProtoRegistry.getInstance();
         const contractsArr = Array.from(globalProto.contracts);
         let returnObj = {};
 
