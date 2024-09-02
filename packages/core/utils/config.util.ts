@@ -59,4 +59,12 @@ export class Config extends Singleton {
     public static getAll(): Record<string, any> {
         return Config.getInstance().config;
     }
+
+    public static assign(config: Record<string, any>): void {
+        Config.getInstance().config = config;
+    }
+
+    public static clear(): void {
+        Config.getInstance().config = {};
+    }
 }

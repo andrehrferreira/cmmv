@@ -50,7 +50,7 @@ export class Application {
     private host: string;
     private port: number;
 
-    private constructor(settings: IApplicationSettings) {
+    constructor(settings: IApplicationSettings) {
         this.logger.log("Initialize application");
 
         Config.loadConfig();
@@ -179,6 +179,10 @@ export class Application {
 
     public getUnderlyingHttpServer() {
         this.httpAdapter.getHttpServer();
+    }
+
+    public getWSServer(): AbstractWSAdapter {
+        return this.wsServer as AbstractWSAdapter;
     }
 
     public static create(settings: IApplicationSettings): Application {

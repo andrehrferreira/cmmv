@@ -12,3 +12,5 @@ tslint.json
 tsconfig.json
 .prettierrc
 yarn.lock
+
+*.tsbuildinfo

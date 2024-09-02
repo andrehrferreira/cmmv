@@ -7,23 +7,26 @@
 	"scripts": {
 		"prebuild": "rimraf dist",
 		"build:server": "tsc",
-		"build:packages": "rm -rf ./packages/**/*.tsbuildinfo && tsc -b -v packages && gulp move",
+		"build:packages": "rm -rf ./packages/**/*.tsbuildinfo && tsc -b -v packages",
 		"build": "npm-run-all --parallel build:*",
+		"prod:packages": "tsc -b -v packages",
 		"benchmarks": "ts-node ./tools/benchmarks/check-benchmarks.ts",
-		"dev": "NODE_ENV=dev nodemon",
+		"dev": "rm -rf ./node_modules/@cmmv && NODE_ENV=dev nodemon",
 		"clean:tsfiles": "find ./src -type f \\( -name '*.d.ts' -o -name '*.js' \\) -exec rm -f {} +",
 		"clean:packages": "find ./packages -name 'node_modules' -prune -o -type f \\( -name '*.d.ts' -o -name '*.js' \\) -exec rm -f {} +",
 		"clean": "npm run clean:tsfiles && npm run clean:packages > /dev/null 2>&1",
 		"format": "prettier \"**/*.ts\" \"packages/**/*.json\" --ignore-path ./.prettierignore --write && git status",
-		"test": "mocha packages/**/*.spec.ts",
-		"test:dev": "mocha -w --watch-files \"packages\" packages/**/*.spec.ts",
+		"test": "npm run build:packages && mocha && npm run clean",
+		"test:dev": "mocha -w --watch-files \"packages\" packages/**/*.spec.js",
 		"lint": "concurrently 'yarn lint:packages' 'yarn lint:spec'",
 		"lint:fix": "concurrently 'yarn lint:packages -- --fix' 'yarn lint:spec -- --fix'",
 		"lint:packages": "eslint 'packages/**/**.ts' --no-ignore",
 		"lint:spec": "eslint 'packages/**/**.spec.ts' --no-ignore",
-		"start": "NODE_ENV=prod node dist/index.js",
+		"start": "NODE_ENV=prod node dist/src/index.js",
 		"prerelease": "gulp copy-misc",
-		"publish": "npm run build && ./node_modules/.bin/lerna publish --force-publish --exact -m \"chore(@cmmv) publish %s release\""
+		"packages:move": "gulp move",
+		"publish:lerna": "./node_modules/.bin/lerna publish --force-publish --exact -m \"chore(@cmmv) publish %s release\"",
+		"publish": "npm run build && npm run packages:move && npm run publish:lerna && npm run clean"
 	},
 	"repository": {
 		"type": "git",
@@ -40,6 +43,13 @@
 	},
 	"engines": {
 		"node": ">= 18.0.0"
+	},
+	"mocha": {
+		"require": [
+			"node_modules/reflect-metadata/Reflect.js",
+			"hooks/mocha-init-hook.js"
+		],
+		"exit": true
 	},
 	"devDependencies": {
 		"@codechecks/client": "^0.1.12",
@@ -60,8 +70,6 @@
 		"concurrently": "^8.2.2",
 		"delete-empty": "^3.0.0",
 		"eslint": "^9.9.1",
-		"eslint-config-prettier": "^9.1.0",
-		"eslint-plugin-import": "^2.29.1",
 		"esm": "^3.2.25",
 		"gulp": "^5.0.0",
 		"gulp-clean": "^0.4.0",

@@ -1,0 +1,39 @@
+services:
+  api1:
+    build: .
+    environment:
+      - PORT=3001      
+    ports:
+      - "3001:3001"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.6"
+          memory: "225M"
+
+  api2:
+    build: .
+    environment:
+      - PORT=3002
+    ports:
+      - "3002:3002"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.6"
+          memory: "225M"
+
+  nginx:
+    image: nginx:1.25.4
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api1
+      - api2
+    deploy:
+      resources:
+        limits:
+          cpus: "0.1"
+          memory: "50M"

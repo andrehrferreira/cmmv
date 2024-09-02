@@ -9,7 +9,7 @@ type TelemetryRecord = {
 
 export class Telemetry extends Singleton {
     private records: Map<string, TelemetryRecord[]> = new Map();
-    private plugins: any[] = [];
+    public plugins: any[] = [];
 
     public static start(label: string, requestId: string): void {
         const telemetry = Telemetry.getInstance();
