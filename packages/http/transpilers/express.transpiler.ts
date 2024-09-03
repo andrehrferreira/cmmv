@@ -1,15 +1,13 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { ITranspile, Logger, Scope } from "@cmmv/core";
+import { Application, ITranspile, Logger, Scope } from "@cmmv/core";
 
 export class ExpressTranspile implements ITranspile {
     private logger: Logger = new Logger('ExpressTranspile');
 
     run(): void {
         const contracts = Scope.getArray<any>("__contracts");
-        const moduleName = 'ApplicationModule';
-
         const controllers = [];
         const providers = [];
 
@@ -23,7 +21,7 @@ export class ExpressTranspile implements ITranspile {
             }
         });
 
-        this.generateModule(moduleName, controllers, providers);
+        this.generateModule(controllers, providers);
     }
 
     private generateModel(contract: any): void {
@@ -65,13 +63,13 @@ export class ${serviceName} extends AbstractService {
     public override name = "${contract.controllerName.toLowerCase()}";
     private items: ${modelName}[] = [];
 
-    async getAll(queries: any): Promise<${modelName}[]> {
+    async getAll(queries?: any, req?: any): Promise<${modelName}[]> {
         return this.items.filter(item => 
             Object.keys(queries).every(key => item[key] === queries[key])
         );
     }
 
-    async getById(id: string): Promise<${modelName}> {
+    async getById(id: string, req?: any): Promise<${modelName}> {
         const item = this.items.find(i => i.id === id);
 
         if (item) 
@@ -80,13 +78,13 @@ export class ${serviceName} extends AbstractService {
         throw new Error('Item not found');
     }
 
-    async add(item: ${modelName}): Promise<${modelName}> {
+    async add(item: ${modelName}, req?: any): Promise<${modelName}> {
         item['id'] = this.items.length + 1;
         this.items.push(item);
         return item;
     }
 
-    async update(id: string, item: ${modelName}): Promise<${modelName}> {
+    async update(id: string, item: ${modelName}, req?: any): Promise<${modelName}> {
         const index = this.items.findIndex(i => i.id === parseInt(id));
 
         if (index !== -1) 
@@ -96,7 +94,7 @@ export class ${serviceName} extends AbstractService {
         throw new Error('Item not found');
     }
 
-    async delete(id: string): Promise<{ success: boolean, affected: number }> {
+    async delete(id: string, req?: any): Promise<{ success: boolean, affected: number }> {
         const index = this.items.findIndex(i => i.id === parseInt(id));
 
         if (index !== -1) 
@@ -185,26 +183,13 @@ export class ${controllerName} {
         fs.writeFileSync(outputFilePath, controllerTemplate, 'utf8');
     }
     
-    private generateModule(moduleName: string, controllers: string[], providers: string[]): void {
-        const outputPath = path.resolve('src', `app.module.ts`);
-
-        const moduleTemplate = `// Generated automatically by CMMV
-
-import { Module } from '@cmmv/core';
-${controllers.map(controller => `import { ${controller} } from './controllers/${controller.toLowerCase().replace('controller', '')}.controller';`).join('\n')}
-${providers.map(provider => `import { ${provider} } from './services/${provider.toLowerCase().replace('service', '')}.service';`).join('\n')}
-
-export let ${moduleName} = new Module({
-    controllers: [${controllers.join(', ')}],
-    providers: [${providers.join(', ')}]
-});
-`;
-
-        if (!fs.existsSync(path.dirname(outputPath)))
-            fs.mkdirSync(path.dirname(outputPath), { recursive: true });
-
-        fs.writeFileSync(outputPath, moduleTemplate, 'utf8');
-        this.logger.log(`Generated module at ${outputPath}`);
+    private generateModule(controllers: string[], providers: string[]): void {
+        Application.appModule.controllers = [...Application.appModule.controllers, ...controllers.map((name) => {
+            return { name, path: `./controllers/${name.replace("Controller", "").toLowerCase()}.controller` }
+        })];
+        Application.appModule.providers = [...Application.appModule.providers, ...providers.map((name) => {
+            return { name, path: `./services/${name.replace("Service", "").toLowerCase()}.service` }
+        })];
     }
 
     private mapToTsType(protoType: string): string {

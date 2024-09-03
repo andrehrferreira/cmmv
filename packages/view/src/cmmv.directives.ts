@@ -97,7 +97,7 @@ export const ssrDirectives: Directive = async (templateText: string, data: Recor
     const placeholder = 'c-ssr-for';
     
     let match: RegExpExecArray | null;
-
+    
     while ((match = sDirectiveRegex.exec(templateText)) !== null) {
         const [fullMatch, variableName, expression] = match;
         const result = await evaluate(data, expression);    

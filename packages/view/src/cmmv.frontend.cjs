@@ -14,6 +14,8 @@
             contextApp: null,
 
             loaded: false,
+
+            binds: {},
     
             initialize(context, methods, mounted) {
                 this.socket = new WebSocket(
@@ -31,7 +33,7 @@
                 document.addEventListener('DOMContentLoaded', this.processExpressions.bind(this));
             },
     
-            addContracts: function(jsonContracts) {
+            addContracts(jsonContracts) {
                 try {
                     this.contractIndex = jsonContracts.index;
     
@@ -41,40 +43,102 @@
                             this.contracts[contractName] = contract;         
                         }             
                     }
+
+                    this.generateRPCBindings();
                 } catch (e) {
                     console.error("Error loading contracts:", e);
                 }
             },
     
-            getContract: function(contractName) {
+            getContract(contractName) {
                 return this.contracts[contractName];
             },
     
             parseMessage(event) {
-                // Implementação de tratamento de mensagens
+                try {
+                    const buffer = event.data instanceof ArrayBuffer ? new Uint8Array(event.data) : event.data;
+                    const message = this.contracts["ws"].lookupType("WsCall").decode(buffer);
+
+                    const contractName = Object.keys(this.contractIndex).find(name => this.contractIndex[name].index === message.contract);
+                    const typeName = Object.keys(this.contractIndex[contractName].types).find(key => this.contractIndex[contractName].types[key] === message.message);
+
+                    if (contractName && typeName) {
+                        const contract = this.getContract(contractName);
+                        const MessageType = contract.lookupType(typeName);
+                        const decodedMessage = MessageType.decode(message.data);
+
+                        if (this.binds[contractName] && this.binds[contractName][typeName]) 
+                            this.binds[contractName][typeName].forEach(callback => callback.apply(this.contextApp, [decodedMessage, event.socket]));
+                    } 
+                    else {
+                        console.error("Unknown contract or message type:", message.contract, message.message);
+                    }
+                } catch (error) {
+                    console.error(error);
+                }
             },
     
             pack(contractName, messageName, data) {
-                if(this.contracts.has(contractName) && this.index.has(contractName)) {
-                    const contractIndex = this.index.get(contractName);
-                    const typeIndex = contractIndex?.types[messageName.replace(contractName + ".", "")];
-                    const contract = this.contracts.get(contractName);
-                    const message = contract?.lookupType(messageName);
-                    const dataBuffer = (message && data) ? message.encode(data).finish() : null;
-                    const wsCall = this.contracts.get("ws");
-                    const wsMessage = wsCall?.lookupType("ws.Call");
-        
-                    const buffer = wsMessage?.encode({
-                        contract: contractIndex?.index,
-                        message: typeIndex,
-                        data: (dataBuffer && dataBuffer instanceof Uint8Array) ? dataBuffer : new Uint8Array()
-                    }).finish();
-        
-                    return (buffer) ? new Uint8Array(buffer) : null;
-                } else {
-                    console.error(`Not found in contract list ${contractName}.${messageName}`);
-                    return null;
+                try{
+                    if(this.contracts[contractName] && this.contractIndex[contractName]) {
+                        const contractIndex = this.contractIndex[contractName];
+                        const typeIndex = contractIndex?.types[messageName];
+                        const contract = this.contracts[contractName];
+                        const message = contract?.lookupType(messageName);
+                        const dataBuffer = (message && data) ? message.encode(data).finish() : null;
+                        const wsCall = this.contracts["ws"];
+                        const wsMessage = wsCall?.lookupType("WsCall");
+            
+                        const buffer = wsMessage?.encode({
+                            contract: contractIndex?.index,
+                            message: typeIndex,
+                            data: (dataBuffer && dataBuffer instanceof Uint8Array) ? dataBuffer : new Uint8Array()
+                        }).finish();
+            
+                        return (buffer) ? new Uint8Array(buffer) : null;
+                    } else {
+                        console.error(`Not found in contract list ${contractName}.${messageName}`);
+                        return null;
+                    }
                 }
+                catch(e){
+                    console.error(e);
+                }
+            },
+
+            generateRPCBindings() {            
+                Object.keys(cmmv.contracts).forEach((contractName) => {
+                    const contract = cmmv.contracts[contractName];
+            
+                    if (contract.nested) {
+                        Object.keys(contract.nested).forEach((nestedName) => {
+                            const nestedItem = contract.nested[nestedName];
+                            
+                            if (nestedItem.nested) {
+                                Object.keys(nestedItem.nested).forEach((methodName) => {
+                                    if(methodName.indexOf("Request") > -1){
+                                        cmmv[methodName] = (data) => {
+                                            if(methodName.startsWith("Add"))
+                                                this.rpc.add(contractName, methodName, data);
+                                            else if(methodName.startsWith("Update"))
+                                                this.rpc.update(contractName, methodName, data);
+                                            else if(methodName.startsWith("Delete"))
+                                                this.rpc.delete(contractName, methodName, { id: data });
+                                        }   
+                                    }
+                                    else if(methodName.indexOf("Response")){
+                                        if(this[methodName]  && typeof this[methodName] === "function")
+                                            this.rpc.on(contractName, methodName, this[methodName]);                                        
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+            },
+
+            send(buffer){
+                this.socket.send(buffer);
             },
     
             processExpressions() {
@@ -100,24 +164,45 @@
             },
     
             rpc: {
-                
-                get: (name) => {
-                    if (name === 'tasks') {
-                        return [
-                            { key: 1, label: 'Task 1' },
-                            { key: 2, label: 'Task 2' },
-                            { key: 3, label: 'Task 3' }
-                        ];
-                    }
-                    return [];
+
+                get: (contract, messageType) => {
+                    let buffer = cmmv.pack.call(cmmv, contract, messageType);
+                    cmmv.send(buffer);
                 },
     
-                add: (contract, data) => {
-                    console.log(contract, data);
+                add: (contract, messageType, data) => {
+                    let buffer = cmmv.pack.call(cmmv, contract, messageType, {
+                        item: data
+                    });
+
+                    cmmv.send(buffer);
+                },
+
+                update: (contract, messageType, data) => {
+                    let buffer = cmmv.pack.call(cmmv, contract, messageType, {
+                        id: data.id,
+                        item: data
+                    });
+
+                    cmmv.send(buffer);
+                },
+
+                delete: (contract, messageType, data) => {
+                    let buffer = cmmv.pack.call(cmmv, contract, messageType, {
+                        id: data.id
+                    });
+
+                    cmmv.send(buffer);
                 },
     
-                on: (contract, cb) => {
-    
+                on: (contract, messageType, cb) => {
+                    if(!cmmv.binds[contract])
+                        cmmv.binds[contract] = {};
+
+                    if(!cmmv.binds[contract][messageType])
+                        cmmv.binds[contract][messageType] = [];
+
+                    cmmv.binds[contract][messageType].push(cb);
                 }
             }
         };

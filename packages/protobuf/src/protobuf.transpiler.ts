@@ -18,8 +18,9 @@ export class ProtobufTranspile implements ITranspile {
         contracts?.forEach((contract: any) => {
             const outputPath = path.resolve(contract.protoPath);
             const outputPathJson = outputPath.replace('.proto', '.json');
-            const outputDir = path.dirname(outputPath);           
-            
+            const outputPathTs = outputPath.replace('.proto', '.d.ts');
+            const outputDir = path.dirname(outputPath);    
+                               
             if (!fs.existsSync(outputDir)) {
                 fs.mkdirSync(outputDir, { recursive: true });
                 this.logger.log(`Created directory ${outputDir}`);
@@ -47,7 +48,9 @@ export class ProtobufTranspile implements ITranspile {
 
             const protoContent = this.generateProtoContent(contract);
             fs.writeFileSync(outputPath, protoContent, 'utf8');
-            //this.logger.log(`Generated .proto file for ${contract.controllerName} at ${outputPath}`);
+
+            const tsContent = this.generateTypes(contract);
+            fs.writeFileSync(outputPathTs, tsContent, 'utf8');
 
             const contractJSON = root.toJSON();
             contractsJson[contract.controllerName] = contractJSON;
@@ -90,7 +93,6 @@ export class ProtobufTranspile implements ITranspile {
     
         lines.push(`}`);
     
-        // Gerando a lista de mensagens
         if (!contract.directMessage) {
             lines.push('');
             lines.push(`message ${contract.controllerName}List {`);
@@ -98,22 +100,23 @@ export class ProtobufTranspile implements ITranspile {
             lines.push(`}`);
         }
     
-        // Gerando mensagens para operações CRUD
         lines.push('');
         lines.push(`message Add${contract.controllerName}Request {`);
         lines.push(`  ${contract.controllerName} item = 1;`);
         lines.push(`}`);
         lines.push(`message Add${contract.controllerName}Response {`);
-        lines.push(`  ${contract.controllerName} item = 1;`);
+        lines.push(`  string id = 1;`); 
+        lines.push(`  ${contract.controllerName} item = 2;`);
         lines.push(`}`);
         
         lines.push('');
         lines.push(`message Update${contract.controllerName}Request {`);
-        lines.push(`  string id = 1;`); // ID do registro a ser alterado
+        lines.push(`  string id = 1;`); 
         lines.push(`  ${contract.controllerName} item = 2;`);
         lines.push(`}`);
         lines.push(`message Update${contract.controllerName}Response {`);
-        lines.push(`  ${contract.controllerName} item = 1;`);
+        lines.push(`  string id = 1;`); 
+        lines.push(`  ${contract.controllerName} item = 2;`);
         lines.push(`}`);
     
         lines.push('');
@@ -122,6 +125,7 @@ export class ProtobufTranspile implements ITranspile {
         lines.push(`}`);
         lines.push(`message Delete${contract.controllerName}Response {`);
         lines.push(`  bool success = 1;`);
+        lines.push(`  string id = 2;`);
         lines.push(`}`);
     
         lines.push('');
@@ -141,41 +145,50 @@ export class ProtobufTranspile implements ITranspile {
     
         return lines.join('\n');
     }
+
+    private generateTypes(contract: any): string {
+        const lines: string[] = [];
     
-    private mapToProtoType(type: string): string {
-        const typeMapping: { [key: string]: string } = {
-            string: 'string',
-            boolean: 'bool',
-            bool: 'bool',
-            int: 'int32',
-            int32: 'int32',
-            int64: 'int64',
-            float: 'float',
-            double: 'double',
-            bytes: 'bytes',
-            date: 'string',          
-            timestamp: 'string',     
-            text: 'string',          
-            json: 'string',          
-            jsonb: 'string',         
-            uuid: 'string',          
-            time: 'string',          
-            simpleArray: 'string',   
-            simpleJson: 'string',    
-            bigint: 'int64',
-            uint32: 'uint32',
-            uint64: 'uint64',
-            sint32: 'sint32',
-            sint64: 'sint64',
-            fixed32: 'fixed32',
-            fixed64: 'fixed64',
-            sfixed32: 'sfixed32',
-            sfixed64: 'sfixed64',
-            any: 'google.protobuf.Any'
-        };
+        lines.push(`// Types generated automatically by CMMV`);
+        lines.push(`export namespace ${contract.controllerName} {`);
     
-        return typeMapping[type] || 'string';
-    }   
+        contract.fields.forEach((field: any) => {
+            const tsType = this.mapToTsType(field.protoType);
+            lines.push(`  export type ${field.propertyKey} = ${tsType};`);
+        });
+    
+        lines.push(`}`);
+        
+        // Gerando tipos para CRUD
+        lines.push(`export interface Add${contract.controllerName}Request {`);
+        lines.push(`  item: ${contract.controllerName};`);
+        lines.push(`}`);
+        lines.push(`export interface Add${contract.controllerName}Response {`);
+        lines.push(`  item: ${contract.controllerName};`);
+        lines.push(`}`);
+        
+        lines.push(`export interface Update${contract.controllerName}Request {`);
+        lines.push(`  id: string;`);
+        lines.push(`  item: ${contract.controllerName};`);
+        lines.push(`}`);
+        lines.push(`export interface Update${contract.controllerName}Response {`);
+        lines.push(`  item: ${contract.controllerName};`);
+        lines.push(`}`);
+        
+        lines.push(`export interface Delete${contract.controllerName}Request {`);
+        lines.push(`  id: string;`);
+        lines.push(`}`);
+        lines.push(`export interface Delete${contract.controllerName}Response {`);
+        lines.push(`  success: boolean;`);
+        lines.push(`}`);
+        
+        lines.push(`export interface GetAll${contract.controllerName}Request {}`);
+        lines.push(`export interface GetAll${contract.controllerName}Response {`);
+        lines.push(`  items: ${contract.controllerName}[];`);
+        lines.push(`}`);
+    
+        return lines.join('\n');
+    }
 
     private async generateContractsJs(contractsJson: { [key: string]: any }): Promise<void> {
         const outputFile = path.resolve('public/core/contracts.min.js');
@@ -221,5 +234,75 @@ export class ProtobufTranspile implements ITranspile {
     
         fs.writeFileSync(outputFile, minifiedJsContent, 'utf8');
         //this.logger.log(`Generated public contracts JS file at ${outputFile}`);
-    }    
+    }  
+    
+    private mapToProtoType(type: string): string {
+        const typeMapping: { [key: string]: string } = {
+            string: 'string',
+            boolean: 'bool',
+            bool: 'bool',
+            int: 'int32',
+            int32: 'int32',
+            int64: 'int64',
+            float: 'float',
+            double: 'double',
+            bytes: 'bytes',
+            date: 'string',          
+            timestamp: 'string',     
+            text: 'string',          
+            json: 'string',          
+            jsonb: 'string',         
+            uuid: 'string',          
+            time: 'string',          
+            simpleArray: 'string',   
+            simpleJson: 'string',    
+            bigint: 'int64',
+            uint32: 'uint32',
+            uint64: 'uint64',
+            sint32: 'sint32',
+            sint64: 'sint64',
+            fixed32: 'fixed32',
+            fixed64: 'fixed64',
+            sfixed32: 'sfixed32',
+            sfixed64: 'sfixed64',
+            any: 'google.protobuf.Any'
+        };
+    
+        return typeMapping[type] || 'string';
+    }  
+    
+    private mapToTsType(protoType: string): string {
+        const typeMapping: { [key: string]: string } = {
+            string: 'string',
+            boolean: 'boolean',
+            bool: 'boolean',
+            int: 'number',
+            int32: 'number',
+            int64: 'number',
+            float: 'number',
+            double: 'number',
+            bytes: 'Uint8Array',
+            date: 'string',
+            timestamp: 'string',
+            text: 'string',
+            json: 'any',
+            jsonb: 'any',
+            uuid: 'string',
+            time: 'string',
+            simpleArray: 'string[]',
+            simpleJson: 'any',
+            bigint: 'bigint',
+            uint32: 'number',
+            uint64: 'number',
+            sint32: 'number',
+            sint64: 'number',
+            fixed32: 'number',
+            fixed64: 'number',
+            sfixed32: 'number',
+            sfixed64: 'number',
+            any: 'any'
+        };
+    
+        return typeMapping[protoType] || 'any';
+    }
 }

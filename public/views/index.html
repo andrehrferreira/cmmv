@@ -10,9 +10,21 @@
             c-for="(item, key) in todolist"
             class="todo-item"
         >
-            <input type="checkbox" c-model="item.checked"></checkbox>
+            <c class="todo-item-content">
+                <input 
+                    type="checkbox" 
+                    c-model="item.checked" 
+                    @change="UpdateTaskRequest(item)"
+                ></input>
 
-            <label>{{ item.label }}</label>
+                <label :class="{'todo-item-checked': item.checked}">{{ item.label }}</label>
+            </c>
+            
+            <button 
+                class="todo-btn-remove"
+                s-i18n="remove" 
+                @click="DeleteTaskRequest(item.id)"
+            ></button>
         </div>
     </div>
 
@@ -20,9 +32,9 @@
         <input c-model="label" class="todo-input">
 
         <button 
-            class="todo-btn"
+            class="todo-btn-add"
             s-i18n="add" 
-            @click="add"
+            @click="addTask"
         ></button>
     </div>
 
@@ -46,25 +58,36 @@ export default {
 
     data(){
         return {
-            tt: true,
             todolist: [],
             label: ""
         }
     },
 
-    mounted() {      
-        this.rpc.on('tasks', this.updateList);
-    },
-
     methods: {
-        add(){
-            this.rpc.add('tasks', { label: this.label });
+        addTask(){
+            this.AddTaskRequest({ label: this.label });
             this.label = '';
         },
 
-        updateList(data) {
-            this.todolist = data;
-        }   
+        DeleteTaskResponse(data){
+            if (data.success) {
+                const index = this.todolist.findIndex(item => item.id === data.id);
+
+                if (index !== -1) 
+                    this.todolist.splice(index, 1);
+            }
+        },
+
+        AddTaskResponse(data) { this.UpdateTaskResponse(data); },
+
+        UpdateTaskResponse(data) {
+            const index = this.todolist.findIndex(item => item.id === data.id);
+            
+            if (index !== -1) 
+                this.todolist[index] = { ...data.item, id: data.id };
+            else 
+                this.todolist.push({ ...data.item, id: data.id });
+        } 
     }
 }
 </script>

@@ -1,7 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as fg from 'fast-glob';
-import { v4 as uuidv4 } from 'uuid';
 
 import { IHTTPSettings } from "./interfaces";
 import { ITranspile, Logger, Scope, Transpile } from './utils';
@@ -34,12 +33,17 @@ export interface IApplicationSettings {
 export class Application {
     private logger: Logger = new Logger('Application');
 
+    public static appModule = {
+        controllers: [],
+        providers: []
+    }
+
     private httpAdapter: AbstractHttpAdapter;
     private httpBind: string;
     private httpOptions: IHTTPSettings;
     private wsAdapter: AbstractWSAdapter;
     private wsServer: any;
-    private wSConnections: Map<string, any> = new Map<string, any>();
+    public wSConnections: Map<string, any> = new Map<string, any>();
     private modules: Array<Module>;
     private transpilers: Array<new () => ITranspile>;
     private controllers: Array<any> = [];
@@ -71,7 +75,7 @@ export class Application {
 
     private async initialize(settings: IApplicationSettings): Promise<void> {
         try {
-            this.loadModules(this.modules);
+            this.loadModules(this.modules);            
             this.processContracts();
                         
             if (this.transpilers.length > 0) {
@@ -83,28 +87,20 @@ export class Application {
                 this.logger.log("No transpilers provided.");
             }
 
+            const appModel = await Application.generateModule();
+
+            if(appModel)
+                this.loadModules([...this.modules, appModel]);
+
+            //Create frontend bundle
             this.createScriptBundle();
+            
             settings.services?.forEach(async (service) => await service?.loadConfig());
             this.httpAdapter.init(this, this.httpOptions); 
 
-            if(this.wsAdapter){
-                this.wsServer = this.wsAdapter.create(this.httpAdapter);
-
-                this.wsAdapter.bindClientConnect(this.wsServer, (socket) => {                
-                    const id = uuidv4();
-                    socket.id = id;
-                    this.wSConnections.set(id, socket);
-                    this.logger.log(`WS Connection: ${id}`);
-        
-                    //if(interceptor && typeof interceptor === "function")
-                    //    socket.on("message", (data) => interceptor(this.getHttpAdapter(), socket, data));
+            if(this.wsAdapter)
+                this.wsServer = this.wsAdapter.create(this.httpAdapter, this);
                         
-                    socket.on("error", () => this.wSConnections.delete(id));
-                    socket.on("close", () => this.wSConnections.delete(id));
-                    //socket.send(stringToArrayBuffer(id), { binary: true });
-                });
-            }
-            
             await this.httpAdapter.listen(`${this.host}:${this.port}`).then(() => {
                 this.logger.log(`Server HTTP successfully started on ${this.host}:${this.port}`);
             }).catch((error) => {
@@ -187,5 +183,35 @@ export class Application {
 
     public static create(settings: IApplicationSettings): Application {
         return new Application(settings);
+    }
+
+    private static async generateModule() : Promise<Module> {
+        try{
+            const outputPath = path.resolve('src', `app.module.ts`);
+
+            const moduleTemplate = `// Generated automatically by CMMV
+    
+    import { Module } from '@cmmv/core';
+    ${Application.appModule.controllers.map(controller => `import { ${controller.name} } from '${controller.path}';`).join('\n')}
+    ${Application.appModule.providers.map(provider => `import { ${provider.name} } from '${provider.path}';`).join('\n')}
+    
+    export let ApplicationModule = new Module({
+        controllers: [${Application.appModule.controllers.map(controller => controller.name).join(', ')}],
+        providers: [${Application.appModule.providers.map(provider => provider.name).join(', ')}]
+    });`;
+    
+            if (!fs.existsSync(path.dirname(outputPath)))
+                fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+    
+            await fs.writeFileSync(outputPath, moduleTemplate, 'utf8');
+    
+            const { ApplicationModule } = await import(outputPath);
+            return ApplicationModule as Module;
+        }
+        catch(e){
+            console.error(e);
+            new Logger('Application').error(e.message, "generateModule");
+            return null;
+        }       
     }
 }

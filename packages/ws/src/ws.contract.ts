@@ -1,7 +1,7 @@
 import { AbstractContract, Contract, ContractField } from "@cmmv/core";
 
 @Contract({ 
-    controllerName: "wscall",
+    controllerName: "WsCall",
     protoPath: "src/protos/ws.proto",
     protoPackage: "ws",
     directMessage: true,

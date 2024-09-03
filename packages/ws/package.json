@@ -16,6 +16,8 @@
 	},
 	"homepage": "https://cmmv.io",
 	"dependencies": {
+		"@cmmv/protobuf": "^0.2.10",
+		"class-transformer": "^0.5.1",
 		"ws": "^8.18.0"
 	},
 	"devDependencies": {

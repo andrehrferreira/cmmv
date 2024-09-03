@@ -30,10 +30,15 @@ h1 {
 
 .todo-item{
     border: 1px solid #CCC;
-    padding: 10px;
     display: flex;
     align-items: center;
     margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+}
+
+.todo-item-checked {
+    text-decoration: line-through;
 }
 
 .todo-input-box {
@@ -53,7 +58,13 @@ h1 {
     font-size: 15px;
 }
 
-.todo-btn {
+.todo-item-content{
+    width: 70%;
+    padding: 10px;
+    font-size: 15px;
+}
+
+.todo-btn-add, .todo-btn-remove {
     width: 30%;
     height: 40px;
     margin: auto;
@@ -64,6 +75,11 @@ h1 {
     cursor: pointer; 
     text-align: center; 
     font-size: 15px;
+}
+
+.todo-btn-remove{
+    background-color: #a72828; 
+    border: 1px solid #a72828;
 }
 
 .todo-btn:hover {

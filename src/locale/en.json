@@ -1,5 +1,6 @@
 {
     "title": "CMMV - Hello World",
     "todo": "Todo List",
-    "add": "Add"
+    "add": "Add",
+    "remove": "Remove"
 }

@@ -11,7 +11,7 @@ export abstract class AbstractWSAdapter {
             this.httpServer = appOrHttpServer;
     }
 
-    public abstract create(server: AbstractHttpAdapter, options?: any);
+    public abstract create(server: AbstractHttpAdapter, application: Application, options?: any);
     public abstract bindClientConnect(server, callback: Function): any;
     public abstract bindCustomMessageHandler(server, callback: Function): any;
 }

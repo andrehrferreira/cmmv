@@ -4,7 +4,8 @@
     "ignore": [
         "src/**/*.spec.ts", "src/services", 
         "src/models", "src/controllers", 
-        "src/app.module.ts", "src/entities"
+        "src/protos", "src/app.module.ts", 
+        "src/gateways", "src/entities"
     ],
     "exec": "ts-node -r tsconfig-paths/register ./src/index.ts" 
 }

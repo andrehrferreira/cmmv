@@ -85,9 +85,15 @@ export class Template {
 
                     const methodsAsString = JSON.stringify(Object.entries(result.setup.methods).reduce((acc, [key, func]) => {
                         const funcString = func.toString();
+                        const funcArgs = funcString.slice(funcString.indexOf('(') + 1, funcString.indexOf(')'));
                         const functionBody = funcString.slice(funcString.indexOf('{') + 1, funcString.lastIndexOf('}'));
                         
-                        acc[key] = `function ${key}() {${functionBody}}`;
+                        if (funcArgs.trim()) {
+                            acc[key] = `function ${key}(${funcArgs}) {${functionBody}}`;
+                        } else {
+                            acc[key] = `function ${key}() {${functionBody}}`;
+                        }
+                        
                         return acc;
                     }, {}));
 

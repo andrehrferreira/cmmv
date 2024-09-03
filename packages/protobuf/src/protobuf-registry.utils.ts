@@ -60,8 +60,8 @@ export class ProtoRegistry extends Singleton {
         
         const keys = Array.from(globalProto.index).
             map((item) => (item[1] === key) ? item[0] : null).
-            filter(item => item);
-
+            filter(item => { return (item || item === 0); });
+            
         return (keys.length > 0) ? keys[0] : null;
     }
 

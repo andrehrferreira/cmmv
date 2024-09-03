@@ -3,7 +3,8 @@ import { AbstractContract, Contract, ContractField } from "@cmmv/core";
 @Contract({
     controllerName: "Task",
     databaseType: "mongodb",
-    protoPath: "src/protos/tasks.proto"
+    protoPath: "src/protos/task.proto",
+    protoPackage: "task"
 })
 export class TasksContract extends AbstractContract {
     @ContractField({ 

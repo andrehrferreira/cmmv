@@ -2,42 +2,45 @@
 syntax = "proto3";
 package ws;
 
-message wscall {
+message WsCall {
   int32 contract = 1;
   int32 message = 2;
   bytes data = 3;
 }
 
-message AddwscallRequest {
-  wscall item = 1;
+message AddWsCallRequest {
+  WsCall item = 1;
 }
-message AddwscallResponse {
-  wscall item = 1;
+message AddWsCallResponse {
+  string id = 1;
+  WsCall item = 2;
 }
 
-message UpdatewscallRequest {
+message UpdateWsCallRequest {
   string id = 1;
-  wscall item = 2;
+  WsCall item = 2;
 }
-message UpdatewscallResponse {
-  wscall item = 1;
+message UpdateWsCallResponse {
+  string id = 1;
+  WsCall item = 2;
 }
 
-message DeletewscallRequest {
+message DeleteWsCallRequest {
   string id = 1;
 }
-message DeletewscallResponse {
+message DeleteWsCallResponse {
   bool success = 1;
+  string id = 2;
 }
 
-message GetAllwscallRequest {}
-message GetAllwscallResponse {
-  wscallList items = 1;
+message GetAllWsCallRequest {}
+message GetAllWsCallResponse {
+  WsCallList items = 1;
 }
 
-service wscallService {
-  rpc Addwscall (AddwscallRequest) returns (AddwscallResponse);
-  rpc Updatewscall (UpdatewscallRequest) returns (UpdatewscallResponse);
-  rpc Deletewscall (DeletewscallRequest) returns (DeletewscallResponse);
-  rpc GetAllwscall (GetAllwscallRequest) returns (GetAllwscallResponse);
+service WsCallService {
+  rpc AddWsCall (AddWsCallRequest) returns (AddWsCallResponse);
+  rpc UpdateWsCall (UpdateWsCallRequest) returns (UpdateWsCallResponse);
+  rpc DeleteWsCall (DeleteWsCallRequest) returns (DeleteWsCallResponse);
+  rpc GetAllWsCall (GetAllWsCallRequest) returns (GetAllWsCallResponse);
 }
