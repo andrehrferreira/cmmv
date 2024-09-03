@@ -50,11 +50,11 @@ export const i18n: Directive = (templateText: string, data: Record<string, any>,
     const locale = data.locale || Config.get<string>('i18n.default') || "en";
     const translations = loadLocaleFile(locale);
 
-    return templateText.replace(/<([^>]+)\s+s-i18n=["'](.+?)["']([^>]*)>(.*?)<\/\1>/g, (match, tagName, key, attributes, innerHTML) => {
+    return templateText.replace(/<(\w+)([^>]*)\s+s-i18n=["'](.+?)["']([^>]*)>(.*?)<\/\1>/g, (match, tagName, beforeAttrs, key, afterAttrs, innerHTML) => {
         const translation = translations[key.trim()];
 
         if (translation !== undefined) 
-            return `<${tagName} ${attributes}>${translation}</${tagName}>`;
+            return `<${tagName}${beforeAttrs}${afterAttrs}>${translation}</${tagName}>`;
         else 
             return `<!-- s-i18n not found: ${key} -->`;        
     });
@@ -92,20 +92,9 @@ export const extractSetupScript = (templateText: string): object | string => {
 
 //SSR
 export const ssrDirectives: Directive = async (templateText: string, data: Record<string, any>, template: Template): Promise<string> => {
-    /*const regex = /<([^>]+\s+s-for\s*=\s*["']+(.*?)["']+.*?)>(.*?)<\/[^>]+>/igs;
-
-    let m;
-
-    while ((m = regex.exec(templateText)) !== null) {
-        if (m.index === regex.lastIndex) 
-            regex.lastIndex++;
-                
-        m.forEach((match, groupIndex) => {
-            console.log(`Found match, group ${groupIndex}: ${match}`);
-        });
-    }*/
-
     const sDirectiveRegex = /\s+s:([\w\d_]+)\s*=\s*["']([^"']+)["']/g;
+    const forDirectiveRegex = /<(\w+)([^>]*)\s+(c-for|v-for)\s*=\s*["'](.*?)["']([^>]*)>(.*?)<\/\1>/gs;
+    const placeholder = 'c-ssr-for';
     
     let match: RegExpExecArray | null;
 
@@ -115,6 +104,35 @@ export const ssrDirectives: Directive = async (templateText: string, data: Recor
         template.setContext(variableName, result);
         templateText = templateText.replace(fullMatch, '');
     }
+
+    while ((match = forDirectiveRegex.exec(templateText)) !== null) {
+        const [fullMatch, tagName, beforeAttrs, directive, exp, afterAttrs, innerHTML] = match;
+        const listNameMatch = exp.match(/\b(?:in|of)\s+([^\s"']+)/i);
+        const listName = listNameMatch ? listNameMatch[1] : null;
+        const context = template.getContext();
+        const items = listName ? context[listName] : null;
+
+        let renderedItems = '';
+
+        if (Array.isArray(items)) {
+            for (const item of items) {
+                const itemData = { ...template.getContext(), item }; // Vincula item ao contexto de dados
+                let itemHTML = innerHTML.replace(/\{\{\s*item\.(\w+)\s*\}\}/g, (_, key) => {
+                    return item[key];
+                });
+                renderedItems += `<${tagName}${beforeAttrs}${afterAttrs}>${itemHTML}</${tagName}>`;
+            }
+        }
+
+        renderedItems = `
+        <div c-if="!loaded && !${listName}">${renderedItems}</div>
+        <div c-else>${fullMatch.replace(directive, placeholder)}</div>
+        `;  
+
+        templateText = templateText.replace(fullMatch, renderedItems);
+    }
+
+    templateText = templateText.replace(new RegExp(placeholder, 'g'), 'c-for');
 
     return templateText;
 };

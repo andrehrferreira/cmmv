@@ -39,6 +39,10 @@ export class Template {
         this.context[value] = data;
     }
 
+    getContext() {
+        return this.context;
+    }
+
     private async loadIncludes(templateText: string): Promise<string> {
         const includeRegex = /<!--\s*include\(['"]([^'"]+)['"]\)[^;]+\s*-->/g;
         let match;

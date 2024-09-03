@@ -12,6 +12,8 @@
             context: {}, 
     
             contextApp: null,
+
+            loaded: false,
     
             initialize(context, methods, mounted) {
                 this.socket = new WebSocket(
@@ -78,6 +80,7 @@
             processExpressions() {
                 this.contextApp = this.reactive({ 
                     $template: "#app",
+                    loaded: true,
                     ...this, 
                     rpc: this.rpc, 
                     ...this.context,

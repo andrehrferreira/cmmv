@@ -1,22 +1,32 @@
 <div class="todo-box" scope>
     <h1 s-i18n="todo"></h1>
 
-    <div c-show="todolist?.length" s:todolist="services.task.getAll()">
+    <div 
+        c-show="todolist?.length > 0" 
+        s:todolist="services.task.getAll()"
+    >
         <div 
+            c-show="todolist"
             c-for="(item, key) in todolist"
             class="todo-item"
-        >{{ item.label }}</div>
+        >
+            <input type="checkbox" c-model="item.checked"></checkbox>
+
+            <label>{{ item.label }}</label>
+        </div>
     </div>
 
     <div class="todo-input-box">
         <input v-model="label" class="todo-input">
 
         <button 
+            class="todo-btn"
             s-i18n="add" 
             @click="add"
-            class="todo-btn"
         ></button>
     </div>
+
+    <pre>{{ todolist }}</pre>
 </div>
 
 <script s-setup>
@@ -30,7 +40,7 @@ export default {
         ],
         link: [
             { rel: "stylesheet", href: "/assets/styles/todo.css" },
-            { rel: "canonical", href: "https://cmmv.io/" },
+            { rel: "canonical", href: "https://cmmv.io" },
         ]
     },
 
