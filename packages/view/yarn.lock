@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@cmmv/reactivity@^0.0.2":
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/@cmmv/reactivity/-/reactivity-0.0.2.tgz#9a12059f3b4bac4dc2954b2eeda61cd0cbf3c71f"
-  integrity sha512-xrhRWzBghloj6+dSzb5wUO4oph//yELUaH2kUID+MSmnL//KytcZXOCLNj102omN7TDXJATXvvaodRPlE70FwQ==
+"@cmmv/reactivity@^0.0.5":
+  version "0.0.5"
+  resolved "https://registry.yarnpkg.com/@cmmv/reactivity/-/reactivity-0.0.5.tgz#42671ad94c3dd04f53a3ce791f57062c9a33518a"
+  integrity sha512-/t3wLFWGQl56bTOylvf7ybenYVHKGfKohUGE/C/wv4jvgP3AIQUkJEnezSw0QHcq7sL3NQY6P5hc30Wofu6f6Q==
 
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"

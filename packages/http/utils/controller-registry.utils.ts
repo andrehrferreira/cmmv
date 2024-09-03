@@ -24,14 +24,12 @@ export class ControllerRegistry {
             let route = controller.routes.find(route => route.handlerName === handlerName);
             
             if (!route) {
-                logger.log(`Registering route: ${method.toUpperCase()} ${path} to ${handlerName}`);
+                //logger.log(`Registering route: ${method.toUpperCase()} ${path} to ${handlerName}`);
                 controller.routes.push({ method, path, handlerName, params: [] });
             } else {
                 route.method = method;
                 route.path = path;
             }
-        } else {
-            logger.error(`Failed to register controller for ${target.constructor.name}`);
         }
     }
     
@@ -62,6 +60,25 @@ export class ControllerRegistry {
 
     public static getControllers() {
         return Array.from(this.controllers.entries());
+    }
+
+    public static getRoutes(target: any): any[] {
+        const controller = this.controllers.get(target);
+        return controller ? controller.routes : [];
+    }
+
+    public static getParams(target: any, handlerName: string): any[] {
+        const controller = this.controllers.get(target.constructor);
+        if (!controller) {
+            return [];
+        }
+
+        const route = controller.routes.find(route => route.handlerName === handlerName);
+        return route ? route.params : [];
+    }
+
+    public static clear(){
+        ControllerRegistry.controllers = new Map<any, { prefix: string, routes: any[] }>();
     }
 }
 

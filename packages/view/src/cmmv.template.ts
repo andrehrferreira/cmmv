@@ -8,7 +8,7 @@ import * as fg from "fast-glob";
 import { Config } from "@cmmv/core";
 import { hasOwnOnlyObject, createNullProtoObjWherePossible } from './utils.cjs';
 
-export type Directive = (templateText: string, data: Record<string, any>) => string | object;
+export type Directive = (templateText: string, data: Record<string, any>, template: Template) => string | object;
 
 const templateCache: Record<string, string> = {};
 
@@ -17,6 +17,7 @@ export class Template {
 
     private directives: Directive[] = [];
     private nonce: string;
+    private context: {} = {};
 
     constructor(text: string, optsParam: any) {
         const opts = hasOwnOnlyObject(optsParam);
@@ -32,6 +33,10 @@ export class Template {
         }
         else
             this.directives.push(directives);
+    }
+
+    setContext(value: string, data: any) {
+        this.context[value] = data;
     }
 
     private async loadIncludes(templateText: string): Promise<string> {
@@ -71,7 +76,8 @@ export class Template {
         if (result.setup) {
             if(result.setup.data && typeof result.setup.data === "function"){
                 try{
-                    const data = result.setup.data();
+                    let data = result.setup.data();
+                    data = Object.assign({}, data, this.context);
 
                     const methodsAsString = JSON.stringify(Object.entries(result.setup.methods).reduce((acc, [key, func]) => {
                         const funcString = func.toString();
@@ -96,12 +102,13 @@ export class Template {
                         : null;
 
                     pageContents += `\r\n
-                    <script nonce="{nonce}">
-                        let __data = ${JSON.stringify(data)};
-                        let __methods = ${methodsAsString};
-                        let __mounted = ${JSON.stringify(mountedAsString)};
-                        let __created = ${JSON.stringify(createdAsString)};
-                    </script>`;
+    <script nonce="{nonce}">
+        let __data = ${JSON.stringify(data)};
+        let __methods = ${methodsAsString};
+        let __mounted = ${JSON.stringify(mountedAsString)};
+        let __created = ${JSON.stringify(createdAsString)};
+    </script>`;
+
                 }
                 catch { }
             }
@@ -221,11 +228,10 @@ export class Template {
 
         return async function(data: Record<string, any>) {
             let processedText = self.templateText;
-
             processedText = await self.loadIncludes(processedText);
 
             for (const directive of self.directives) {
-                const result: any = directive(processedText, data);
+                const result: any = await directive(processedText, data, self);
 
                 if(typeof result === "string")
                     processedText = result;

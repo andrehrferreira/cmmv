@@ -1,18 +1,16 @@
 <div class="todo-box" scope>
     <h1 s-i18n="todo"></h1>
 
-    <div if="todolist.length">
+    <div c-show="todolist?.length" s:todolist="services.task.getAll()">
         <div 
-            for="(item, key) in todolist"
-            ssr-for="(item, key) in services.task.getAll()"
-            :key="key"
+            c-for="(item, key) in todolist"
             class="todo-item"
         >{{ item.label }}</div>
     </div>
 
     <div class="todo-input-box">
-        <input c-model="label" class="todo-input">
-        
+        <input v-model="label" class="todo-input">
+
         <button 
             s-i18n="add" 
             @click="add"
@@ -44,14 +42,14 @@ export default {
         }
     },
 
-    mounted() {
-        this.rpc.get('tasks');        
+    mounted() {      
         this.rpc.on('tasks', this.updateList);
     },
 
     methods: {
         add(){
-            this.rpc.add('tasks', { label: this.label })
+            this.rpc.add('tasks', { label: this.label });
+            this.label = '';
         },
 
         updateList(data) {

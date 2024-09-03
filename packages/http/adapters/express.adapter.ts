@@ -14,6 +14,7 @@ import helmet from "helmet";
 import { AbstractHttpAdapter, IHTTPSettings, Logger, Application, Telemetry, Config } from "@cmmv/core";
 import { CMMVRenderer } from "@cmmv/view";
 import { ControllerRegistry } from '../utils/controller-registry.utils';
+import { ServiceRegistry } from '../utils';
 
 export interface ExpressRequest extends express.Request{
     requestId?: string;
@@ -156,7 +157,8 @@ export class ExpressAdapter extends AbstractHttpAdapter<http.Server | https.Serv
     
                     return res.render(filePath, {
                         debug: debugContent,
-                        nonce: res.locals.nonce
+                        nonce: res.locals.nonce,
+                        services: ServiceRegistry.getServicesArr()
                     });
                 }
             }
@@ -239,6 +241,7 @@ export class ExpressAdapter extends AbstractHttpAdapter<http.Server | https.Serv
     
     private buildRouteArgs(req: express.Request, res: express.Response, params: any[]) {
         const args: any[] = [];
+
         params?.forEach(param => {
             const [paramType, paramName] = param.paramType.split(':');
             switch (paramType) {
@@ -253,6 +256,7 @@ export class ExpressAdapter extends AbstractHttpAdapter<http.Server | https.Serv
                 default: args[param.index] = undefined; break;
             }
         });
+
         return args;
     }
     

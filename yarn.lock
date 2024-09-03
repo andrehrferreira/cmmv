@@ -298,10 +298,10 @@
   resolved "https://registry.npmjs.org/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
-"@cmmv/reactivity@^0.0.2":
-  version "0.0.2"
-  resolved "https://registry.npmjs.org/@cmmv/reactivity/-/reactivity-0.0.2.tgz"
-  integrity sha512-xrhRWzBghloj6+dSzb5wUO4oph//yELUaH2kUID+MSmnL//KytcZXOCLNj102omN7TDXJATXvvaodRPlE70FwQ==
+"@cmmv/reactivity@^0.0.5":
+  version "0.0.5"
+  resolved "https://registry.yarnpkg.com/@cmmv/reactivity/-/reactivity-0.0.5.tgz#42671ad94c3dd04f53a3ce791f57062c9a33518a"
+  integrity sha512-/t3wLFWGQl56bTOylvf7ybenYVHKGfKohUGE/C/wv4jvgP3AIQUkJEnezSw0QHcq7sL3NQY6P5hc30Wofu6f6Q==
 
 "@codechecks/client@^0.1.12":
   version "0.1.12"

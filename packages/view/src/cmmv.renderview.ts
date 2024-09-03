@@ -77,10 +77,12 @@ export class CMMVRenderer {
 
     public compile(template: string, opts: any) {
         let templ = new Template(template, opts);
+        
         templ.use([
-            extractSetupScript, sServerData, 
-            ssrDirectives, sData, sAttr, i18n
+            ssrDirectives, extractSetupScript,  
+            sServerData, sData, sAttr, i18n
         ]); //Extact Setup first 
+
         return templ.compile();
     }
 

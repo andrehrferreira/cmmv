@@ -1,10 +1,11 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { Directive } from "./cmmv.template";
+import { Directive, Template } from "./cmmv.template";
+import { evaluate } from "./cmmv.eval";
 import { Config } from "@cmmv/core";
 
-export const sData: Directive = (templateText: string, data: Record<string, any>): string => {
+export const sData: Directive = (templateText: string, data: Record<string, any>, template: Template): string => {
     return templateText.replace(/<([^>]+)\s+s-data=["'](.+?)["']([^>]*)>(.*?)<\/\1>/g, (match, tagName, key, attributes, innerHTML) => {
         const value = data[key.trim()];
         
@@ -15,7 +16,7 @@ export const sData: Directive = (templateText: string, data: Record<string, any>
     });
 };
 
-export const sAttr: Directive = (templateText: string, data: Record<string, any>): string => {
+export const sAttr: Directive = (templateText: string, data: Record<string, any>, template: Template): string => {
     return templateText.replace(/<([^>]+)\s+s-attr=["'](.+?)["']([^>]*)>/g, (match, tagName, key, attributes) => {
         const value = data[key.trim()];
 
@@ -26,7 +27,7 @@ export const sAttr: Directive = (templateText: string, data: Record<string, any>
     });
 };
 
-export const sServerData: Directive = (templateText: string, data: Record<string, any>): string => {
+export const sServerData: Directive = (templateText: string, data: Record<string, any>, template: Template): string => {
     return templateText.replace(/\{(\w+)\}/g, (match, key) => {
         const value = data[key.trim()];
         return (value !== undefined)  ? value : "";
@@ -45,7 +46,7 @@ function loadLocaleFile(locale: string): Record<string, string> {
     return JSON.parse(fileContent);
 }
 
-export const i18n: Directive = (templateText: string, data: Record<string, any>): string => {
+export const i18n: Directive = (templateText: string, data: Record<string, any>, template: Template): string => {
     const locale = data.locale || Config.get<string>('i18n.default') || "en";
     const translations = loadLocaleFile(locale);
 
@@ -60,7 +61,7 @@ export const i18n: Directive = (templateText: string, data: Record<string, any>)
 };
 
 //Layout
-export const extractSetupScript = (templateText: string, data: Record<string, any>): object | string => {
+export const extractSetupScript = (templateText: string): object | string => {
     const regex = /<script\s+[^>]*s-setup[^>]*>([\s\S]*?)<\/script>/;
     const scriptMatch = templateText.match(regex);
     let scriptObject = null;
@@ -90,8 +91,30 @@ export const extractSetupScript = (templateText: string, data: Record<string, an
 };
 
 //SSR
-export const ssrDirectives: Directive = (templateText: string, data: Record<string, any>): string => {
+export const ssrDirectives: Directive = async (templateText: string, data: Record<string, any>, template: Template): Promise<string> => {
+    /*const regex = /<([^>]+\s+s-for\s*=\s*["']+(.*?)["']+.*?)>(.*?)<\/[^>]+>/igs;
+
+    let m;
+
+    while ((m = regex.exec(templateText)) !== null) {
+        if (m.index === regex.lastIndex) 
+            regex.lastIndex++;
+                
+        m.forEach((match, groupIndex) => {
+            console.log(`Found match, group ${groupIndex}: ${match}`);
+        });
+    }*/
+
+    const sDirectiveRegex = /\s+s:([\w\d_]+)\s*=\s*["']([^"']+)["']/g;
     
+    let match: RegExpExecArray | null;
+
+    while ((match = sDirectiveRegex.exec(templateText)) !== null) {
+        const [fullMatch, variableName, expression] = match;
+        const result = await evaluate(data, expression);    
+        template.setContext(variableName, result);
+        templateText = templateText.replace(fullMatch, '');
+    }
 
     return templateText;
 };
