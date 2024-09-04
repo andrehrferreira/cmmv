@@ -4,6 +4,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { cwd } from "process";
 import * as fg from "fast-glob";
+import { minify } from 'html-minifier';
 
 import { Config } from "@cmmv/core";
 import { hasOwnOnlyObject, createNullProtoObjWherePossible } from './utils.cjs';
@@ -44,7 +45,7 @@ export class Template {
     }
 
     private async loadIncludes(templateText: string): Promise<string> {
-        const includeRegex = /<!--\s*include\(['"]([^'"]+)['"]\)[^;]+\s*-->/g;
+        const includeRegex = /<!--\s*include\(\s*['"]([^'"]+)['"]\s*\);?\s*-->/g;
         let match;
         let resultText = templateText;
 
@@ -74,6 +75,70 @@ export class Template {
         return resultText;
     }
 
+    private async extractInlineScripts(html: string): Promise<string> {
+        const extractScript = Config.get<boolean>("view.extractInlineScript");
+
+        if (!extractScript) return html;
+    
+        const scriptRegex = /<script(?!.*src).*?>([\s\S]*?)<\/script>/gi; 
+        let match;
+        let inlineScripts = '';
+        let resultHtml = html;
+        let scriptIndex = 0; 
+    
+        const tempDir = path.resolve(cwd(), './public/assets');
+    
+        if (!fs.existsSync(tempDir)) {
+            fs.mkdirSync(tempDir, { recursive: true });
+        }
+    
+        while ((match = scriptRegex.exec(html)) !== null) {
+            inlineScripts = match[1];  
+            const tempFilePath = path.resolve(tempDir, `i-${Date.now()}.cached.js`);
+            scriptIndex++;
+    
+            fs.writeFileSync(tempFilePath, inlineScripts);
+            resultHtml = resultHtml.replace(match[0], `<script src="${tempFilePath.replace(cwd(), '').replace('/public', '')}" nonce="${this.nonce}"></script>`);
+        }
+    
+        this.parseScripts();
+        await this.cleanupExpiredFiles(tempDir, 60000);
+    
+        return resultHtml;
+    }
+
+    private async cleanupExpiredFiles(directory: string, maxAge: number) {
+        const files = await fg(`${directory}/*.cached.js`);
+        const now = Date.now();
+
+        files.forEach(file => {
+            const stats = fs.statSync(file);
+            const age = now - stats.mtimeMs;
+
+            if (age > maxAge) {
+                try {
+                    fs.unlinkSync(file);
+                } catch (error) {
+                    console.error(`Erro ao remover arquivo expirado: ${file}`, error);
+                }
+            }
+        });
+    }
+
+    private async minifyHtml(html: string): Promise<string> {
+        const minifyHtml = Config.get<boolean>("view.minifyHTML") || true;
+        if (!minifyHtml) return html;
+
+        return minify(html, {
+            removeAttributeQuotes: true,
+            collapseWhitespace: true,
+            removeComments: true,
+            minifyCSS: true,
+            minifyJS: true,
+            removeEmptyAttributes: true,
+        });
+    }
+
     async processSetup(result) {
         let pageContents = result.html;
 
@@ -84,7 +149,7 @@ export class Template {
                     data = Object.assign({}, data, this.context);
                     let methodsAsString =""
 
-                    if(result.setup.methods) {
+                    if(result.setup.methods) {                        
                         methodsAsString = JSON.stringify(Object.entries(result.setup.methods).reduce((acc, [key, func]) => {
                             const funcString = func.toString();
                             const funcArgs = funcString.slice(funcString.indexOf('(') + 1, funcString.indexOf(')'));
@@ -117,7 +182,7 @@ export class Template {
                     pageContents += `\r\n
     <script nonce="{nonce}">
         let __data = ${data ? JSON.stringify(data) : "{}"};
-        let __methods = ${mountedAsString ? mountedAsString : "null"};
+        let __methods = ${methodsAsString ? methodsAsString : "null"};
         let __mounted = ${mountedAsString ? JSON.stringify(mountedAsString) : "null"};
         let __created = ${createdAsString ? JSON.stringify(createdAsString) : "null"};
     </script>`;
@@ -251,6 +316,9 @@ export class Template {
                 else if(typeof result === "object") 
                     processedText = await self.processSetup(result);                                  
             }
+
+            processedText = await self.extractInlineScripts(processedText);
+            processedText = await self.minifyHtml(processedText);
                             
             return processedText;
         };

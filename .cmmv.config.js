@@ -1,4 +1,6 @@
 module.exports = {
+    env: process.env.NODE_ENV,
+    
     server: {
         host: process.env.HOST || "0.0.0.0",
         port: process.env.PORT || 3000,
@@ -9,6 +11,16 @@ module.exports = {
     i18n: {
         localeFiles: "./src/locale",
         default: "en"
+    },
+
+    rpc:{
+        enabled: true,
+        preLoadContracts: true
+    },
+
+    view: {
+        extractInlineScript: true,
+        minifyHTML: true
     },
 
     repository: {

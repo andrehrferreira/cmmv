@@ -1,0 +1,6 @@
+
+        let __data = {"todolist":[{"id":"410456ac-0c0a-4449-b3a4-cafef184b501","label":"teste","checked":false,"removed":false},{"id":"51b94a9f-fc44-478c-9a4e-5891e59f60a6","label":"asdasd","checked":false,"removed":false}],"label":""};
+        let __methods = {"addTask":"function addTask() {\r\n            this.AddTaskRequest({ label: this.label });\r\n            this.label = '';\r\n        }","DeleteTaskResponse":"function DeleteTaskResponse(data) {\r\n            if (data.success) {\r\n                const index = this.todolist.findIndex(item => item.id === data.id);\r\n\r\n                if (index !== -1) \r\n                    this.todolist.splice(index, 1);\r\n            }\r\n        }","AddTaskResponse":"function AddTaskResponse(data) { this.UpdateTaskResponse(data); }","UpdateTaskResponse":"function UpdateTaskResponse(data) {\r\n            const index = this.todolist.findIndex(item => item.id === data.id);\r\n            \r\n            if (index !== -1) \r\n                this.todolist[index] = { ...data.item, id: data.id };\r\n            else \r\n                this.todolist.push({ ...data.item, id: data.id });\r\n        }"};
+        let __mounted = null;
+        let __created = null;
+    

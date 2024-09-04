@@ -36,7 +36,7 @@ export class ExpressAdapter extends AbstractHttpAdapter<http.Server | https.Serv
         
         this.instance = this.instance || express();
         this.instance.disable('x-powered-by');
-        this.instance.use(compression());
+        this.instance.use(compression({ level: 6 }));
         this.instance.use(express.static(publicDir));
         this.instance.set('views', publicDir);
         this.instance.set('view engine', 'html');
