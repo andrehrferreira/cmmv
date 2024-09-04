@@ -1,6 +1,6 @@
 {
 	"name": "@cmmv/ws",
-	"version": "0.2.12",
+	"version": "0.2.13",
 	"description": "CMMV (@websocket)",
 	"publishConfig": {
 		"access": "public"
@@ -16,12 +16,12 @@
 	},
 	"homepage": "https://cmmv.io",
 	"dependencies": {
-		"@cmmv/protobuf": "0.2.12",
+		"@cmmv/protobuf": "0.2.13",
 		"class-transformer": "^0.5.1",
 		"ws": "^8.18.0"
 	},
 	"devDependencies": {
 		"@types/ws": "^8.5.12"
 	},
-	"gitHead": "4b793950f6f885cf948826c57993335a00c52e82"
+	"gitHead": "393b67a3887e1b2aff69e13c9f000407cf75d533"
 }
