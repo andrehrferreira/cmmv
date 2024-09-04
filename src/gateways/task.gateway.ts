@@ -5,13 +5,9 @@ import { plainToClass } from 'class-transformer';
 import { TaskEntity } from '../entities/task.entity';
 
 import { 
-    GetAllTaskResponse, 
     AddTaskRequest, 
-    AddTaskResponse,
-    UpdateTaskRequest, 
-    UpdateTaskResponse,    
-    DeleteTaskRequest,
-    DeleteTaskResponse 
+    UpdateTaskRequest,   
+    DeleteTaskRequest 
 } from "../protos/task";
 
 import { TaskService } from '../services/task.service';

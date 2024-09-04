@@ -1,7 +1,9 @@
 module.exports = {
     server: {
         host: process.env.HOST || "0.0.0.0",
-        port: process.env.PORT || 3000
+        port: process.env.PORT || 3000,
+        sessionSecret: process.env.SESSION_SECRET || "secret",
+        sessionCookieName: process.env.SESSION_COOKIENAME || "cmmv-session"
     },
 
     i18n: {

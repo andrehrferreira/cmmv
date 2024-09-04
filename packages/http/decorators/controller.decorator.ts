@@ -70,6 +70,30 @@ export function Request(): ParameterDecorator {
     return createParamDecorator(`request`);
 }
 
+export function Req(): ParameterDecorator {
+    return createParamDecorator(`request`);
+}
+
 export function Response(): ParameterDecorator {
     return createParamDecorator(`response`);
+}
+
+export function Res(): ParameterDecorator {
+    return createParamDecorator(`response`);
+}
+
+export function Next(): ParameterDecorator {
+    return createParamDecorator(`next`);
+}
+
+export function Session(): ParameterDecorator {
+    return createParamDecorator(`session`);
+}
+
+export function Ip(): ParameterDecorator {
+    return createParamDecorator(`ip`);
+}
+
+export function HostParam(): ParameterDecorator {
+    return createParamDecorator(`hosts`);
 }
