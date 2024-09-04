@@ -209,12 +209,12 @@
     
         let methods = {};
     
-        if(typeof __methods === "object"){
-            for(let key in __methods)
-                methods[key] = new Function(`return (${__methods[key]})`)()
+        if(typeof cmmv.__methods === "object"){
+            for(let key in cmmv.__methods)
+                methods[key] = new Function(`return (${cmmv.__methods[key]})`)()
         }
     
-        let mounted = (__mounted) ? new Function(`return (${__mounted})`)() : null;
+        let mounted = (cmmv.__mounted) ? new Function(`return (${cmmv.__mounted})`)() : null;
         
         global.cmmv = Object.assign({ ...methods, mounted }, cmmv, cmmvMiddleware);;
         global.cmmv.initialize(__data || {});

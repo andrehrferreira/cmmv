@@ -4,6 +4,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { cwd } from "process";
 import * as fg from "fast-glob";
+import * as UglifyJS from 'uglify-js';
 import { minify } from 'html-minifier';
 
 import { Config } from "@cmmv/core";
@@ -179,30 +180,36 @@ export class Template {
                         )}}`
                         : null;
 
-                        pageContents += `
-    <script nonce="{nonce}">
-        (function() {
-            if (typeof __data === 'undefined') {
-                var __data = ${data ? JSON.stringify(data) : "{}"};
-            } else {
-                Object.assign(__data, ${data ? JSON.stringify(data) : "{}"});
-            }
+                        let jsContent = `// Generated automatically by CMMV\n`;
+                        jsContent += `(function(global) {
+                        try {                            
+                            if (typeof __data === 'undefined') {
+                                global.__data = ${data ? JSON.stringify(data) : "{}"};
+                            } else {
+                                Object.assign(global.__data, ${data ? JSON.stringify(data) : "{}"});
+                            }
 
-            if (typeof __methods === 'undefined') {
-                var __methods = ${methodsAsString ? methodsAsString : "null"};
-            } else {
-                Object.assign(__methods, ${methodsAsString ? methodsAsString : "{}"});
-            }
+                            if (typeof __methods === 'undefined') {
+                                global.__methods = ${methodsAsString ? methodsAsString : "null"};
+                            } else {
+                                Object.assign(global.__methods, ${methodsAsString ? methodsAsString : "{}"});
+                            }
 
-            if (typeof __mounted === 'undefined') {
-                var __mounted = ${mountedAsString ? JSON.stringify(mountedAsString) : "null"};
-            }
+                            if (typeof __mounted === 'undefined') {
+                                global.__mounted = ${mountedAsString ? JSON.stringify(mountedAsString) : "null"};
+                            }
 
-            if (typeof __created === 'undefined') {
-                var __created = ${createdAsString ? JSON.stringify(createdAsString) : "null"};
-            }
-        })();
-    </script>`;
+                            if (typeof __created === 'undefined') {
+                                global.__created = ${createdAsString ? JSON.stringify(createdAsString) : "null"};
+                            }
+
+                        } catch (e) {
+                            console.error("Error loading contracts or initializing app data:", e);
+                        }
+                        })(typeof window !== "undefined" ? window : global);`;
+
+                        pageContents += `<script nonce="{nonce}">${UglifyJS.minify(jsContent).code}</script>`;
+
 
                 }
                 catch { }
