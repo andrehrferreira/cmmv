@@ -146,9 +146,10 @@ export class Template {
         if (result.setup) {
             if(result.setup.data && typeof result.setup.data === "function"){
                 try{
+                    const config = Config.getAll();
                     let data = result.setup.data();
-                    data = Object.assign({}, data, this.context);
-                    let methodsAsString =""
+                    data = Object.assign({ config: { rpc: config.rpc }}, data, this.context);
+                    let methodsAsString = ""
 
                     if(result.setup.methods) {                        
                         methodsAsString = JSON.stringify(Object.entries(result.setup.methods).reduce((acc, [key, func]) => {
@@ -309,31 +310,25 @@ export class Template {
         sources.forEach(source => {
             if (source instanceof Object && !Array.isArray(source)) {
                 Object.entries(source).forEach(([key, value]) => {
-                    if (Array.isArray(value)) {
-                        // Se for um array, combina os itens (evita duplicatas)
-                        if (!target[key]) {
+                    if (Array.isArray(value)) {                        
+                        if (!target[key]) 
                             target[key] = [];
-                        }
-    
+                            
                         if (key === 'meta' || key === 'link') {
-                            // Mescla arrays de meta e link sem duplicar
                             value.forEach(item => {
                                 if (!target[key].some((existingItem: any) => this.isEqualObject(existingItem, item))) {
                                     target[key].push(item);
                                 }
                             });
                         } else {
-                            // Para outros arrays, faz a junção simples
                             target[key] = [...new Set([...target[key], ...value])];
                         }
                     } else if (value instanceof Object && !Array.isArray(value)) {
-                        // Mescla objetos recursivamente
-                        if (!target[key]) {
+                        if (!target[key]) 
                             target[key] = {};
-                        }
+                        
                         this.deepMerge(target[key], value);
                     } else {
-                        // Caso seja um valor primitivo, sobrescreve
                         target[key] = value;
                     }
                 });

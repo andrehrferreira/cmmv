@@ -140,7 +140,6 @@ export class Application {
                 
         fs.writeFileSync(finalbundle, UglifyJS.minify(lines.join('\n'), {
             compress: {
-              drop_console: true,
               dead_code: true, 
               conditionals: true, 
             },
