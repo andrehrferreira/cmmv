@@ -52,3 +52,5 @@ pnpm-lock.yaml
 
 database.sqlite
 /http
+*.cached.js
+/public/assets/*.cached.js
