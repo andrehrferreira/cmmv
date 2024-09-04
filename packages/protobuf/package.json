@@ -1,6 +1,6 @@
 {
 	"name": "@cmmv/protobuf",
-	"version": "0.2.12",
+	"version": "0.2.13",
 	"description": "CMMV (@protobuf)",
 	"publishConfig": {
 		"access": "public"
@@ -20,5 +20,5 @@
 		"protobufjs": "^7.3.2",
 		"uglify-js": "^3.19.2"
 	},
-	"gitHead": "4b793950f6f885cf948826c57993335a00c52e82"
+	"gitHead": "393b67a3887e1b2aff69e13c9f000407cf75d533"
 }
