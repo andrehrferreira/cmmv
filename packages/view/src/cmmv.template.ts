@@ -194,7 +194,9 @@ export class Template {
                         } catch (e) {
                             console.error("Error loading contracts or initializing app data:", e);
                         }
-                        })(typeof window !== "undefined" ? window : global);`;
+                        })(typeof window !== "undefined" ? window : global);
+                        
+                        var process = { env: { NODE_ENV: '${process.env.NODE_ENV}' } };`;
 
                         pageContents += `<script nonce="{nonce}">${UglifyJS.minify(jsContent, {
                             compress: {
