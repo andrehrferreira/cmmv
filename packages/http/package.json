@@ -37,5 +37,5 @@
 		"@types/express": "^4.17.21",
 		"@types/express-session": "^1.18.0"
 	},
-	"gitHead": "e90ff86c4947c4c4b7718568324c3ec1c8ad4aed"
+	"gitHead": "3a26fb0472335b04288ffbacdd46b7fdc804cca2"
 }
