@@ -71,9 +71,7 @@
                 }
 
                 document.addEventListener('DOMContentLoaded', () => {
-                    this.telemetry.start('DOMContentLoaded');
                     this.processExpressions();
-                    this.telemetry.end('DOMContentLoaded');
                     this.telemetry.log();
                 });
 
