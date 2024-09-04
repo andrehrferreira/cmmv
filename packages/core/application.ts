@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as fg from 'fast-glob';
+import * as UglifyJS from 'uglify-js';
 
 import { IHTTPSettings } from "./interfaces";
 import { ITranspile, Logger, Scope, Transpile } from './utils';
@@ -136,8 +137,18 @@ export class Application {
             lines.push(fs.readFileSync(file, "utf-8"));
             lines.push('');
         })
-        
-        fs.writeFileSync(finalbundle, lines.join('\n'), { encoding: "utf-8" });
+                
+        fs.writeFileSync(finalbundle, UglifyJS.minify(lines.join('\n'), {
+            compress: {
+              drop_console: true,
+              dead_code: true, 
+              conditionals: true, 
+            },
+            mangle: true, 
+            output: {
+              beautify: false, 
+            },
+        }).code, { encoding: "utf-8" });
     }
 
     private loadModules(modules: Array<Module>): void {

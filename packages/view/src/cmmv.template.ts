@@ -182,35 +182,30 @@ export class Template {
 
                         let jsContent = `// Generated automatically by CMMV\n`;
                         jsContent += `(function(global) {
-                        try {                            
-                            if (typeof __data === 'undefined') {
-                                global.__data = ${data ? JSON.stringify(data) : "{}"};
-                            } else {
-                                Object.assign(global.__data, ${data ? JSON.stringify(data) : "{}"});
-                            }
+                        try {          
+                            if(!global.cmmvSetup)
+                                global.cmmvSetup = {};
 
-                            if (typeof __methods === 'undefined') {
-                                global.__methods = ${methodsAsString ? methodsAsString : "null"};
-                            } else {
-                                Object.assign(global.__methods, ${methodsAsString ? methodsAsString : "{}"});
-                            }
-
-                            if (typeof __mounted === 'undefined') {
-                                global.__mounted = ${mountedAsString ? JSON.stringify(mountedAsString) : "null"};
-                            }
-
-                            if (typeof __created === 'undefined') {
-                                global.__created = ${createdAsString ? JSON.stringify(createdAsString) : "null"};
-                            }
-
+                            global.cmmvSetup.__data = ${data ? JSON.stringify(data) : "{}"};
+                            global.cmmvSetup.__methods = ${methodsAsString ? methodsAsString : "null"};
+                            global.cmmvSetup.__mounted = ${mountedAsString ? JSON.stringify(mountedAsString) : "null"};
+                            global.cmmvSetup.__created = ${createdAsString ? JSON.stringify(createdAsString) : "null"};
                         } catch (e) {
                             console.error("Error loading contracts or initializing app data:", e);
                         }
                         })(typeof window !== "undefined" ? window : global);`;
 
-                        pageContents += `<script nonce="{nonce}">${UglifyJS.minify(jsContent).code}</script>`;
-
-
+                        pageContents += `<script nonce="{nonce}">${UglifyJS.minify(jsContent, {
+                            compress: {
+                              drop_console: true,
+                              dead_code: true, 
+                              conditionals: true, 
+                            },
+                            mangle: true, 
+                            output: {
+                              beautify: false, 
+                            },
+                        }).code}</script>`;
                 }
                 catch { }
             }
@@ -312,19 +307,47 @@ export class Template {
 
     deepMerge(target: any, ...sources: any[]): any {
         sources.forEach(source => {
-            if (source instanceof Object) {
+            if (source instanceof Object && !Array.isArray(source)) {
                 Object.entries(source).forEach(([key, value]) => {
-                    if (value instanceof Object && key in target) 
-                        Object.assign(value, this.deepMerge(target[key], value));
-                    
-                    target[key] = value;
+                    if (Array.isArray(value)) {
+                        // Se for um array, combina os itens (evita duplicatas)
+                        if (!target[key]) {
+                            target[key] = [];
+                        }
+    
+                        if (key === 'meta' || key === 'link') {
+                            // Mescla arrays de meta e link sem duplicar
+                            value.forEach(item => {
+                                if (!target[key].some((existingItem: any) => this.isEqualObject(existingItem, item))) {
+                                    target[key].push(item);
+                                }
+                            });
+                        } else {
+                            // Para outros arrays, faz a junção simples
+                            target[key] = [...new Set([...target[key], ...value])];
+                        }
+                    } else if (value instanceof Object && !Array.isArray(value)) {
+                        // Mescla objetos recursivamente
+                        if (!target[key]) {
+                            target[key] = {};
+                        }
+                        this.deepMerge(target[key], value);
+                    } else {
+                        // Caso seja um valor primitivo, sobrescreve
+                        target[key] = value;
+                    }
                 });
             }
         });
-
+    
         return target;
     }
-
+    
+    isEqualObject(obj1: any, obj2: any): boolean {
+        return JSON.stringify(obj1) === JSON.stringify(obj2);
+    }
+    
+    
     compile() {
         const self = this;
 

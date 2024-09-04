@@ -207,17 +207,22 @@
             }
         };
     
-        let methods = {};
-    
-        if(typeof cmmv.__methods === "object"){
-            for(let key in cmmv.__methods)
-                methods[key] = new Function(`return (${cmmv.__methods[key]})`)()
-        }
-    
-        let mounted = (cmmv.__mounted) ? new Function(`return (${cmmv.__mounted})`)() : null;
+        if(global.cmmvSetup){
+            let methods = {};
+            if(typeof global.cmmvSetup.__methods === "object"){
+                for(let key in global.cmmvSetup.__methods)
+                    methods[key] = new Function(`return (${global.cmmvSetup.__methods[key]})`)()
+            }
         
-        global.cmmv = Object.assign({ ...methods, mounted }, cmmv, cmmvMiddleware);;
-        global.cmmv.initialize(__data || {});
+            let mounted = (global.cmmvSetup.__mounted) ? new Function(`return (${global.cmmvSetup.__mounted})`)() : null;
+            
+            global.cmmv = Object.assign({ ...methods, mounted }, cmmv, global.cmmvSetup, cmmvMiddleware);;
+            global.cmmv.initialize(global.cmmvSetup.__data || {});
+        }
+        else{
+            global.cmmv = Object.assign({}, cmmvMiddleware);
+            global.cmmv.initialize( {});
+        }
     }
     catch(e){ console.error(e); }
 })(typeof window !== "undefined" ? window : global);
