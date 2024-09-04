@@ -2,10 +2,12 @@
 # yarn lockfile v1
 
 
-"@cmmv/reactivity@^0.0.5":
-  version "0.0.5"
-  resolved "https://registry.yarnpkg.com/@cmmv/reactivity/-/reactivity-0.0.5.tgz#42671ad94c3dd04f53a3ce791f57062c9a33518a"
-  integrity sha512-/t3wLFWGQl56bTOylvf7ybenYVHKGfKohUGE/C/wv4jvgP3AIQUkJEnezSw0QHcq7sL3NQY6P5hc30Wofu6f6Q==
+"@cmmv/reactivity@^0.0.7":
+  version "0.0.7"
+  resolved "https://registry.yarnpkg.com/@cmmv/reactivity/-/reactivity-0.0.7.tgz#ee4d6bf7da09607cc94b0a5325c12a42a3b2e83b"
+  integrity sha512-9Gy6MlvzEesAgJiBtWY7MaKnEcjb9784PbN1gu2Fx9iBvYqxTg/sMv1YK9McjdA3ReEVDrdy8ZglljYylYLTiA==
+  dependencies:
+    "@vue/reactivity" "^3.5.1"
 
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"
@@ -27,6 +29,18 @@
   dependencies:
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
+
+"@vue/reactivity@^3.5.1":
+  version "3.5.1"
+  resolved "https://registry.yarnpkg.com/@vue/reactivity/-/reactivity-3.5.1.tgz#e4a57a038e3caaa9669de529533fcb16288a1736"
+  integrity sha512-aFE1nMDfbG7V+U5vdOk/NXxH/WX78XuAfX59vWmCM7Ao4lieoc83RkzOAWun61sQXlzNZ4IgROovFBHg+Iz1+Q==
+  dependencies:
+    "@vue/shared" "3.5.1"
+
+"@vue/shared@3.5.1":
+  version "3.5.1"
+  resolved "https://registry.yarnpkg.com/@vue/shared/-/shared-3.5.1.tgz#f9418dae5ac194a4f19023d812978c21a15412a1"
+  integrity sha512-NdcTRoO4KuW2RSFgpE2c+E/R/ZHaRzWPxAGxhmxZaaqLh6nYCXx7lc9a88ioqOCxCaV2SFJmujkxbUScW7dNsQ==
 
 braces@^3.0.3:
   version "3.0.3"
