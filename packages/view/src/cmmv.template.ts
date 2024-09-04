@@ -179,12 +179,29 @@ export class Template {
                         )}}`
                         : null;
 
-                    pageContents += `\r\n
+                        pageContents += `
     <script nonce="{nonce}">
-        let __data = ${data ? JSON.stringify(data) : "{}"};
-        let __methods = ${methodsAsString ? methodsAsString : "null"};
-        let __mounted = ${mountedAsString ? JSON.stringify(mountedAsString) : "null"};
-        let __created = ${createdAsString ? JSON.stringify(createdAsString) : "null"};
+        (function() {
+            if (typeof __data === 'undefined') {
+                var __data = ${data ? JSON.stringify(data) : "{}"};
+            } else {
+                Object.assign(__data, ${data ? JSON.stringify(data) : "{}"});
+            }
+
+            if (typeof __methods === 'undefined') {
+                var __methods = ${methodsAsString ? methodsAsString : "null"};
+            } else {
+                Object.assign(__methods, ${methodsAsString ? methodsAsString : "{}"});
+            }
+
+            if (typeof __mounted === 'undefined') {
+                var __mounted = ${mountedAsString ? JSON.stringify(mountedAsString) : "null"};
+            }
+
+            if (typeof __created === 'undefined') {
+                var __created = ${createdAsString ? JSON.stringify(createdAsString) : "null"};
+            }
+        })();
     </script>`;
 
                 }

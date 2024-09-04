@@ -224,6 +224,7 @@ export class ExpressAdapter extends AbstractHttpAdapter<http.Server | https.Serv
                             res.status(200).send(result);                        
                     } 
                     catch (error) {
+                        console.error(error);
                         const processingTime = Date.now() - startTime; 
                         Telemetry.end('Request Process', req.requestId);
                         const telemetry = Telemetry.getTelemetry(req.requestId);
