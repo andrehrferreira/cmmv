@@ -24,6 +24,7 @@ export interface IApplicationSettings {
     wsAdapter?: new (appOrHttpServer: any) => AbstractWSAdapter,
     httpAdapter?: new (instance?: any) => AbstractHttpAdapter,
     httpOptions?: IHTTPSettings;
+    httpMiddlewares?: Array<any>;
     transpilers?: Array<new () => ITranspile>;
     modules?: Array<Module>;
     contracts?: Array<new () => AbstractContract>;
@@ -61,6 +62,10 @@ export class Application {
                 
         this.httpOptions = settings.httpOptions || {};
         this.httpAdapter = new settings.httpAdapter();  
+
+        settings?.httpMiddlewares?.forEach(middleware => {
+            this.httpAdapter.use(middleware);
+        });
         
         if(settings.wsAdapter)
             this.wsAdapter = new settings.wsAdapter(this.httpAdapter);
@@ -75,26 +80,33 @@ export class Application {
 
     private async initialize(settings: IApplicationSettings): Promise<void> {
         try {
+            const env = Config.get<string>("env");
             this.loadModules(this.modules);            
             this.processContracts();
-                        
-            if (this.transpilers.length > 0) {
-                const transpile = new Transpile(this.transpilers);
-                await transpile.transpile();
-                this.logger.log("All transpilers executed successfully.");
-            } 
-            else {
-                this.logger.log("No transpilers provided.");
+
+            if(env == "dev" || env == "development" || env == "build"){
+                if (this.transpilers.length > 0) {
+                    const transpile = new Transpile(this.transpilers);
+                    await transpile.transpile();
+                    this.logger.log("All transpilers executed successfully.");
+                } 
+                else {
+                    this.logger.log("No transpilers provided.");
+                }
+
+                const appModel = await Application.generateModule();
+
+                if(appModel)
+                    this.loadModules([...this.modules, appModel]);
+
+                this.createScriptBundle();
+            }
+            else{
+                const outputPath = path.resolve('src', `app.module.ts`);
+                const { ApplicationModule } = await import(outputPath);
+                this.loadModules([...this.modules, ApplicationModule]);
             }
 
-            const appModel = await Application.generateModule();
-
-            if(appModel)
-                this.loadModules([...this.modules, appModel]);
-
-            //Create frontend bundle
-            this.createScriptBundle();
-            
             settings.services?.forEach(async (service) => await service?.loadConfig());
             this.httpAdapter.init(this, this.httpOptions); 
 

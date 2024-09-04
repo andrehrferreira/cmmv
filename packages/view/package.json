@@ -18,6 +18,7 @@
 	"dependencies": {
 		"@cmmv/reactivity": "^0.0.5",
 		"fast-glob": "^3.3.2",
+		"html-minifier": "^4.0.0",
 		"uglify-js": "^3.19.2"
 	},
 	"gitHead": "4b793950f6f885cf948826c57993335a00c52e82"
