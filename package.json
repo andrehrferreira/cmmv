@@ -1,6 +1,6 @@
 {
 	"name": "@cmmv/skeleton",
-	"version": "0.2.11",
+	"version": "0.2.13",
 	"description": "CMMV (@skeleton)",
 	"main": "dist/index.js",
 	"private": false,
@@ -10,7 +10,7 @@
 		"build": "rm -rf ./packages/**/*.tsbuildinfo && NODE_ENV=build tsc -b -v packages",
 		"build:dev": "tsc -b -v packages --watch",
 		"prebuild:prod": "npm run clean",
-    	"build:prod": "tsc -b -v packages",
+		"build:prod": "rm -rf ./packages/**/*.tsbuildinfo && tsc -b -v packages",
 		"prod:packages": "tsc -b -v packages",
 		"build:test": "rm -rf ./packages/**/*.tsbuildinfo && tsc -b -v packages",
 		"benchmarks": "ts-node ./tools/benchmarks/check-benchmarks.ts",
@@ -28,7 +28,7 @@
 		"prerelease": "gulp copy-misc",
 		"packages:move": "gulp move",
 		"publish:lerna": "./node_modules/.bin/lerna publish --force-publish --exact -m \"chore(@cmmv) publish %s release\"",
-		"publish": "npm run build:prod && npm run packages:move && npm run publish:lerna && npm run clean"
+		"publish": "npm run build:prod && npm run packages:move && npm run publish:lerna"
 	},
 	"repository": {
 		"type": "git",

@@ -171,6 +171,7 @@ export class FastifyAdapter extends AbstractHttpAdapter<FastifyInstance> {
                             data: result,
                         });
                     } catch (error) {
+                        console.error(error);
                         const processingTime = Date.now() - startTime;
 
                         reply.status(500).send({
