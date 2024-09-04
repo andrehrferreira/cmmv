@@ -18,15 +18,20 @@
             binds: {},
     
             initialize(context, methods, mounted) {
-                this.socket = new WebSocket(
-                    window.location.href
-                        .replace("https", "wss")
-                        .replace("http", "ws")
-                );
-    
-                this.socket.addEventListener("message", this.parseMessage.bind(this));
-                this.socket.binaryType = 'arraybuffer';   
-                
+                try{
+                    if(context.config && context.config.rpc.enabled){
+                        this.socket = new WebSocket(
+                            window.location.href
+                                .replace("https", "wss")
+                                .replace("http", "ws")
+                        );
+            
+                        this.socket.addEventListener("message", this.parseMessage.bind(this));
+                        this.socket.binaryType = 'arraybuffer';   
+                    }
+                }
+                catch(e){ console.error(e); } 
+                                
                 if(typeof context == 'object')
                     this.context = Object.assign(this.context, context);
 
@@ -221,7 +226,7 @@
         }
         else{
             global.cmmv = Object.assign({}, cmmvMiddleware);
-            global.cmmv.initialize( {});
+            global.cmmv.initialize({});
         }
     }
     catch(e){ console.error(e); }

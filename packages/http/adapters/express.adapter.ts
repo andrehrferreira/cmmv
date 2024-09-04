@@ -107,13 +107,13 @@ export class ExpressAdapter extends AbstractHttpAdapter<http.Server | https.Serv
                 if (Array.isArray(headerValue)) {
                     headerValue = headerValue.map(value => {
                         if (headerName === "Content-Security-Policy") 
-                            return `${value} 'nonce-${res.locals.nonce}'`;
+                        return (value.indexOf("style-src") == -1) ? `${value} 'nonce-${res.locals.nonce}'` : value;
                         
                         return value;
                     }).join("; ");
                 } else if (typeof headerValue === "string") {
                     if (headerName === "Content-Security-Policy") 
-                        headerValue = `${headerValue} 'nonce-${res.locals.nonce}'`;                    
+                        headerValue = (headerValue.indexOf("style-src") == -1) ? `${headerValue} 'nonce-${res.locals.nonce}'` : headerValue;                
                 }
     
                 res.setHeader(headerName, headerValue);
@@ -163,11 +163,15 @@ export class ExpressAdapter extends AbstractHttpAdapter<http.Server | https.Serv
                     fileFound = true;
                     const debugFilePath = path.resolve(require.resolve('@cmmv/view'), '../src/debug.html');
                     const debugContent = process.env.NODE_ENV === "dev" ? fs.readFileSync(debugFilePath, "utf-8") : "";
+                    const config = Config.getAll();
     
                     return res.render(filePath, {
                         debug: debugContent,
                         nonce: res.locals.nonce,
-                        services: ServiceRegistry.getServicesArr()
+                        services: ServiceRegistry.getServicesArr(),
+                        config: {
+                            rpc: config.rpc
+                        }
                     });
                 }
             }
