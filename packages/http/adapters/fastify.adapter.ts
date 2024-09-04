@@ -8,6 +8,7 @@ import fastifyCompress from '@fastify/compress';
 import fastifyCors from '@fastify/cors';
 import fastifyHelmet from '@fastify/helmet';
 import fastifyView from '@fastify/view';
+import fastifySecureSession from '@fastify/secure-session';
 
 import { AbstractHttpAdapter, IHTTPSettings, Logger, Application, Telemetry, Config } from "@cmmv/core";
 import { CMMVRenderer } from "@cmmv/view";
@@ -46,6 +47,11 @@ export class FastifyAdapter extends AbstractHttpAdapter<FastifyInstance> {
         this.instance.register(require('@fastify/formbody'));
         this.instance.register(fastifyCors);
         this.instance.register(fastifyHelmet, { contentSecurityPolicy: false });
+
+        this.instance.register(fastifySecureSession, {
+            secret: Config.get<string>("sessionSecret") || "",
+            cookieName: Config.get<string>("sessionCookieName") || "cmmv-session"
+        });
 
         this.setMiddleware();
         this.registerControllers();
@@ -191,6 +197,10 @@ export class FastifyAdapter extends AbstractHttpAdapter<FastifyInstance> {
                 case 'headers': args[param.index] = req.headers; break;
                 case 'request': args[param.index] = req; break;
                 case 'response': args[param.index] = reply; break;
+                case 'next': args[param.index] = null; break;
+                case 'session': args[param.index] = req.session; break;
+                case 'ip': args[param.index] = req.ip; break;
+                case 'hosts': args[param.index] = req.hostname || req.headers['host']; break;
                 default: args[param.index] = undefined; break;
             }
         });

@@ -9,6 +9,7 @@ import * as express from "express";
 import * as bodyParser from "body-parser";
 import * as compression from "compression";
 import * as cors from 'cors';
+import * as session from 'express-session';
 import helmet from "helmet";
 
 import { AbstractHttpAdapter, IHTTPSettings, Logger, Application, Telemetry, Config } from "@cmmv/core";
@@ -50,6 +51,12 @@ export class ExpressAdapter extends AbstractHttpAdapter<http.Server | https.Serv
         }));
         this.instance.use(cors());
         this.instance.use(helmet({ contentSecurityPolicy: false }));
+        this.instance.use(session({
+            secret: process.env.SESSION_SECRET,
+            resave: false,
+            saveUninitialized: false,
+            cookie: { secure: true }
+        }));
 
         this.setMiddleware();
         this.registerControllers();
@@ -139,11 +146,13 @@ export class ExpressAdapter extends AbstractHttpAdapter<http.Server | https.Serv
             const requestPath = req.path === '/' ? 'index' : req.path.substring(1);
             const ext = path.extname(req.path);
     
-            if ((ext || ext !== ".html") && requestPath !== 'index')
+            if (req.path.indexOf(".html") === -1 && req.path !== "/")
                 return next();
-    
+
             const possiblePaths = [
                 path.join(publicDir, `${requestPath}.html`),
+                path.join(publicDir, requestPath, 'index.html'),
+                path.join(publicDir, `${requestPath}`),
                 path.join(publicDir, requestPath, 'index.html')
             ];
     
@@ -183,11 +192,11 @@ export class ExpressAdapter extends AbstractHttpAdapter<http.Server | https.Serv
                 const fullPath = `/${prefix}${route.path ? '/' + route.path : ''}`;
                 const method = route.method.toLowerCase();
     
-                this.instance[method](fullPath, async (req: ExpressRequest, res: express.Response) => {
+                this.instance[method](fullPath, async (req: ExpressRequest, res: express.Response, next: any) => {
                     const startTime = Date.now();
                     
                     try {
-                        const args = this.buildRouteArgs(req, res, route.params);
+                        const args = this.buildRouteArgs(req, res, next, route.params);
     
                         Telemetry.start('Controller Handler', req.requestId);
                         const result = await instance[route.handlerName](...args);
@@ -239,7 +248,7 @@ export class ExpressAdapter extends AbstractHttpAdapter<http.Server | https.Serv
         });
     }
     
-    private buildRouteArgs(req: express.Request, res: express.Response, params: any[]) {
+    private buildRouteArgs(req: express.Request | any, res: express.Response, next: any, params: any[]) {
         const args: any[] = [];
 
         params?.forEach(param => {
@@ -253,6 +262,10 @@ export class ExpressAdapter extends AbstractHttpAdapter<http.Server | https.Serv
                 case 'headers': args[param.index] = req.headers; break;
                 case 'request': args[param.index] = req; break;
                 case 'response': args[param.index] = res; break;
+                case 'next': args[param.index] = next; break;
+                case 'session': args[param.index] = req.session; break;
+                case 'ip': args[param.index] = req.ip; break;
+                case 'hosts': args[param.index] = req.hosts; break;
                 default: args[param.index] = undefined; break;
             }
         });

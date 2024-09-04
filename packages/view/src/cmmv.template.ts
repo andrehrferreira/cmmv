@@ -82,21 +82,24 @@ export class Template {
                 try{
                     let data = result.setup.data();
                     data = Object.assign({}, data, this.context);
+                    let methodsAsString =""
 
-                    const methodsAsString = JSON.stringify(Object.entries(result.setup.methods).reduce((acc, [key, func]) => {
-                        const funcString = func.toString();
-                        const funcArgs = funcString.slice(funcString.indexOf('(') + 1, funcString.indexOf(')'));
-                        const functionBody = funcString.slice(funcString.indexOf('{') + 1, funcString.lastIndexOf('}'));
-                        
-                        if (funcArgs.trim()) {
-                            acc[key] = `function ${key}(${funcArgs}) {${functionBody}}`;
-                        } else {
-                            acc[key] = `function ${key}() {${functionBody}}`;
-                        }
-                        
-                        return acc;
-                    }, {}));
-
+                    if(result.setup.methods) {
+                        methodsAsString = JSON.stringify(Object.entries(result.setup.methods).reduce((acc, [key, func]) => {
+                            const funcString = func.toString();
+                            const funcArgs = funcString.slice(funcString.indexOf('(') + 1, funcString.indexOf(')'));
+                            const functionBody = funcString.slice(funcString.indexOf('{') + 1, funcString.lastIndexOf('}'));
+                            
+                            if (funcArgs.trim()) {
+                                acc[key] = `function ${key}(${funcArgs}) {${functionBody}}`;
+                            } else {
+                                acc[key] = `function ${key}() {${functionBody}}`;
+                            }
+                            
+                            return acc;
+                        }, {}));
+                    }
+                    
                     const mountedAsString = result.setup.mounted 
                         ? `function mounted() {${result.setup.mounted.toString().slice(
                             result.setup.mounted.toString().indexOf('{') + 1, 
@@ -113,10 +116,10 @@ export class Template {
 
                     pageContents += `\r\n
     <script nonce="{nonce}">
-        let __data = ${JSON.stringify(data)};
-        let __methods = ${methodsAsString};
-        let __mounted = ${JSON.stringify(mountedAsString)};
-        let __created = ${JSON.stringify(createdAsString)};
+        let __data = ${data ? JSON.stringify(data) : "{}"};
+        let __methods = ${mountedAsString ? mountedAsString : "null"};
+        let __mounted = ${mountedAsString ? JSON.stringify(mountedAsString) : "null"};
+        let __created = ${createdAsString ? JSON.stringify(createdAsString) : "null"};
     </script>`;
 
                 }

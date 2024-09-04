@@ -31,13 +31,9 @@ import { plainToClass } from 'class-transformer';
 import { ${contract.controllerName}Entity } from '../entities/${contract.controllerName.toLowerCase()}.entity';
 
 import { 
-    GetAll${contract.controllerName}Response, 
     Add${contract.controllerName}Request, 
-    Add${contract.controllerName}Response,
-    Update${contract.controllerName}Request, 
-    Update${contract.controllerName}Response,    
-    Delete${contract.controllerName}Request,
-    Delete${contract.controllerName}Response 
+    Update${contract.controllerName}Request,   
+    Delete${contract.controllerName}Request 
 } from "../protos/task";
 
 import { ${serviceName} } from '../services/${contract.controllerName.toLowerCase()}.service';
