@@ -1,29 +1,24 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import * as protobufjs from 'protobufjs';
-import * as UglifyJS from 'uglify-js';
 
-import { Application, ITranspile, Logger, Scope } from "@cmmv/core";
+import { Application, ITranspile, Scope } from '@cmmv/core';
 
 export class WSTranspile implements ITranspile {
-    private logger: Logger = new Logger('WSTranspile');
-
     run(): void {
-        const contracts = Scope.getArray<any>("__contracts");
+        const contracts = Scope.getArray<any>('__contracts');
 
         contracts?.forEach((contract: any) => {
-            if(contract.generateController)
-                this.generateGateway(contract);
+            if (contract.generateController) this.generateGateway(contract);
         });
     }
 
     private generateGateway(contract: any) {
         const outputPath = path.resolve(contract.protoPath);
-        const outputDir = path.dirname(outputPath); 
+        const outputDir = path.dirname(outputPath);
         const gatewayName = `${contract.controllerName}Gateway`;
         const serviceName = `${contract.controllerName}Service`;
-        const gatewayFileName = `${contract.controllerName.toLowerCase()}.gateway.ts`; 
-    
+        const gatewayFileName = `${contract.controllerName.toLowerCase()}.gateway.ts`;
+
         const serviceTemplate = `// Generated automatically by CMMV
     
 import { Rpc, Message, Data, Socket, RpcUtils } from "@cmmv/ws";
@@ -80,16 +75,21 @@ export class ${gatewayName} {
             socket.send(response);
     }
 }`;
-    
-        Application.appModule.providers.push({ name: gatewayName, path: `./gateways/${contract.controllerName.toLowerCase()}.gateway` });
-                           
+
+        Application.appModule.providers.push({
+            name: gatewayName,
+            path: `./gateways/${contract.controllerName.toLowerCase()}.gateway`,
+        });
+
         const dirname = path.resolve(outputDir, '../gateways');
-    
-        if(!fs.existsSync(dirname))
-            fs.mkdirSync(dirname, { recursive: true });
-    
-        const outputFilePath = path.join(outputDir, '../gateways', gatewayFileName);        
+
+        if (!fs.existsSync(dirname)) fs.mkdirSync(dirname, { recursive: true });
+
+        const outputFilePath = path.join(
+            outputDir,
+            '../gateways',
+            gatewayFileName,
+        );
         fs.writeFileSync(outputFilePath, serviceTemplate, 'utf8');
     }
-    
 }
