@@ -1,25 +1,25 @@
 {
-	"name": "@cmmv/view",
-	"version": "0.2.16",
-	"description": "CMMV (@viewengine)",
-	"publishConfig": {
-		"access": "public"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/andrehrferreira/cmmv.git"
-	},
-	"author": "Andre Ferreira",
-	"license": "MIT",
-	"bugs": {
-		"url": "https://github.com/andrehrferreira/cmmv/issues"
-	},
-	"homepage": "https://cmmv.io",
-	"dependencies": {
-		"@cmmv/reactivity": "^0.0.9",
-		"fast-glob": "^3.3.2",
-		"html-minifier": "^4.0.0",
-		"uglify-js": "^3.19.2"
-	},
-	"gitHead": "29e154e20515bf9c9fb184f6be6bab155e07c726"
+    "name": "@cmmv/view",
+    "version": "0.2.17",
+    "description": "CMMV (@viewengine)",
+    "publishConfig": {
+        "access": "public"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/andrehrferreira/cmmv.git"
+    },
+    "author": "Andre Ferreira",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/andrehrferreira/cmmv/issues"
+    },
+    "homepage": "https://cmmv.io",
+    "dependencies": {
+        "@cmmv/reactivity": "^0.0.9",
+        "fast-glob": "^3.3.2",
+        "html-minifier": "^4.0.0",
+        "uglify-js": "^3.19.2"
+    },
+    "gitHead": "29e154e20515bf9c9fb184f6be6bab155e07c726"
 }

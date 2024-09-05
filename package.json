@@ -1,6 +1,6 @@
 {
 	"name": "@cmmv/skeleton",
-	"version": "0.2.17",
+	"version": "0.2.18",
 	"description": "CMMV (@skeleton)",
 	"main": "dist/index.js",
 	"private": false,
@@ -29,7 +29,7 @@
 		"packages:move": "gulp move",
 		"changelog": "lerna-changelog",
 		"prepublishOnly": "npm run changelog",
-		"publish:lerna": "./node_modules/.bin/lerna publish --force-publish --exact -m \"chore(@cmmv) publish %s release\"",
+		"publish:lerna": "./node_modules/.bin/lerna publish --force-publish --exact -m \"update: chore(@cmmv) publish %s release\"",
 		"publish": "npm run build:prod && npm run packages:move && npm run publish:lerna",
 		"prepare": "husky"
 	},
