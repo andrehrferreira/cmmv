@@ -22,15 +22,39 @@ describe('Contract Decorator', function () {
         @Contract()
         class TestClass {}
 
-        assert.strictEqual(Reflect.getMetadata(CONTRACT_WATERMARK, TestClass), true);
-        assert.strictEqual(Reflect.getMetadata(CONTROLLER_NAME_METADATA, TestClass), 'DefaultContract');
-        assert.strictEqual(Reflect.getMetadata(PROTO_PATH_METADATA, TestClass), 'contract.proto');
-        assert.strictEqual(Reflect.getMetadata(PROTO_PACKAGE_METADATA, TestClass), '');
-        assert.strictEqual(Reflect.getMetadata(DATABASE_TYPE_METADATA, TestClass), 'mongodb');
-        assert.strictEqual(Reflect.getMetadata(DIRECTMESSAGE_METADATA, TestClass), false);
-        assert.strictEqual(Reflect.getMetadata(GENERATE_CONTROLLER_METADATA, TestClass), true);
+        assert.strictEqual(
+            Reflect.getMetadata(CONTRACT_WATERMARK, TestClass),
+            true,
+        );
+        assert.strictEqual(
+            Reflect.getMetadata(CONTROLLER_NAME_METADATA, TestClass),
+            'DefaultContract',
+        );
+        assert.strictEqual(
+            Reflect.getMetadata(PROTO_PATH_METADATA, TestClass),
+            'contract.proto',
+        );
+        assert.strictEqual(
+            Reflect.getMetadata(PROTO_PACKAGE_METADATA, TestClass),
+            '',
+        );
+        assert.strictEqual(
+            Reflect.getMetadata(DATABASE_TYPE_METADATA, TestClass),
+            'mongodb',
+        );
+        assert.strictEqual(
+            Reflect.getMetadata(DIRECTMESSAGE_METADATA, TestClass),
+            false,
+        );
+        assert.strictEqual(
+            Reflect.getMetadata(GENERATE_CONTROLLER_METADATA, TestClass),
+            true,
+        );
         assert.strictEqual(Reflect.getMetadata(AUTH_METADATA, TestClass), true);
-        assert.strictEqual(Reflect.getMetadata(CONTROLLER_CUSTOM_PATH_METADATA, TestClass), '');
+        assert.strictEqual(
+            Reflect.getMetadata(CONTROLLER_CUSTOM_PATH_METADATA, TestClass),
+            '',
+        );
     });
 
     it('should apply provided metadata options', function () {
@@ -38,7 +62,6 @@ describe('Contract Decorator', function () {
             controllerName: 'CustomContract',
             protoPath: 'custom.proto',
             protoPackage: 'custom.package',
-            databaseType: 'typeorm',
             directMessage: true,
             generateController: false,
             auth: false,
@@ -48,15 +71,42 @@ describe('Contract Decorator', function () {
         @Contract(options)
         class TestClass {}
 
-        assert.strictEqual(Reflect.getMetadata(CONTRACT_WATERMARK, TestClass), true);
-        assert.strictEqual(Reflect.getMetadata(CONTROLLER_NAME_METADATA, TestClass), 'CustomContract');
-        assert.strictEqual(Reflect.getMetadata(PROTO_PATH_METADATA, TestClass), 'custom.proto');
-        assert.strictEqual(Reflect.getMetadata(PROTO_PACKAGE_METADATA, TestClass), 'custom.package');
-        assert.strictEqual(Reflect.getMetadata(DATABASE_TYPE_METADATA, TestClass), 'typeorm');
-        assert.strictEqual(Reflect.getMetadata(DIRECTMESSAGE_METADATA, TestClass), true);
-        assert.strictEqual(Reflect.getMetadata(GENERATE_CONTROLLER_METADATA, TestClass), false);
-        assert.strictEqual(Reflect.getMetadata(AUTH_METADATA, TestClass), false);
-        assert.strictEqual(Reflect.getMetadata(CONTROLLER_CUSTOM_PATH_METADATA, TestClass), 'custom/path');
+        assert.strictEqual(
+            Reflect.getMetadata(CONTRACT_WATERMARK, TestClass),
+            true,
+        );
+        assert.strictEqual(
+            Reflect.getMetadata(CONTROLLER_NAME_METADATA, TestClass),
+            'CustomContract',
+        );
+        assert.strictEqual(
+            Reflect.getMetadata(PROTO_PATH_METADATA, TestClass),
+            'custom.proto',
+        );
+        assert.strictEqual(
+            Reflect.getMetadata(PROTO_PACKAGE_METADATA, TestClass),
+            'custom.package',
+        );
+        assert.strictEqual(
+            Reflect.getMetadata(DATABASE_TYPE_METADATA, TestClass),
+            'typeorm',
+        );
+        assert.strictEqual(
+            Reflect.getMetadata(DIRECTMESSAGE_METADATA, TestClass),
+            true,
+        );
+        assert.strictEqual(
+            Reflect.getMetadata(GENERATE_CONTROLLER_METADATA, TestClass),
+            false,
+        );
+        assert.strictEqual(
+            Reflect.getMetadata(AUTH_METADATA, TestClass),
+            false,
+        );
+        assert.strictEqual(
+            Reflect.getMetadata(CONTROLLER_CUSTOM_PATH_METADATA, TestClass),
+            'custom/path',
+        );
     });
 });
 
@@ -75,10 +125,20 @@ describe('ContractField Decorator', function () {
             public testField: string;
         }
 
-        const fieldMetadata = Reflect.getMetadata(FIELD_METADATA, TestClass.prototype);
-        
-        assert(Array.isArray(fieldMetadata), 'Field metadata should be an array');
-        assert.strictEqual(fieldMetadata.length, 1, 'Field metadata should contain one entry');
+        const fieldMetadata = Reflect.getMetadata(
+            FIELD_METADATA,
+            TestClass.prototype,
+        );
+
+        assert(
+            Array.isArray(fieldMetadata),
+            'Field metadata should be an array',
+        );
+        assert.strictEqual(
+            fieldMetadata.length,
+            1,
+            'Field metadata should contain one entry',
+        );
 
         const [field] = fieldMetadata;
 
@@ -108,10 +168,20 @@ describe('ContractField Decorator', function () {
             public field2: number;
         }
 
-        const fieldMetadata = Reflect.getMetadata(FIELD_METADATA, TestClass.prototype);
-        
-        assert(Array.isArray(fieldMetadata), 'Field metadata should be an array');
-        assert.strictEqual(fieldMetadata.length, 2, 'Field metadata should contain two entries');
+        const fieldMetadata = Reflect.getMetadata(
+            FIELD_METADATA,
+            TestClass.prototype,
+        );
+
+        assert(
+            Array.isArray(fieldMetadata),
+            'Field metadata should be an array',
+        );
+        assert.strictEqual(
+            fieldMetadata.length,
+            2,
+            'Field metadata should contain two entries',
+        );
 
         const [field1, field2] = fieldMetadata;
 
@@ -129,7 +199,10 @@ describe('ContractField Decorator', function () {
             public field: string;
         }
 
-        const fieldMetadata = Reflect.getMetadata(FIELD_METADATA, DefaultFieldClass.prototype);
+        const fieldMetadata = Reflect.getMetadata(
+            FIELD_METADATA,
+            DefaultFieldClass.prototype,
+        );
         const field = fieldMetadata[0];
 
         assert.strictEqual(field.propertyKey, 'field');
@@ -154,7 +227,10 @@ describe('ContractField Decorator', function () {
             public field: number;
         }
 
-        const fieldMetadata = Reflect.getMetadata(FIELD_METADATA, CustomFieldClass.prototype);
+        const fieldMetadata = Reflect.getMetadata(
+            FIELD_METADATA,
+            CustomFieldClass.prototype,
+        );
         const field = fieldMetadata[0];
 
         assert.strictEqual(field.propertyKey, 'field');
@@ -184,7 +260,10 @@ describe('ContractField Decorator', function () {
             public field3: boolean[];
         }
 
-        const fieldMetadata = Reflect.getMetadata(FIELD_METADATA, MultipleFieldClass.prototype);
+        const fieldMetadata = Reflect.getMetadata(
+            FIELD_METADATA,
+            MultipleFieldClass.prototype,
+        );
 
         assert.strictEqual(fieldMetadata.length, 3);
 
