@@ -19,7 +19,9 @@
                 "revert",
                 "style",
                 "test",
-                "sample"
+                "sample",
+                "input",
+                "update"
             ]
         ],
         "scope-enum": [
