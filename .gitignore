@@ -48,6 +48,7 @@ build/config\.gypi
 
 .npmrc
 .secure
+.env
 pnpm-lock.yaml
 
 database.sqlite
