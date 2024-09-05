@@ -1,6 +1,6 @@
 {
 	"name": "@cmmv/skeleton",
-	"version": "0.2.21",
+	"version": "0.2.22",
 	"description": "CMMV (@skeleton)",
 	"main": "dist/index.js",
 	"private": false,
