@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@cmmv/reactivity@^0.0.7":
-  version "0.0.7"
-  resolved "https://registry.yarnpkg.com/@cmmv/reactivity/-/reactivity-0.0.7.tgz#ee4d6bf7da09607cc94b0a5325c12a42a3b2e83b"
-  integrity sha512-9Gy6MlvzEesAgJiBtWY7MaKnEcjb9784PbN1gu2Fx9iBvYqxTg/sMv1YK9McjdA3ReEVDrdy8ZglljYylYLTiA==
+"@cmmv/reactivity@^0.0.9":
+  version "0.0.9"
+  resolved "https://registry.yarnpkg.com/@cmmv/reactivity/-/reactivity-0.0.9.tgz#be7ff2aa525ba0ec7574cb624da28d42bf34e364"
+  integrity sha512-LaK/kDpGSqB/cMeDgfzdSUnEx6x8U+GLWPOqtBv/I+AU7k+/tTr4REaWpci+elvg79n5q2vRYv8lBBsWz5gfww==
   dependencies:
     "@vue/reactivity" "^3.5.1"
 
