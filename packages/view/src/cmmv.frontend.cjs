@@ -35,7 +35,8 @@
                     Duration: `${totalDuration.toFixed(2)} ms`
                 });
             
-                console.table(summary);
+                if(process.env.NODE_ENV === "dev")
+                    console.table(summary);
             }            
         }
 
