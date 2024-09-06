@@ -5,33 +5,35 @@
         c-show="todolist?.length > 0" 
         s:todolist="services.task.getAll()"
     >
-        <sif exp="todolist.length > 0">
-            <sfor 
-                c-show="todolist"
-                c-for="(item, key) in todolist"
-                class="todo-item"
-                render-tag="div"
-            >
-                <div class="todo-item-content">
-                    <input 
-                        type="checkbox" 
-                        c-model="item.checked" 
-                        @change="UpdateTaskRequest(item)"
-                    ></input>
+        <s-if exp="todolist.length > 0">
+            <div>Total Record Loaded SSR: {{ todolist.length }}</div>
+            <s-else>
+                <div>No records were loaded via SSR</div>
+            </s-else>
+        </s-if>  
 
-                    <label :class="{'todo-item-checked': item.checked}">{{ item.label }}</label>
-                </div>
-                
-                <button 
-                    class="todo-btn-remove"
-                    s-i18n="remove" 
-                    @click="DeleteTaskRequest(item.id)"
-                ></button>
-            </sfor>
-            <selse>
-                <div s-i18n="norecords"></div>
-            </selse>
-        </sif>        
+        <s-for 
+            c-show="todolist"
+            c-for="(item, key) in todolist"
+            class="todo-item"
+            render-tag="div"
+        >
+            <div class="todo-item-content">
+                <input 
+                    type="checkbox" 
+                    c-model="item.checked" 
+                    @change="UpdateTaskRequest(item)"
+                ></input>
+
+                <label :class="{'todo-item-checked': item.checked}">{{ item.label }}</label>
+            </div>
+            
+            <button 
+                class="todo-btn-remove"
+                s-i18n="remove" 
+                @click="DeleteTaskRequest(item.id)"
+            ></button>
+        </s-for>    
     </div>
 
     <div class="todo-input-box">

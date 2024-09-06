@@ -3,7 +3,7 @@ import * as path from 'path';
 
 import { getValueFromKey } from './cmmv.utils';
 import { Directive, Template } from './cmmv.template';
-import { evaluate } from './cmmv.eval';
+import { evaluate, evaluateAsync } from './cmmv.eval';
 import { Config } from '@cmmv/core';
 
 export const sData: Directive = (
@@ -124,7 +124,7 @@ export const extractSetupScript = (templateText: string): object | string => {
 //SSR
 function forSSR(templateText: string, template: Template) {
     const forDirectiveRegex =
-        /<(\w+)([^>]*)\s+(c-for|v-for)\s*=\s*["']([^"']+)["']([^>]*)>(.*?)<\/\1>/gs;
+        /<(\w[-\w]*)([^>]*)\s+(c-for|v-for)\s*=\s*["'](.*?)["']([^>]*)>(.*?)<\/\1>/gs;
     const attrDirectiveRegex =
         /\s+(c-text|c-html|:ref)\s*=\s*["']([^"']+)["']/g;
     const placeholder = 'c-ssr-for';
@@ -152,7 +152,7 @@ function forSSR(templateText: string, template: Template) {
         const renderTagMatch = /render-tag\s*=\s*["']([^"']+)["']/i.exec(
             fullMatch,
         );
-        const renderTag = renderTagMatch ? renderTagMatch[1] : tagName;
+        const renderTag = renderTagMatch ? renderTagMatch[1] : 'div';
 
         let renderedItems = '';
 
@@ -220,8 +220,8 @@ function forSSR(templateText: string, template: Template) {
 }
 
 function ifSSR(templateText: string, data: Record<string, any>) {
-    const sIfRegex = /<sif\s+exp=["']([^"']+)["']>(.*?)<\/sif>/gs;
-    const sElseRegex = /<selse>(.*?)<\/selse>/gs;
+    const sIfRegex = /<s-if\s+exp=["']([^"']+)["']>(.*?)<\/s-if>/gs;
+    const sElseRegex = /<s-else>(.*?)<\/s-else>/gs;
 
     return templateText.replace(sIfRegex, (match, exp, innerHTML) => {
         const condition = evaluate(data, exp);
@@ -247,7 +247,7 @@ export const ssrDirectives: Directive = async (
     while ((match = sDirectiveRegex.exec(templateText)) !== null) {
         const [fullMatch, variableName, expression] = match;
         try {
-            const result = await evaluate(data, expression);
+            const result = await evaluateAsync(data, expression);
             template.setContext(variableName, result);
             templateText = templateText.replace(fullMatch, '');
         } catch (error) {
