@@ -52,11 +52,13 @@ module.exports = {
             "default-src 'self'",
             "script-src 'self' 'unsafe-eval'",
             "style-src 'self' 'unsafe-inline'",
-            "font-src 'self'"
+            "font-src 'self'",
+            "connect-src 'self' ws://localhost:3001 http://localhost:3001"
         ]
     },
 
     scripts: [
-        { type: "text/javascript", src: '/assets/bundle.min.js' }
+        { type: "text/javascript", src: '/assets/bundle.min.js' },
+        { type: "text/javascript", src: 'http://localhost:3001/browser-sync/browser-sync-client.js?v=3.0.2' }
     ]
 };

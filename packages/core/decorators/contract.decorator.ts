@@ -4,6 +4,9 @@ export interface ContractFieldOptions {
     defaultValue?: any;
     index?: boolean;
     unique?: boolean;
+    exclude?: boolean;
+    toClassOnly?: boolean;
+    transform?: Function;
 }
 
 export interface ContractOptions {
@@ -14,6 +17,7 @@ export interface ContractOptions {
     directMessage?: boolean;
     generateController?: boolean;
     auth?: boolean;
+    imports?: Array<string>;
 }
 
 export const CONTRACT_WATERMARK = Symbol('contract_watermark');
@@ -30,6 +34,7 @@ export const AUTH_METADATA = Symbol('auth_metadata');
 export const CONTROLLER_CUSTOM_PATH_METADATA = Symbol(
     'controller_custom_path_metadata',
 );
+export const CONTROLLER_IMPORTS = Symbol('contract_imports');
 
 export function Contract(options?: ContractOptions): ClassDecorator {
     const defaultControllerName = 'DefaultContract';
@@ -39,6 +44,7 @@ export function Contract(options?: ContractOptions): ClassDecorator {
     const defaultGenerateController = true;
     const defaultAuth = true;
     const defaultControllerCustomPath = '';
+    const defaultImports = [];
 
     const [
         controllerName,
@@ -48,6 +54,7 @@ export function Contract(options?: ContractOptions): ClassDecorator {
         generateController,
         auth,
         controllerCustomPath,
+        imports,
     ] = !options
         ? [
               defaultControllerName,
@@ -57,6 +64,7 @@ export function Contract(options?: ContractOptions): ClassDecorator {
               defaultGenerateController,
               defaultAuth,
               defaultControllerCustomPath,
+              defaultImports,
           ]
         : [
               options.controllerName || defaultControllerName,
@@ -66,6 +74,7 @@ export function Contract(options?: ContractOptions): ClassDecorator {
               options.generateController ?? defaultGenerateController,
               options.auth ?? defaultAuth,
               options.controllerCustomPath || defaultControllerCustomPath,
+              options.imports || defaultImports,
           ];
 
     return (target: object) => {
@@ -89,6 +98,7 @@ export function Contract(options?: ContractOptions): ClassDecorator {
             controllerCustomPath,
             target,
         );
+        Reflect.defineMetadata(CONTROLLER_IMPORTS, imports, target);
     };
 }
 

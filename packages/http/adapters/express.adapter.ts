@@ -113,7 +113,6 @@ export class ExpressAdapter extends AbstractHttpAdapter<
     private setMiddleware() {
         this.instance.use((req, res, next) => {
             req.requestId = uuidv4();
-            Telemetry.start('Request Process', req.requestId);
 
             res.locals.nonce = uuidv4().substring(0, 8);
             const customHeaders = Config.get('headers') || {};
@@ -169,6 +168,7 @@ export class ExpressAdapter extends AbstractHttpAdapter<
         });
 
         this.instance.get('*', (req, res, next) => {
+            Telemetry.start('Request Process', req.requestId);
             const publicDir = path.join(process.cwd(), 'public/views');
             const requestPath =
                 req.path === '/' ? 'index' : req.path.substring(1);
@@ -203,6 +203,7 @@ export class ExpressAdapter extends AbstractHttpAdapter<
                         debug: debugContent,
                         nonce: res.locals.nonce,
                         services: ServiceRegistry.getServicesArr(),
+                        requestId: req.requestId,
                         config: {
                             rpc: config.rpc,
                         },

@@ -1,27 +1,26 @@
-require('dotenv').config()
+require('dotenv').config();
 
-import { Application } from "@cmmv/core";
-import { ExpressAdapter, ExpressModule } from "@cmmv/http";
-import { ProtobufModule } from "@cmmv/protobuf";
-import { WSModule, WSAdapter } from "@cmmv/ws";
-import { ViewModule } from "@cmmv/view";
-import { RepositoryModule, Repository } from "@cmmv/repository";
+import { Application } from '@cmmv/core';
+import { ExpressAdapter, ExpressModule } from '@cmmv/http';
+import { ProtobufModule } from '@cmmv/protobuf';
+import { WSModule, WSAdapter } from '@cmmv/ws';
+import { ViewModule } from '@cmmv/view';
+import { RepositoryModule, Repository } from '@cmmv/repository';
 
 //Contracts
-import { TasksContract } from "./contracts/tasks.contract";
+import { UsersContract } from './contracts/users.contract';
+import { TasksContract } from './contracts/tasks.contract';
 
 Application.create({
-    httpAdapter: ExpressAdapter,    
+    httpAdapter: ExpressAdapter,
     wsAdapter: WSAdapter,
     modules: [
         ExpressModule,
         ProtobufModule,
         WSModule,
         ViewModule,
-        RepositoryModule
+        RepositoryModule,
     ],
     services: [Repository],
-    contracts: [
-        TasksContract
-    ]
+    contracts: [UsersContract, TasksContract],
 });

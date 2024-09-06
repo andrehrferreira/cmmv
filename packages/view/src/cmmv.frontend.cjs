@@ -1,18 +1,22 @@
 (function(global) {
     try {
         class Telemetry {
-            constructor() {
+            constructor(serverMetrics) {
                 this.metrics = {};
             }
 
             start(label) {
-                if (!this.metrics[label]) {
+                label = `Client: ${label}`;
+
+                if (!this.metrics[label]) 
                     this.metrics[label] = { start: 0, end: 0, duration: 0 };
-                }
+                
                 this.metrics[label].start = performance.now();
             }
 
             end(label) {
+                label = `Client: ${label}`;
+
                 if (this.metrics[label]) {
                     this.metrics[label].end = performance.now();
                     this.metrics[label].duration = this.metrics[label].end - this.metrics[label].start;
@@ -20,6 +24,21 @@
             }
 
             log() {
+                let serverMetrics = global.cmmvTelemetry;
+
+                if(serverMetrics?.length > 0){
+                    let frontend = this.metrics;
+                    this.metrics = {};
+
+                    serverMetrics.map((item) => this.metrics[`Server: ${item.label}`] = {
+                        start: item.startTime,
+                        end: item.endTime,
+                        duration: item.endTime - item.startTime
+                    });
+
+                    this.metrics = { ...this.metrics, ...frontend };
+                }
+
                 let totalDuration = 0;
                 const summary = Object.keys(this.metrics).map(key => {
                     const duration = this.metrics[key].duration;
@@ -29,12 +48,7 @@
                         Duration: `${duration.toFixed(2)} ms`,
                     };
                 });
-            
-                summary.push({
-                    Process: 'Total',
-                    Duration: `${totalDuration.toFixed(2)} ms`
-                });
-            
+                                        
                 if(process.env.NODE_ENV === "dev")
                     console.table(summary);
             }            
@@ -52,7 +66,7 @@
             telemetry: new Telemetry(),
 
             initialize(context, methods, mounted) {
-                this.telemetry.start('Initialize');
+                this.telemetry.start('Initialize Frontend');
                 try {
                     if (context.config && context.config.rpc && context.config.rpc.enabled) {
                         this.telemetry.start('WebSocket Initialization');
@@ -76,7 +90,7 @@
                     this.telemetry.log();
                 });
 
-                this.telemetry.end('Initialize');
+                this.telemetry.end('Initialize Frontend');
             },
 
             addContracts(jsonContracts) {

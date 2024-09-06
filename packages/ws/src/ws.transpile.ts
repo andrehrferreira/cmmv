@@ -29,7 +29,7 @@ import {
     Add${contract.controllerName}Request, 
     Update${contract.controllerName}Request,   
     Delete${contract.controllerName}Request 
-} from "../protos/task";
+} from "../protos/${contract.controllerName.toLowerCase()}";
 
 import { ${serviceName} } from '../services/${contract.controllerName.toLowerCase()}.service';
 
@@ -39,40 +39,52 @@ export class ${gatewayName} {
 
     @Message("GetAll${contract.controllerName}Request")
     async getAll(@Socket() socket){
-        const items = await this.${serviceName.toLowerCase()}.getAll();
-        const response = await RpcUtils.pack("${contract.controllerName.toLowerCase()}", "GetAll${contract.controllerName}Response", items);
+        try{
+            const items = await this.${serviceName.toLowerCase()}.getAll();
+            const response = await RpcUtils.pack("${contract.controllerName.toLowerCase()}", "GetAll${contract.controllerName}Response", items);
 
-        if(response)
-            socket.send(response);
+            if(response)
+                socket.send(response);
+        }
+        catch(e){}
     }
 
     @Message("Add${contract.controllerName}Request")
     async add(@Data() data: Add${contract.controllerName}Request, @Socket() socket){
-        const entity = plainToClass(${contract.controllerName}Entity, data.item);
-        const result = await this.${serviceName.toLowerCase()}.add(entity);
-        const response = await RpcUtils.pack("${contract.controllerName.toLowerCase()}", "Add${contract.controllerName}Response", { item: result, id: result.id });
+        try{
+            const entity = plainToClass(${contract.controllerName}Entity, data.item);
+            const result = await this.${serviceName.toLowerCase()}.add(entity);
+            const response = await RpcUtils.pack("${contract.controllerName.toLowerCase()}", "Add${contract.controllerName}Response", { item: result, id: result.id });
 
-        if(response)
-            socket.send(response);
+            if(response)
+                socket.send(response);
+        }
+        catch(e){}
     }
 
     @Message("Update${contract.controllerName}Request")
     async update(@Data() data: Update${contract.controllerName}Request, @Socket() socket){
-        const entity = plainToClass(${contract.controllerName}Entity, data.item);
-        const result = await this.${serviceName.toLowerCase()}.update(data.id, entity);
-        const response = await RpcUtils.pack("${contract.controllerName.toLowerCase()}", "Update${contract.controllerName}Response", { item: result, id: result.id });
+        try{
+            const entity = plainToClass(${contract.controllerName}Entity, data.item);
+            const result = await this.${serviceName.toLowerCase()}.update(data.id, entity);
+            const response = await RpcUtils.pack("${contract.controllerName.toLowerCase()}", "Update${contract.controllerName}Response", { item: result, id: result.id });
 
-        if(response)
-            socket.send(response);
+            if(response)
+                socket.send(response);
+        }
+        catch(e){}
     }
 
     @Message("Delete${contract.controllerName}Request")
     async delete(@Data() data: Delete${contract.controllerName}Request, @Socket() socket){
-        const result = (await this.${serviceName.toLowerCase()}.delete(data.id)).success;
-        const response = await RpcUtils.pack("${contract.controllerName.toLowerCase()}", "Delete${contract.controllerName}Response", { success: result, id: data.id });
+        try{
+            const result = (await this.${serviceName.toLowerCase()}.delete(data.id)).success;
+            const response = await RpcUtils.pack("${contract.controllerName.toLowerCase()}", "Delete${contract.controllerName}Response", { success: result, id: data.id });
 
-        if(response)
-            socket.send(response);
+            if(response)
+                socket.send(response);
+        }
+        catch(e){}
     }
 }`;
 

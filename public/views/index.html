@@ -3,9 +3,9 @@
 
     <div 
         c-show="todolist?.length > 0" 
-        s:todolist="services.task.getAll()"
+        s:todolist="services.task.getAll(null, { requestId })"
     >
-        <s-if exp="todolist.length > 0">
+        <s-if exp="todolist?.length > 0">
             <div>Total Record Loaded SSR: {{ todolist.length }}</div>
             <s-else>
                 <div>No records were loaded via SSR</div>
@@ -23,6 +23,7 @@
                     type="checkbox" 
                     c-model="item.checked" 
                     @change="UpdateTaskRequest(item)"
+                    aria-label="finish task"
                 ></input>
 
                 <label :class="{'todo-item-checked': item.checked}">{{ item.label }}</label>
@@ -36,8 +37,15 @@
         </s-for>    
     </div>
 
+    <hr/>
+    
     <div class="todo-input-box">
-        <input c-model="label" class="todo-input">
+        <input 
+            c-model="label" 
+            class="todo-input"
+            placeholder="New Task"
+            aria-label="new task"
+        >
 
         <button 
             class="todo-btn-add"
