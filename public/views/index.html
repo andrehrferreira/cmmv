@@ -5,27 +5,33 @@
         c-show="todolist?.length > 0" 
         s:todolist="services.task.getAll()"
     >
-        <div 
-            c-show="todolist"
-            c-for="(item, key) in todolist"
-            class="todo-item"
-        >
-            <c class="todo-item-content">
-                <input 
-                    type="checkbox" 
-                    c-model="item.checked" 
-                    @change="UpdateTaskRequest(item)"
-                ></input>
+        <sif exp="todolist.length > 0">
+            <sfor 
+                c-show="todolist"
+                c-for="(item, key) in todolist"
+                class="todo-item"
+                render-tag="div"
+            >
+                <div class="todo-item-content">
+                    <input 
+                        type="checkbox" 
+                        c-model="item.checked" 
+                        @change="UpdateTaskRequest(item)"
+                    ></input>
 
-                <label :class="{'todo-item-checked': item.checked}">{{ item.label }}</label>
-            </c>
-            
-            <button 
-                class="todo-btn-remove"
-                s-i18n="remove" 
-                @click="DeleteTaskRequest(item.id)"
-            ></button>
-        </div>
+                    <label :class="{'todo-item-checked': item.checked}">{{ item.label }}</label>
+                </div>
+                
+                <button 
+                    class="todo-btn-remove"
+                    s-i18n="remove" 
+                    @click="DeleteTaskRequest(item.id)"
+                ></button>
+            </sfor>
+            <selse>
+                <div s-i18n="norecords"></div>
+            </selse>
+        </sif>        
     </div>
 
     <div class="todo-input-box">
