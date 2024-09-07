@@ -110,7 +110,13 @@ export class Application {
 
                 this.createScriptBundle();
             } else {
-                const outputPath = path.resolve('src', `app.module.ts`);
+                const tsconfig: any = new Function(
+                    `return(${fs.readFileSync(path.resolve('./tsconfig.json'), 'utf-8')})`,
+                )();
+                const outputPath = path.resolve(
+                    tsconfig.compilerOptions.outDir,
+                    `app.module.js`,
+                );
                 const { ApplicationModule } = await import(outputPath);
                 this.loadModules([...this.modules, ApplicationModule]);
             }

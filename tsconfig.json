@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
         "module": "commonjs",
-		"moduleResolution": "node",
+        "moduleResolution": "node",
         "declaration": true,
         "removeComments": true,
         "emitDecoratorMetadata": true,
@@ -42,8 +42,8 @@
             "@cmmv/ws/*": ["packages/ws/*"],
             "@cmmv/repository": ["packages/repository"],
             "@cmmv/repository/*": ["packages/repository/*"]
-        },
+        }
     },
-    "include": ["packages/**/*", "src/**/*.ts",],
+    "include": ["packages/**/*", "src/**/*.ts"],
     "exclude": ["node_modules", "dist", "src/protos", "**/*.spec.ts"]
 }
