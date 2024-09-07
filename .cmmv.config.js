@@ -58,7 +58,6 @@ module.exports = {
     },
 
     scripts: [
-        { type: "text/javascript", src: '/assets/bundle.min.js' },
-        { type: "text/javascript", src: 'http://localhost:3001/browser-sync/browser-sync-client.js?v=3.0.2' }
+        { type: "text/javascript", src: '/assets/bundle.min.js' }
     ]
 };

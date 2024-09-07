@@ -6,6 +6,31 @@ import { Directive, Template } from './cmmv.template';
 import { evaluate, evaluateAsync } from './cmmv.eval';
 import { Config } from '@cmmv/core';
 
+export const ssrLoadData: Directive = async (
+    templateText: string,
+    data: Record<string, any>,
+    template: Template,
+): Promise<string> => {
+    const sDirectiveRegex = /\s+s:([\w\d_]+)\s*=\s*["']([^"']+)["']/g;
+    let match: RegExpExecArray | null;
+
+    while ((match = sDirectiveRegex.exec(templateText)) !== null) {
+        const [fullMatch, variableName, expression] = match;
+        try {
+            const result = await evaluateAsync(data, expression);
+            template.setContext(variableName, result);
+            templateText = templateText.replace(fullMatch, '');
+        } catch (error) {
+            console.error(
+                `Error evaluating expression '${expression}':`,
+                error,
+            );
+        }
+    }
+
+    return templateText;
+};
+
 export const sData: Directive = async (
     templateText: string,
     data: Record<string, any>,
@@ -77,7 +102,7 @@ export const i18n: Directive = (
     return templateText.replace(
         /<(\w+)([^>]*)\s+s-i18n=["'](.+?)["']([^>]*)>(.*?)<\/\1>/g,
         (match, tagName, beforeAttrs, key, afterAttrs, innerHTML) => {
-            const translation = translations[key?.trim()];
+            const translation = getValueFromKey(translations, key?.trim());
 
             if (translation)
                 return `<${tagName}${beforeAttrs}${afterAttrs}>${translation}</${tagName}>`;
@@ -122,7 +147,7 @@ export const extractSetupScript = (templateText: string): object | string => {
 };
 
 //SSR
-function forSSR(templateText: string, template: Template) {
+async function forSSR(templateText: string, template: Template) {
     const forDirectiveRegex =
         /<(\w[-\w]*)([^>]*)\s+(c-for|v-for)\s*=\s*["'](.*?)["']([^>]*)>(.*?)<\/\1>/gs;
     const attrDirectiveRegex =
@@ -148,7 +173,7 @@ function forSSR(templateText: string, template: Template) {
             : [variables, null];
         const listName = exp.match(/\b(?:in|of)\s+([^\s"']+)/i)?.[1];
         const context = template.getContext();
-        const items = listName ? context[listName] : null;
+        const items = listName ? getValueFromKey(context, listName) : null;
         const renderTagMatch = /render-tag\s*=\s*["']([^"']+)["']/i.exec(
             fullMatch,
         );
@@ -216,13 +241,15 @@ function forSSR(templateText: string, template: Template) {
                 .replace(directive, placeholder)}</div>
             `,
         );
+
+        break;
     }
 
     templateText = templateText.replace(new RegExp(placeholder, 'g'), 'c-for');
     return templateText;
 }
 
-function ifSSR(templateText: string, data: Record<string, any>) {
+async function ifSSR(templateText: string, data: Record<string, any>) {
     const sIfRegex = /<s-if\s+exp=["']([^"']+)["']>(.*?)<\/s-if>/gs;
     const sElseRegex = /<s-else>(.*?)<\/s-else>/gs;
 
@@ -244,25 +271,7 @@ export const ssrDirectives: Directive = async (
     data: Record<string, any>,
     template: Template,
 ): Promise<string> => {
-    const sDirectiveRegex = /\s+s:([\w\d_]+)\s*=\s*["']([^"']+)["']/g;
-    let match: RegExpExecArray | null;
-
-    while ((match = sDirectiveRegex.exec(templateText)) !== null) {
-        const [fullMatch, variableName, expression] = match;
-        try {
-            const result = await evaluateAsync(data, expression);
-            template.setContext(variableName, result);
-            templateText = templateText.replace(fullMatch, '');
-        } catch (error) {
-            console.error(
-                `Error evaluating expression '${expression}':`,
-                error,
-            );
-        }
-    }
-
-    let parsedTemplateText = ifSSR(templateText, template.getContext());
-    parsedTemplateText = forSSR(parsedTemplateText, template);
-
+    let parsedTemplateText = await ifSSR(templateText, template.getContext());
+    parsedTemplateText = await forSSR(parsedTemplateText, template);
     return parsedTemplateText;
 };

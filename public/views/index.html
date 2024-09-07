@@ -34,27 +34,27 @@
                 s-i18n="remove" 
                 @click="DeleteTaskRequest(item.id)"
             ></button>
-        </s-for>    
-    </div>
-
-    <hr/>
+        </s-for> 
+        
+        <hr/>
     
-    <div class="todo-input-box">
-        <input 
-            c-model="label" 
-            class="todo-input"
-            placeholder="New Task"
-            aria-label="new task"
-        >
+        <div class="todo-input-box">
+            <input 
+                c-model="label" 
+                class="todo-input"
+                placeholder="New Task"
+                aria-label="new task"
+            >
 
-        <button 
-            class="todo-btn-add"
-            s-i18n="add" 
-            @click="addTask"
-        ></button>
+            <button 
+                class="todo-btn-add"
+                s-i18n="add" 
+                @click="addTask"
+            ></button>
+        </div>
+
+        <pre>{{ todolist }}</pre>
     </div>
-
-    <pre>{{ todolist }}</pre>
 </div>
 
 <script s-setup>

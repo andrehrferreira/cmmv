@@ -464,7 +464,7 @@ export class Template {
             );
 
             processedText = await self.extractInlineScripts(processedText);
-            processedText = await self.minifyHtml(processedText);
+            //processedText = await self.minifyHtml(processedText);
             Telemetry.clearTelemetry(data.requestId);
 
             return processedText;

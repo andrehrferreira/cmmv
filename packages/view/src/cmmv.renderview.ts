@@ -9,6 +9,7 @@ import {
     extractSetupScript,
     sServerData,
     ssrDirectives,
+    ssrLoadData,
 } from './cmmv.directives';
 
 export class CMMVRenderer {
@@ -82,9 +83,10 @@ export class CMMVRenderer {
         let templ = new Template(template, opts);
 
         templ.use([
-            ssrDirectives,
+            ssrLoadData,
             extractSetupScript,
             sServerData,
+            ssrDirectives,
             sData,
             sAttr,
             i18n,
