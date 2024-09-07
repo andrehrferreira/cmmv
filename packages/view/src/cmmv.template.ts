@@ -249,9 +249,7 @@ export class Template {
                         } catch (e) {
                             console.error("Error loading contracts or initializing app data:", e);
                         }
-                        })(typeof window !== "undefined" ? window : global);
-                        
-                        var process = { env: { NODE_ENV: '${process.env.NODE_ENV}' } };`;
+                        })(typeof window !== "undefined" ? window : global);`;
 
                     pageContents += `<script nonce="{nonce}">${
                         UglifyJS.minify(jsContent, {
@@ -313,7 +311,11 @@ export class Template {
         //Headers
         let headers = this.parseHead(setup);
         let title = setup.title || Config.get('head').title;
-        headers = `<title>${title}</title>\n${headers}`;
+        headers = `
+            <title>${title}</title>\n
+            ${headers}\n
+            <script nonce="${this.nonce}">var process = { env: { NODE_ENV: '${process.env.NODE_ENV}' } };</script>
+        `;
 
         pageContents = pageContents.replace(/<headers\s*\/?>/i, headers);
 

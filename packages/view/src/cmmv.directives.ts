@@ -6,18 +6,18 @@ import { Directive, Template } from './cmmv.template';
 import { evaluate, evaluateAsync } from './cmmv.eval';
 import { Config } from '@cmmv/core';
 
-export const sData: Directive = (
+export const sData: Directive = async (
     templateText: string,
     data: Record<string, any>,
     template: Template,
-): string => {
+): Promise<string> => {
     return templateText.replace(
-        /<([^>]+)\s+s-data=["'](.+?)["']([^>]*)>(.*?)<\/\1>/g,
-        (match, tagName, key, attributes, innerHTML) => {
-            const value = data[key.trim()];
+        /<([^>]+)\s([^>]+)s-data=["'](.+?)["']([^>]*)>(.*?)<\/\1>/g,
+        (match, tagName, attributesBefore, key, attributesAfter, innerHTML) => {
+            const value = getValueFromKey(data, key.trim());
 
             if (value !== undefined)
-                return `<${tagName} ${attributes}>${value}</${tagName}>`;
+                return `<${tagName} ${attributesBefore} ${attributesAfter}>${value}</${tagName}>`;
             else return `<!-- s-data not found: ${key} -->`;
         },
     );
@@ -31,7 +31,7 @@ export const sAttr: Directive = (
     return templateText.replace(
         /<([^>]+)\s+s-attr=["'](.+?)["']([^>]*)>/g,
         (match, tagName, key, attributes) => {
-            const value = data[key.trim()];
+            const value = getValueFromKey(data, key.trim());
 
             if (value !== undefined)
                 return `<${tagName} ${attributes} ${key}="${value}">`;
@@ -46,7 +46,7 @@ export const sServerData: Directive = (
     template: Template,
 ): string => {
     return templateText.replace(/\{(\w+)\}/g, (match, key) => {
-        const value = data[key.trim()];
+        const value = getValueFromKey(data, key.trim());
         return value !== undefined ? value : '';
     });
 };

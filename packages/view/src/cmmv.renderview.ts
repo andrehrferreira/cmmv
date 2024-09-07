@@ -1,11 +1,15 @@
 import * as fs from 'fs';
 
-import { Template }  from "./cmmv.template";
+import { Template } from './cmmv.template';
 
-import { 
-    sData, sAttr, i18n, extractSetupScript,
-    sServerData, ssrDirectives 
-} from "./cmmv.directives";
+import {
+    sData,
+    sAttr,
+    i18n,
+    extractSetupScript,
+    sServerData,
+    ssrDirectives,
+} from './cmmv.directives';
 
 export class CMMVRenderer {
     private cache: Map<string, Function>;
@@ -36,12 +40,11 @@ export class CMMVRenderer {
         list = list || [];
         from = from || {};
 
-        if ((to !== null) && (to !== undefined)) {
+        if (to !== null && to !== undefined) {
             for (let i = 0; i < list.length; i++) {
                 let p = list[i];
 
-                if (typeof from[p] !== 'undefined') 
-                    to[p] = from[p];
+                if (typeof from[p] !== 'undefined') to[p] = from[p];
             }
         }
 
@@ -56,32 +59,36 @@ export class CMMVRenderer {
         if (options.cache && filename) {
             func = this.cache.get(filename);
 
-            if (func) 
-                return func;
+            if (func) return func;
         }
 
         if (!hasTemplate) {
-            if (!filename) 
-                throw new Error('Internal CMMVRenderer error: no file name or template provided');
-            
+            if (!filename)
+                throw new Error(
+                    'Internal CMMVRenderer error: no file name or template provided',
+                );
+
             template = fs.readFileSync(filename, 'utf-8');
         }
 
         func = this.compile(template, options);
 
-        if (options.cache && filename) 
-            this.cache.set(filename, func);
-        
+        if (options.cache && filename) this.cache.set(filename, func);
+
         return func;
     }
 
     public compile(template: string, opts: any) {
         let templ = new Template(template, opts);
-        
+
         templ.use([
-            ssrDirectives, extractSetupScript,  
-            sServerData, sData, sAttr, i18n
-        ]); //Extact Setup first 
+            ssrDirectives,
+            extractSetupScript,
+            sServerData,
+            sData,
+            sAttr,
+            i18n,
+        ]); //Extact Setup first
 
         return templ.compile();
     }
@@ -92,8 +99,17 @@ export class CMMVRenderer {
 
         if (arguments.length === 2) {
             this.shallowCopyFromList(opts, data, [
-                'delimiter', 'scope', 'context', 'debug', 'compileDebug',
-                'client', '_with', 'rmWhitespace', 'strict', 'filename', 'async'
+                'delimiter',
+                'scope',
+                'context',
+                'debug',
+                'compileDebug',
+                'client',
+                '_with',
+                'rmWhitespace',
+                'strict',
+                'filename',
+                'async',
             ]);
         }
 
@@ -110,13 +126,12 @@ export class CMMVRenderer {
         opts = opts || {};
         opts.filename = filename;
 
-        if (typeof cb !== 'function') 
+        if (typeof cb !== 'function')
             throw new Error('Callback function is required');
-        
+
         fs.readFile(filename, 'utf-8', async (err, content) => {
-            if (err) 
-                return cb(err);
-            
+            if (err) return cb(err);
+
             try {
                 const handle = this.handleCache(opts, content);
                 const rendered = await handle(data);
