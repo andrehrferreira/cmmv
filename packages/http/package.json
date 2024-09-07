@@ -1,6 +1,6 @@
 {
     "name": "@cmmv/http",
-    "version": "0.2.24",
+    "version": "0.2.25",
     "description": "CMMV (@http)",
     "publishConfig": {
         "access": "public"
