@@ -206,12 +206,15 @@ function forSSR(templateText: string, template: Template) {
         templateText = templateText.replace(
             fullMatch,
             `
-        <div c-if="!loaded && !${listName}">${renderedItems}</div>
-        <div c-else>${fullMatch
-            .replace(new RegExp(tagName, 'img'), renderTag)
-            .replace(/render-tag\s*=\s*["']([^"']+)["']/i, '')
-            .replace(directive, placeholder)}</div>
-        `,
+            <div c-if="!loaded && !${listName}">${renderedItems}</div>
+            <div c-else>${fullMatch
+                .replace(
+                    new RegExp(`(<\\/?\\s*)${tagName}(\\s*>)`, 'gi'),
+                    `$1${renderTag}$2`,
+                )
+                .replace(/render-tag\s*=\s*["']([^"']+)["']/i, '')
+                .replace(directive, placeholder)}</div>
+            `,
         );
     }
 
