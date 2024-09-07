@@ -1,6 +1,6 @@
 {
     "name": "@cmmv/view",
-    "version": "0.2.22",
+    "version": "0.2.23",
     "description": "CMMV (@viewengine)",
     "publishConfig": {
         "access": "public"
