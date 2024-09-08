@@ -1,6 +1,7 @@
 // Generated automatically by CMMV
 
 import { Exclude, Transform } from 'class-transformer';
+import { IsString, IsHash } from 'class-validator';
 import * as crypto from 'crypto';
 
 export interface IUser {
@@ -13,8 +14,10 @@ export interface IUser {
 export class User implements IUser {
     id?: any;
 
+    @IsString({ message: 'Invalid name' })
     name: string;
 
+    @IsString({ message: 'Invalid username' })
     username: string;
 
     @Exclude({ toClassOnly: true })
@@ -22,5 +25,6 @@ export class User implements IUser {
         ({ value }) => crypto.createHash('sha256').update(value).digest('hex'),
         { toClassOnly: true },
     )
+    @IsHash('sha256', { message: 'Invalid password format' })
     password: string;
 }

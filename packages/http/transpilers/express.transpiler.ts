@@ -65,7 +65,8 @@ ${contract.fields.map((field: any) => this.generateClassField(field)).join('\n\n
 
         const serviceTemplate = `// Generated automatically by CMMV
 
-import { classToPlain, plainToClass } from 'class-transformer';
+import { validate } from 'class-validator';
+import { instanceToPlain, plainToClass } from 'class-transformer';
 import { AbstractService, Service } from '@cmmv/http';
 import { ${modelName}, ${modelInterfaceName} } from '../models/${modelName.toLowerCase()}.model';
 
@@ -88,23 +89,49 @@ export class ${serviceName} extends AbstractService {
     }
 
     async add(item: ${modelInterfaceName}, req?: any): Promise<${modelName}> {
-        item['id'] = this.items.length + 1;
-        const newItem = plainToClass(${modelName}, item, { excludeExtraneousValues: true });
-        this.items.push(newItem);
-        return item;
+        return new Promise((resolve, reject) => {
+            item['id'] = this.items.length + 1;
+
+            const newItem = plainToClass(${modelName}, item, { 
+                excludeExtraneousValues: true 
+            });
+
+            validate(newItem, { skipMissingProperties: true }).then(err => {
+                if(!err){
+                    this.items.push(newItem);
+                    resolve(newItem);
+                }
+                else{
+                    reject(err);
+                }
+            });            
+        });
     }
 
     async update(id: string, item: ${modelInterfaceName}, req?: any): Promise<${modelName}> {
-        const index = this.items.findIndex(i => i.id === parseInt(id));
+        return new Promise((resolve, reject) => {
+            const index = this.items.findIndex(i => i.id === parseInt(id));
 
-        if (index !== -1){
-            let itemRaw = classToPlain(this.items[index]);
-            let updateItem = { ...itemRaw, ...item };
-            this.items[index] = plainToClass(${modelName}, updateItem, { excludeExtraneousValues: true })
-            return this.items[index];
-        }
-                    
-        throw new Error('Item not found');
+            if (index !== -1){
+                let itemRaw = instanceToPlain(this.items[index]);
+                let updateItem = { ...itemRaw, ...item };
+
+                const editedItem = plainToClass(${modelName}, updateItem, { 
+                    excludeExtraneousValues: true 
+                });
+                
+                validate(editedItem, { skipMissingProperties: true }).then(err => {
+                    if(!err){
+                        this.items[index] = editedItem;
+                        resolve(editedItem);
+                    } 
+                    else reject(err);
+                }); 
+            }
+            else{
+                reject('Item not found');
+            }                        
+        });
     }
 
     async delete(id: string, req?: any): Promise<{ success: boolean, affected: number }> {
@@ -117,8 +144,7 @@ export class ${serviceName} extends AbstractService {
                     
         throw new Error('Item not found');
     }
-}
-`;
+}`;
 
         const dirname = path.resolve(outputDir, '../services');
 
@@ -129,6 +155,7 @@ export class ${serviceName} extends AbstractService {
             '../services',
             serviceFileName,
         );
+
         fs.writeFileSync(outputFilePath, serviceTemplate, 'utf8');
     }
 
@@ -213,6 +240,7 @@ export class ${controllerName} {
                 };
             }),
         ];
+
         Application.appModule.providers = [
             ...Application.appModule.providers,
             ...providers.map(name => {
@@ -230,6 +258,7 @@ export class ${controllerName} {
         const hasExclude = contract.fields.some(
             (field: any) => field.exclude || field.toClassOnly,
         );
+
         const hasTransform = contract.fields.some(
             (field: any) => field.transform,
         );
@@ -240,6 +269,24 @@ export class ${controllerName} {
             if (hasTransform) imports.push('Transform');
             importStatements.push(
                 `import { ${imports.join(', ')} } from 'class-transformer';`,
+            );
+        }
+
+        const validationImports = new Set<string>();
+        contract.fields.forEach((field: any) => {
+            if (field.validations) {
+                field.validations.forEach((validation: any) => {
+                    const validationName = Array.isArray(validation.type)
+                        ? validation.type[0]
+                        : validation.type;
+                    validationImports.add(validationName);
+                });
+            }
+        });
+
+        if (validationImports.size > 0) {
+            importStatements.push(
+                `import { ${Array.from(validationImports).join(', ')} } from 'class-validator';`,
             );
         }
 
@@ -256,17 +303,64 @@ export class ${controllerName} {
     private generateClassField(field: any): string {
         let decorators: string[] = [];
 
-        if (field.exclude && field.toClassOnly)
+        if (field.exclude && field.toClassOnly) {
             decorators.push(
                 `    @Exclude(${field.toClassOnly ? `{ toClassOnly: true }` : ''})`,
             );
+        }
 
-        if (field.transform)
+        if (field.transform) {
             decorators.push(
-                `    @Transform(${field.transform}${field.toClassOnly ? `,{ toClassOnly: true }` : ''})`,
+                `    @Transform(${field.transform}${field.toClassOnly ? `, { toClassOnly: true }` : ''})`,
             );
+        }
 
-        return `${decorators.length > 0 ? decorators.join('\n') + '\n' : ''}    ${field.propertyKey}: ${this.mapToTsType(field.protoType)};`;
+        if (field.validations) {
+            field.validations.forEach((validation: any) => {
+                const validationName = Array.isArray(validation.type)
+                    ? validation.type[0]
+                    : validation.type;
+                const validationParams =
+                    Array.isArray(validation.type) && validation.type.length > 1
+                        ? `(${validation.type
+                              .slice(1)
+                              .map(param =>
+                                  typeof param === 'string'
+                                      ? `"${param}"`
+                                      : param,
+                              )
+                              .join(', ')}`
+                        : '(';
+
+                const options = [];
+                if (validation.message) {
+                    options.push(`message: "${validation.message}"`);
+                }
+                if (validation.context) {
+                    const contextString = JSON.stringify(
+                        validation.context,
+                    ).replace(/"([^"]+)":/g, '$1:');
+                    options.push(`context: ${contextString}`);
+                }
+                const optionsString =
+                    options.length > 0 ? `{ ${options.join(', ')} }` : '';
+
+                decorators.push(
+                    `    @${validationName}${validationParams}${validationParams !== '(' ? ',' : ''}${optionsString})`,
+                );
+            });
+        }
+
+        let defaultValueString = '';
+        if (field.defaultValue !== undefined) {
+            const defaultValue =
+                typeof field.defaultValue === 'string'
+                    ? `"${field.defaultValue}"`
+                    : field.defaultValue;
+            defaultValueString = ` = ${defaultValue};`;
+        }
+
+        return `${decorators.length > 0 ? decorators.join('\n') + '\n' : ''}    ${field.propertyKey}: ${this.mapToTsType(field.protoType)}${defaultValueString}`;
     }
 
     private mapToTsType(protoType: string): string {

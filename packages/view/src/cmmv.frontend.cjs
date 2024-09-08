@@ -95,8 +95,10 @@
 
             addContracts(jsonContracts) {
                 this.telemetry.start('Load Contracts');
+
                 try {
                     this.contractIndex = jsonContracts.index;
+
                     for (let contractName in jsonContracts.contracts) {
                         if (jsonContracts.contracts.hasOwnProperty(contractName)) {
                             let contract = protobuf.Root.fromJSON(jsonContracts.contracts[contractName]);
@@ -108,6 +110,7 @@
                 } catch (e) {
                     console.error("Error loading contracts:", e);
                 }
+
                 this.telemetry.end('Load Contracts');
             },
 
@@ -117,6 +120,7 @@
 
             parseMessage(event) {
                 this.telemetry.start('Parse Message');
+
                 try {
                     const buffer = event.data instanceof ArrayBuffer ? new Uint8Array(event.data) : event.data;
                     const message = this.contracts["ws"].lookupType("WsCall").decode(buffer);
@@ -138,6 +142,7 @@
                 } catch (error) {
                     console.error(error);
                 }
+                
                 this.telemetry.end('Parse Message');
             },
 

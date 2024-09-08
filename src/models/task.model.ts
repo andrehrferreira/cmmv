@@ -1,5 +1,7 @@
 // Generated automatically by CMMV
 
+import { IsString, IsNotEmpty, IsBoolean } from 'class-validator';
+
 export interface ITask {
     id?: any;
     label: string;
@@ -10,9 +12,13 @@ export interface ITask {
 export class Task implements ITask {
     id?: any;
 
+    @IsString({ message: 'Invalid label' })
+    @IsNotEmpty({ message: 'Invalid label' })
     label: string;
 
-    checked: boolean;
+    @IsBoolean({ message: 'Invalid checked type' })
+    checked: boolean = false;
 
-    removed: boolean;
+    @IsBoolean({ message: 'Invalid removed type' })
+    removed: boolean = false;
 }

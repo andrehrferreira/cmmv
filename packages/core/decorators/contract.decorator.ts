@@ -1,3 +1,11 @@
+export type ValidationType = string | Map<string, any> | [string, ...any[]];
+
+export interface ValidationOption {
+    type: ValidationType;
+    message?: string;
+    context?: any;
+}
+
 export interface ContractFieldOptions {
     protoType: string;
     protoRepeated?: boolean;
@@ -7,6 +15,7 @@ export interface ContractFieldOptions {
     exclude?: boolean;
     toClassOnly?: boolean;
     transform?: Function;
+    validations?: ValidationOption[];
 }
 
 export interface ContractOptions {

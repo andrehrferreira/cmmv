@@ -55,32 +55,37 @@ ${contract.fields.map((field: any) => this.generateField(field)).join('\n')}
         const outputDir = path.dirname(outputPath);
         const serviceName = `${contract.controllerName}Service`;
         const modelName = `${contract.controllerName}`;
+        const modelInterfaceName = `I${modelName}`;
         const entityName = `${contract.controllerName}Entity`;
         const serviceFileName = `${contract.controllerName.toLowerCase()}.service.ts`;
 
         const serviceTemplate = `// Generated automatically by CMMV
     
-import { classToPlain, plainToClass } from 'class-transformer';
+import { validate } from 'class-validator';
+import { plainToClass } from 'class-transformer';
 import { Telemetry } from "@cmmv/core";
 import { AbstractService, Service } from '@cmmv/http';
 import { Repository } from '@cmmv/repository';
+import { ${modelName}, ${modelInterfaceName} } from '../models/${modelName.toLowerCase()}.model';
 import { ${entityName} } from '../entities/${modelName.toLowerCase()}.entity';
 
 @Service("${contract.controllerName.toLowerCase()}")
 export class ${serviceName} extends AbstractService {
     public override name = "${contract.controllerName.toLowerCase()}";
 
-    async getAll(queries?: any, req?: any): Promise<${entityName}[]> {
+    async getAll(queries?: any, req?: any): Promise<${entityName}[] | null> {
         try{
             Telemetry.start('${serviceName}::GetAll', req?.requestId);
             let result = await Repository.findAll(${entityName});
             Telemetry.end('${serviceName}::GetAll', req?.requestId);
             return result;
         }
-        catch(e){}
+        catch(e){
+            return null;
+        }
     }
 
-    async getById(id: string, req?: any): Promise<${entityName}> {
+    async getById(id: string, req?: any): Promise<${entityName} | null> {
         try{
             Telemetry.start('${serviceName}::GetById', req?.requestId);
             const item = await Repository.findBy(${entityName}, { id });
@@ -91,27 +96,69 @@ export class ${serviceName} extends AbstractService {
             
             return item;
         }
-        catch(e){}
+        catch(e){
+            return null;
+        }
     }
 
-    async add(item: Partial<${entityName}>, req?: any): Promise<${entityName}> {
-        try{
-            Telemetry.start('${serviceName}::Add', req?.requestId);
-            const result = await Repository.insert<${entityName}>(${entityName}, item);
-            Telemetry.end('${serviceName}::Add', req?.requestId);
-            return result;
-        }
-        catch(e){}
+    async add(item: ${modelInterfaceName}, req?: any): Promise<${entityName}> {
+        return new Promise(async (resolve, reject) => {
+            try{
+                Telemetry.start('${serviceName}::Add', req?.requestId);
+                        
+                const newItem = plainToClass(${modelName}, item, { 
+                    exposeUnsetFields: true,
+                    enableImplicitConversion: true
+                }); 
+    
+                const errors = await validate(newItem, { skipMissingProperties: true });
+                
+                if (errors.length > 0) {
+                    Telemetry.end('TaskService::Add', req?.requestId);
+                    reject(errors);
+                } 
+                else {                   
+                    const result = await Repository.insert<${entityName}>(${entityName}, newItem);
+                    Telemetry.end('TaskService::Add', req?.requestId);
+                    resolve(result);                    
+                }
+            }
+            catch(e){ 
+                Telemetry.end('TaskService::Add', req?.requestId);
+                console.log(e); 
+                reject(e)
+            }
+        });
     }
 
-    async update(id: string, item: Partial<${entityName}>, req?: any): Promise<${entityName}> {
-        try{
-            Telemetry.start('${serviceName}::Update', req?.requestId);
-            const result = await Repository.update(${entityName}, id, item);
-            Telemetry.end('${serviceName}::Update', req?.requestId);
-            return result;
-        }
-        catch(e){}
+    async update(id: string, item: ${modelInterfaceName}, req?: any): Promise<${entityName}> {
+        return new Promise(async (resolve, reject) => {
+            try{
+                Telemetry.start('${serviceName}::Update', req?.requestId);
+
+                const newItem = plainToClass(${modelName}, item, { 
+                    exposeUnsetFields: true,
+                    enableImplicitConversion: true
+                });
+
+                const errors = await validate(newItem, { skipMissingProperties: true });
+                
+                if (errors.length > 0) {
+                    Telemetry.end('TaskService::Add', req?.requestId);
+                    reject(errors);
+                } 
+                else {  
+                    const result = await Repository.update(${entityName}, id, item);
+                    Telemetry.end('TaskService::Add', req?.requestId);
+                    resolve(result);        
+                }                
+            }
+            catch(e){
+                Telemetry.end('${serviceName}::Update', req?.requestId);
+                console.log(e); 
+                reject(e)
+            }
+        });
     }
 
     async delete(id: string, req?: any): Promise<{ success: boolean, affected: number }> {
@@ -121,7 +168,9 @@ export class ${serviceName} extends AbstractService {
             Telemetry.end('${serviceName}::Delete', req?.requestId);
             return { success: result.affected > 0, affected: result.affected };
         }
-        catch(e){}
+        catch(e){
+            return { success: false, affected: 0 };
+        }
     }
 }`;
 
@@ -134,6 +183,7 @@ export class ${serviceName} extends AbstractService {
             '../services',
             serviceFileName,
         );
+
         fs.writeFileSync(outputFilePath, serviceTemplate, 'utf8');
     }
 
