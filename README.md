@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="https://docs.cmmv.io">Documentation</a> &bull;
+  <a href="https://cmmv.io">Documentation</a> &bull;
   <a href="https://github.com/andrehrferreira/cmmv/issues">Report Issue</a>
 </p>
 
@@ -68,7 +68,7 @@ Application.create({
 
 ## Documentation
 
-The complete documentation is available [here](https://docs.cmmv.io).
+The complete documentation is available [here](https://cmmv.io).
 
 ## Support
 
