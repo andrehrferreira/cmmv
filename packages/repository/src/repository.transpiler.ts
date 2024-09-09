@@ -63,8 +63,7 @@ ${contract.fields.map((field: any) => this.generateField(field)).join('\n')}
     
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
-import { Telemetry } from "@cmmv/core";
-import { AbstractService, Service } from '@cmmv/http';
+import { Telemetry, AbstractService, Service } from "@cmmv/core";
 import { Repository } from '@cmmv/repository';
 import { ${modelName}, ${modelInterfaceName} } from '../models/${modelName.toLowerCase()}.model';
 import { ${entityName} } from '../entities/${modelName.toLowerCase()}.entity';

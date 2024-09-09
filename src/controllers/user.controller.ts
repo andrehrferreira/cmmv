@@ -39,6 +39,7 @@ export class UserController {
     async add(@Body() item: User, @Request() req): Promise<User> {
         Telemetry.start('UserController::Add', req.requestId);
         let result = await this.userservice.add(item, req);
+
         Telemetry.end('UserController::Add', req.requestId);
         return result;
     }
@@ -51,6 +52,7 @@ export class UserController {
     ): Promise<User> {
         Telemetry.start('UserController::Update', req.requestId);
         let result = await this.userservice.update(id, item, req);
+
         Telemetry.end('UserController::Update', req.requestId);
         return result;
     }
@@ -62,6 +64,7 @@ export class UserController {
     ): Promise<{ success: boolean; affected: number }> {
         Telemetry.start('UserController::Delete', req.requestId);
         let result = await this.userservice.delete(id, req);
+
         Telemetry.end('UserController::Delete', req.requestId);
         return result;
     }

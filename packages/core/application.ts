@@ -24,6 +24,7 @@ import {
     AUTH_METADATA,
     CONTROLLER_CUSTOM_PATH_METADATA,
     CONTROLLER_IMPORTS,
+    CONTROLLER_CACHE,
 } from './decorators';
 
 import { Config } from './utils/config.util';
@@ -45,11 +46,15 @@ export class Application {
     public static appModule = {
         controllers: [],
         providers: [],
+        httpMiddlewares: [],
+        httpInterceptors: [],
+        httpAfterRender: [],
     };
 
     private httpAdapter: AbstractHttpAdapter;
     private httpBind: string;
     private httpOptions: IHTTPSettings;
+    private httpMiddlewares: Array<any> = new Array<any>();
     private wsAdapter: AbstractWSAdapter;
     private wsServer: any;
     public wSConnections: Map<string, any> = new Map<string, any>();
@@ -113,18 +118,28 @@ export class Application {
                 const tsconfig: any = new Function(
                     `return(${fs.readFileSync(path.resolve('./tsconfig.json'), 'utf-8')})`,
                 )();
+
                 const outputPath = path.resolve(
                     tsconfig.compilerOptions.outDir,
                     `app.module.js`,
                 );
+
                 const { ApplicationModule } = await import(outputPath);
                 this.loadModules([...this.modules, ApplicationModule]);
             }
 
-            settings.services?.forEach(
-                async service => await service?.loadConfig(),
+            let servicesLoad = [];
+
+            settings.services?.forEach(async service =>
+                servicesLoad.push(service?.loadConfig(this)),
             );
+
+            await Promise.all(servicesLoad);
             this.httpAdapter.init(this, this.httpOptions);
+
+            Application.appModule.httpMiddlewares?.forEach(middleware => {
+                this.httpAdapter.use(middleware);
+            });
 
             if (this.wsAdapter)
                 this.wsServer = this.wsAdapter.create(this.httpAdapter, this);
@@ -239,6 +254,10 @@ export class Application {
                 CONTROLLER_IMPORTS,
                 contract.constructor,
             );
+            const cache = Reflect.getMetadata(
+                CONTROLLER_CACHE,
+                contract.constructor,
+            );
 
             const contractStructure = {
                 controllerName,
@@ -251,6 +270,7 @@ export class Application {
                 auth,
                 controllerCustomPath,
                 imports,
+                cache,
             };
 
             Scope.addToArray('__contracts', contractStructure);
@@ -300,5 +320,17 @@ export class Application {
             new Logger('Application').error(e.message, 'generateModule');
             return null;
         }
+    }
+
+    public static setHTTPMiddleware(cb: Function) {
+        Application.appModule.httpMiddlewares.push(cb);
+    }
+
+    public static setHTTPInterceptor(cb: Function) {
+        Application.appModule.httpInterceptors.push(cb);
+    }
+
+    public static setHTTPAfterRender(cb: Function) {
+        Application.appModule.httpAfterRender.push(cb);
     }
 }

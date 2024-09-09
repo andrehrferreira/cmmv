@@ -30,6 +30,14 @@ module.exports = {
         logging: false
     },
 
+    cache: {
+        store: "@tirke/node-cache-manager-ioredis",
+        getter: "ioRedisStore",
+        host: "localhost",
+        port: 6379,
+        ttl: 600
+    },
+
     head: {
         title: "CMMV",
         htmlAttrs: {
@@ -41,9 +49,7 @@ module.exports = {
             { name: 'viewport', content: 'width=device-width, initial-scale=1' },
         ],
         link: [
-            { rel: 'icon', href: 'assets/favicon/favicon.ico' },
-            //{ rel: "dns-prefetch", href: "http://localhost:3000" },
-            //{ rel: "preconnect", href: "http://localhost:3000" },     
+            { rel: 'icon', href: 'assets/favicon/favicon.ico' }   
         ]
     },
 
@@ -53,7 +59,7 @@ module.exports = {
             "script-src 'self' 'unsafe-eval'",
             "style-src 'self' 'unsafe-inline'",
             "font-src 'self'",
-            "connect-src 'self' ws://localhost:3001 http://localhost:3001"
+            "connect-src 'self'"
         ]
     },
 

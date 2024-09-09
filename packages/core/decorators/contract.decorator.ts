@@ -6,6 +6,12 @@ export interface ValidationOption {
     context?: any;
 }
 
+export interface CacheOptions {
+    key: string;
+    ttl?: number;
+    compress?: boolean;
+}
+
 export interface ContractFieldOptions {
     protoType: string;
     protoRepeated?: boolean;
@@ -27,6 +33,7 @@ export interface ContractOptions {
     generateController?: boolean;
     auth?: boolean;
     imports?: Array<string>;
+    cache?: CacheOptions;
 }
 
 export const CONTRACT_WATERMARK = Symbol('contract_watermark');
@@ -44,6 +51,7 @@ export const CONTROLLER_CUSTOM_PATH_METADATA = Symbol(
     'controller_custom_path_metadata',
 );
 export const CONTROLLER_IMPORTS = Symbol('contract_imports');
+export const CONTROLLER_CACHE = Symbol('contract_cache');
 
 export function Contract(options?: ContractOptions): ClassDecorator {
     const defaultControllerName = 'DefaultContract';
@@ -54,6 +62,7 @@ export function Contract(options?: ContractOptions): ClassDecorator {
     const defaultAuth = true;
     const defaultControllerCustomPath = '';
     const defaultImports = [];
+    const defaultCache = null;
 
     const [
         controllerName,
@@ -64,6 +73,7 @@ export function Contract(options?: ContractOptions): ClassDecorator {
         auth,
         controllerCustomPath,
         imports,
+        cache,
     ] = !options
         ? [
               defaultControllerName,
@@ -74,6 +84,7 @@ export function Contract(options?: ContractOptions): ClassDecorator {
               defaultAuth,
               defaultControllerCustomPath,
               defaultImports,
+              defaultCache,
           ]
         : [
               options.controllerName || defaultControllerName,
@@ -84,6 +95,7 @@ export function Contract(options?: ContractOptions): ClassDecorator {
               options.auth ?? defaultAuth,
               options.controllerCustomPath || defaultControllerCustomPath,
               options.imports || defaultImports,
+              options.cache || defaultCache,
           ];
 
     return (target: object) => {
@@ -108,6 +120,7 @@ export function Contract(options?: ContractOptions): ClassDecorator {
             target,
         );
         Reflect.defineMetadata(CONTROLLER_IMPORTS, imports, target);
+        Reflect.defineMetadata(CONTROLLER_CACHE, cache, target);
     };
 }
 

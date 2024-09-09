@@ -7,9 +7,18 @@ export function Controller(prefix: string = ''): ClassDecorator {
     };
 }
 
-function createMethodDecorator(method: 'get' | 'post' | 'put' | 'delete' | 'patch', path: string): MethodDecorator {
-    return (target, propertyKey: string | symbol) => {
-        ControllerRegistry.registerRoute(target, method, path, propertyKey as string);
+function createMethodDecorator(
+    method: 'get' | 'post' | 'put' | 'delete' | 'patch',
+    path: string,
+): MethodDecorator {
+    return (target, propertyKey: string | symbol, context?: any) => {
+        ControllerRegistry.registerRoute(
+            target,
+            method,
+            path,
+            propertyKey as string,
+            context.value,
+        );
     };
 }
 
@@ -35,10 +44,19 @@ export function Patch(path: string = ''): MethodDecorator {
 
 function createParamDecorator(paramType: string): ParameterDecorator {
     return (target, propertyKey: string | symbol, parameterIndex: number) => {
-        const paramName = paramType.startsWith('param') || paramType.startsWith('query') || paramType.startsWith('header')
-            ? paramType.split(':')[1]
-            : paramType;
-        ControllerRegistry.registerParam(target, propertyKey as string, paramType, parameterIndex, paramName);
+        const paramName =
+            paramType.startsWith('param') ||
+            paramType.startsWith('query') ||
+            paramType.startsWith('header')
+                ? paramType.split(':')[1]
+                : paramType;
+        ControllerRegistry.registerParam(
+            target,
+            propertyKey as string,
+            paramType,
+            parameterIndex,
+            paramName,
+        );
     };
 }
 

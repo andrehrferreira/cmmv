@@ -4,6 +4,12 @@ import { AbstractContract, Contract, ContractField } from '@cmmv/core';
     controllerName: 'Task',
     protoPath: 'src/protos/task.proto',
     protoPackage: 'task',
+    imports: ['crypto'],
+    cache: {
+        key: 'task:',
+        ttl: 300,
+        compress: true,
+    },
 })
 export class TasksContract extends AbstractContract {
     @ContractField({

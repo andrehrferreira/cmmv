@@ -3,6 +3,7 @@
 import { Rpc, Message, Data, Socket, RpcUtils } from '@cmmv/ws';
 import { plainToClass } from 'class-transformer';
 import { TaskEntity } from '../entities/task.entity';
+import { Cache, CacheService } from '@cmmv/cache';
 
 import {
     AddTaskRequest,
@@ -17,6 +18,7 @@ export class TaskGateway {
     constructor(private readonly taskservice: TaskService) {}
 
     @Message('GetAllTaskRequest')
+    @Cache('task:getAll', { ttl: 300, compress: true })
     async getAll(@Socket() socket) {
         try {
             const items = await this.taskservice.getAll();
@@ -39,6 +41,8 @@ export class TaskGateway {
                 item: result,
                 id: result.id,
             });
+            CacheService.set('task:${result.id}', JSON.stringify(result), 300);
+            CacheService.del('task:getAll');
 
             if (response) socket.send(response);
         } catch (e) {}
@@ -53,6 +57,8 @@ export class TaskGateway {
                 item: result,
                 id: result.id,
             });
+            CacheService.set('task:${result.id}', JSON.stringify(result), 300);
+            CacheService.del('task:getAll');
 
             if (response) socket.send(response);
         } catch (e) {}
@@ -66,6 +72,8 @@ export class TaskGateway {
                 success: result,
                 id: data.id,
             });
+            CacheService.del('task:${data.id}');
+            CacheService.del('task:getAll');
 
             if (response) socket.send(response);
         } catch (e) {}

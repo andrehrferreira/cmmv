@@ -41,7 +41,9 @@
             "@cmmv/ws": ["packages/ws"],
             "@cmmv/ws/*": ["packages/ws/*"],
             "@cmmv/repository": ["packages/repository"],
-            "@cmmv/repository/*": ["packages/repository/*"]
+            "@cmmv/repository/*": ["packages/repository/*"],
+            "@cmmv/cache": ["packages/cache"],
+            "@cmmv/cache/*": ["packages/cache/*"]
         }
     },
     "include": ["packages/**/*", "src/**/*.ts"],

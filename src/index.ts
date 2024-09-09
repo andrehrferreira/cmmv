@@ -6,6 +6,7 @@ import { ProtobufModule } from '@cmmv/protobuf';
 import { WSModule, WSAdapter } from '@cmmv/ws';
 import { ViewModule } from '@cmmv/view';
 import { RepositoryModule, Repository } from '@cmmv/repository';
+import { CacheModule, CacheService } from '@cmmv/cache';
 
 //Contracts
 import { UsersContract } from './contracts/users.contract';
@@ -20,7 +21,8 @@ Application.create({
         WSModule,
         ViewModule,
         RepositoryModule,
+        CacheModule,
     ],
-    services: [Repository],
+    services: [Repository, CacheService],
     contracts: [UsersContract, TasksContract],
 });

@@ -1,9 +1,8 @@
 // Generated automatically by CMMV
 
 import { validate } from 'class-validator';
-import { classToPlain, plainToClass } from 'class-transformer';
-import { Telemetry } from '@cmmv/core';
-import { AbstractService, Service } from '@cmmv/http';
+import { plainToClass } from 'class-transformer';
+import { Telemetry, AbstractService, Service } from '@cmmv/core';
 import { Repository } from '@cmmv/repository';
 import { User, IUser } from '../models/user.model';
 import { UserEntity } from '../entities/user.entity';

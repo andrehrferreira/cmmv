@@ -1,6 +1,7 @@
 // Generated automatically by CMMV
 
 import { IsString, IsNotEmpty, IsBoolean } from 'class-validator';
+import * as crypto from 'crypto';
 
 export interface ITask {
     id?: any;

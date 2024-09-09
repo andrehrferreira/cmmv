@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as http from 'http';
 import * as https from 'https';
+import * as crypto from 'crypto';
 import { Duplex } from 'stream';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -19,10 +20,11 @@ import {
     Application,
     Telemetry,
     Config,
+    ServiceRegistry,
 } from '@cmmv/core';
+
 import { CMMVRenderer } from '@cmmv/view';
 import { ControllerRegistry } from '../utils/controller-registry.utils';
-import { ServiceRegistry } from '../utils';
 
 export interface ExpressRequest extends express.Request {
     requestId?: string;
@@ -167,7 +169,7 @@ export class ExpressAdapter extends AbstractHttpAdapter<
             next();
         });
 
-        this.instance.get('*', (req, res, next) => {
+        this.instance.use((req, res, next) => {
             Telemetry.start('Request Process', req.requestId);
             const publicDir = path.join(process.cwd(), 'public/views');
             const requestPath =
@@ -237,13 +239,39 @@ export class ExpressAdapter extends AbstractHttpAdapter<
                     this.instance[method](
                         fullPath,
                         async (
-                            req: ExpressRequest,
+                            req: ExpressRequest | any,
                             res: express.Response,
                             next: any,
                         ) => {
                             const startTime = Date.now();
 
                             try {
+                                req.contextId = crypto
+                                    .createHash('sha1')
+                                    .update(`${req.method}::${req.route.path}`)
+                                    .digest('hex');
+
+                                if (
+                                    Application.appModule.httpInterceptors
+                                        .length > 0
+                                ) {
+                                    for (let interceptor of Application
+                                        .appModule.httpInterceptors) {
+                                        let breakProcess = await interceptor(
+                                            `${req.method}::${req.route.path}`.toLocaleLowerCase(),
+                                            {
+                                                req,
+                                                res,
+                                                next,
+                                                handler:
+                                                    instance[route.handlerName],
+                                            },
+                                        );
+
+                                        if (breakProcess) return;
+                                    }
+                                }
+
                                 const args = this.buildRouteArgs(
                                     req,
                                     res,
@@ -255,9 +283,11 @@ export class ExpressAdapter extends AbstractHttpAdapter<
                                     'Controller Handler',
                                     req.requestId,
                                 );
+
                                 const result = await instance[
                                     route.handlerName
                                 ](...args);
+
                                 Telemetry.end(
                                     'Controller Handler',
                                     req.requestId,
@@ -281,8 +311,54 @@ export class ExpressAdapter extends AbstractHttpAdapter<
                                         response['telemetry'] = telemetry;
                                     }
 
+                                    if (
+                                        Application.appModule.httpAfterRender
+                                            .length > 0
+                                    ) {
+                                        for (let afterRender of Application
+                                            .appModule.httpAfterRender) {
+                                            await afterRender(
+                                                `${req.method}::${req.route.path}`.toLocaleLowerCase(),
+                                                {
+                                                    req,
+                                                    res,
+                                                    next,
+                                                    handler:
+                                                        instance[
+                                                            route.handlerName
+                                                        ],
+                                                    content: response,
+                                                },
+                                            );
+                                        }
+                                    }
+
                                     res.json(response);
-                                } else if (result) res.status(200).send(result);
+                                } else if (result) {
+                                    if (
+                                        Application.appModule.httpAfterRender
+                                            .length > 0
+                                    ) {
+                                        for (let afterRender of Application
+                                            .appModule.httpAfterRender) {
+                                            await afterRender(
+                                                `${req.method}::${req.route.path}`.toLocaleLowerCase(),
+                                                {
+                                                    req,
+                                                    res,
+                                                    next,
+                                                    handler:
+                                                        instance[
+                                                            route.handlerName
+                                                        ],
+                                                    content: result,
+                                                },
+                                            );
+                                        }
+                                    }
+
+                                    res.status(200).send(result);
+                                }
                             } catch (error) {
                                 console.error(error);
                                 const processingTime = Date.now() - startTime;

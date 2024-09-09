@@ -67,7 +67,7 @@ ${contract.fields.map((field: any) => this.generateClassField(field)).join('\n\n
 
 import { validate } from 'class-validator';
 import { instanceToPlain, plainToClass } from 'class-transformer';
-import { AbstractService, Service } from '@cmmv/http';
+import { AbstractService, Service } from '@cmmv/core';
 import { ${modelName}, ${modelInterfaceName} } from '../models/${modelName.toLowerCase()}.model';
 
 @Service("${contract.controllerName.toLowerCase()}")
@@ -166,18 +166,29 @@ export class ${serviceName} extends AbstractService {
         const serviceName = `${contract.controllerName}Service`;
         const controllerFileName = `${contract.controllerName.toLowerCase()}.controller.ts`;
 
+        const hasCache =
+            contract.cache !== undefined && contract.cache !== null;
+        const cacheKeyPrefix = hasCache
+            ? contract.cache.key || `${contract.controllerName.toLowerCase()}:`
+            : '';
+        const cacheTtl = hasCache ? contract.cache.ttl || 300 : 0;
+        const cacheCompress =
+            hasCache && contract.cache.compress ? 'true' : 'false';
+
         const controllerTemplate = `// Generated automatically by CMMV
-    
-import { Telemetry } from "@cmmv/core";  
+
+import { Telemetry } from "@cmmv/core";
 import { Controller, Get, Post, Put, Delete, Queries, Param, Body, Request } from '@cmmv/http';
 import { ${serviceName} } from '../services/${contract.controllerName.toLowerCase()}.service';
 import { ${contract.controllerName} } from '../models/${contract.controllerName.toLowerCase()}.model';
+${hasCache ? `import { Cache, CacheService } from "@cmmv/cache";` : ''}
 
 @Controller('${contract.controllerName.toLowerCase()}')
 export class ${controllerName} {
     constructor(private readonly ${serviceName.toLowerCase()}: ${serviceName}) {}
 
     @Get()
+    ${hasCache ? `@Cache("${cacheKeyPrefix}getAll", { ttl: ${cacheTtl}, compress: ${cacheCompress} })` : ''}
     async getAll(@Queries() queries: any, @Request() req): Promise<${contract.controllerName}[]> {
         Telemetry.start('${controllerName}::GetAll', req.requestId);
         let result = await this.${serviceName.toLowerCase()}.getAll(queries, req);
@@ -186,6 +197,7 @@ export class ${controllerName} {
     }
 
     @Get(':id')
+    ${hasCache ? `@Cache("${cacheKeyPrefix}{id}", { ttl: ${cacheTtl}, compress: ${cacheCompress} })` : ''}
     async getById(@Param('id') id: string, @Request() req): Promise<${contract.controllerName}> {
         Telemetry.start('${controllerName}::GetById', req.requestId);
         let result = await this.${serviceName.toLowerCase()}.getById(id, req);
@@ -197,6 +209,8 @@ export class ${controllerName} {
     async add(@Body() item: ${contract.controllerName}, @Request() req): Promise<${contract.controllerName}> {
         Telemetry.start('${controllerName}::Add', req.requestId);
         let result = await this.${serviceName.toLowerCase()}.add(item, req);
+        ${hasCache ? `CacheService.set(\`${cacheKeyPrefix}\${result.id}\`, JSON.stringify(result), ${cacheTtl});` : ''}
+        ${hasCache ? `CacheService.del("${cacheKeyPrefix}getAll");` : ''}
         Telemetry.end('${controllerName}::Add', req.requestId);
         return result;
     }
@@ -205,6 +219,8 @@ export class ${controllerName} {
     async update(@Param('id') id: string, @Body() item: ${contract.controllerName}, @Request() req): Promise<${contract.controllerName}> {
         Telemetry.start('${controllerName}::Update', req.requestId);
         let result = await this.${serviceName.toLowerCase()}.update(id, item, req);
+        ${hasCache ? `CacheService.set(\`${cacheKeyPrefix}\${result.id}\`, JSON.stringify(result), ${cacheTtl});` : ''}
+        ${hasCache ? `CacheService.del("${cacheKeyPrefix}getAll");` : ''}
         Telemetry.end('${controllerName}::Update', req.requestId);
         return result;
     }
@@ -213,6 +229,8 @@ export class ${controllerName} {
     async delete(@Param('id') id: string, @Request() req): Promise<{ success: boolean, affected: number }> {
         Telemetry.start('${controllerName}::Delete', req.requestId);
         let result = await this.${serviceName.toLowerCase()}.delete(id, req);
+        ${hasCache ? `CacheService.del(\`${cacheKeyPrefix}\${id}\`);` : ''}
+        ${hasCache ? `CacheService.del("${cacheKeyPrefix}getAll");` : ''}
         Telemetry.end('${controllerName}::Delete', req.requestId);
         return result;
     }
