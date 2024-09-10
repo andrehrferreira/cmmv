@@ -48,8 +48,9 @@
                         Duration: `${duration.toFixed(2)} ms`,
                     };
                 });
-                                        
-                if(process.env.NODE_ENV === "dev")
+                           
+                console.log("aki")
+                //if(process.env.NODE_ENV === "dev")
                     console.table(summary);
             }            
         }
@@ -303,7 +304,7 @@
 
         if (global.cmmvSetup) {            
             let methods = {};
-            
+
             if (typeof global.cmmvSetup.__methods === "object") {
                 for (let key in global.cmmvSetup.__methods)
                     methods[key] = new Function(`return (${global.cmmvSetup.__methods[key]})`)()

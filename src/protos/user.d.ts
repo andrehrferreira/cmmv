@@ -24,6 +24,7 @@ export interface DeleteUserRequest {
 export interface DeleteUserResponse {
     success: boolean;
     affected: number;
+    id: string;
 }
 export interface GetAllUserRequest {}
 export interface GetAllUserResponse {

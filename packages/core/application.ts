@@ -189,7 +189,7 @@ export class Application {
                 conditionals: true,
                 unused: true,
                 drop_debugger: true,
-                drop_console: true,
+                drop_console: process.env.NODE_ENV !== 'dev' || true,
             },
             mangle: { toplevel: true },
             output: { beautify: false },

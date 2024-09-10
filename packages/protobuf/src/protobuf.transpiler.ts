@@ -219,6 +219,7 @@ export class ProtobufTranspile implements ITranspile {
             );
             lines.push(`    success: boolean;`);
             lines.push(`    affected: number;`);
+            lines.push(`    id: string;`);
             lines.push(`}`);
 
             lines.push(

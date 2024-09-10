@@ -24,6 +24,7 @@ export interface DeleteTaskRequest {
 export interface DeleteTaskResponse {
     success: boolean;
     affected: number;
+    id: string;
 }
 export interface GetAllTaskRequest {}
 export interface GetAllTaskResponse {
