@@ -1,7 +1,9 @@
-import { Module } from "@cmmv/core";
+import { Module } from '@cmmv/core';
 
-import { ProtobufTranspile } from "./protobuf.transpiler";
+import { ProtobufController } from './protobuf.controller';
+import { ProtobufTranspile } from './protobuf.transpiler';
 
-export let ProtobufModule = new Module({
-    transpilers: [ProtobufTranspile]
-})
+export let ProtobufModule = new Module('protobuf', {
+    controllers: [ProtobufController],
+    transpilers: [ProtobufTranspile],
+});

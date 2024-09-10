@@ -1,0 +1,26 @@
+// Generated automatically by CMMV
+
+syntax = "proto3";
+package auth;
+
+message User {
+   string username = 1;
+   string password = 2;
+   string googleId = 3;
+   string groups = 4;
+}
+
+message LoginRequest {
+    string username = 1;
+    string password = 2;
+}
+
+message LoginResponse {
+    bool success = 1;
+    string token = 2;
+    string message = 3;
+}
+          
+service AuthService {
+    rpc Login (LoginRequest) returns (LoginResponse);
+}

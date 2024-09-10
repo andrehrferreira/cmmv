@@ -40,7 +40,7 @@ export class CacheService extends Singleton {
                             );
 
                             if (context.res) {
-                                const cacheKey = metadata.key.replace(
+                                const cacheKey = metadata?.key.replace(
                                     '{id}',
                                     context.req.params.id,
                                 );
@@ -81,8 +81,8 @@ export class CacheService extends Singleton {
                             contextCached,
                         );
 
-                        if (context.content && metadata.key) {
-                            const cacheKey = metadata.key.replace(
+                        if (context.content && metadata && metadata?.key) {
+                            const cacheKey = metadata?.key.replace(
                                 '{id}',
                                 context.req.params.id,
                             );

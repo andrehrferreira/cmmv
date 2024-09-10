@@ -9,10 +9,9 @@ export class RepositoryTranspile implements ITranspile {
         const contracts = Scope.getArray<any>('__contracts');
 
         contracts?.forEach((contract: any) => {
-            if (contract.generateController) {
-                this.generateEntity(contract);
-                this.generateService(contract);
-            }
+            if (contract.generateEntities) this.generateEntity(contract);
+
+            if (contract.generateController) this.generateService(contract);
         });
     }
 
@@ -25,7 +24,11 @@ export class RepositoryTranspile implements ITranspile {
 
         const entityTemplate = `// Generated automatically by CMMV
         
-import { Entity, PrimaryGeneratedColumn, Column, Index } from 'typeorm';
+import { 
+    Entity, PrimaryGeneratedColumn, 
+    Column, Index 
+} from 'typeorm';
+
 import { ${entityName} } from '../models/${modelName.toLowerCase()}';
 
 @Entity('${entityName.toLowerCase()}')
@@ -34,7 +37,7 @@ export class ${entityName}Entity implements ${entityName} {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
-${contract.fields.map((field: any) => this.generateField(field)).join('\n')}
+${contract.fields.map((field: any) => this.generateField(field)).join('\n\n')}
 }
 `;
 
@@ -47,6 +50,7 @@ ${contract.fields.map((field: any) => this.generateField(field)).join('\n')}
             '../entities',
             entityFileName,
         );
+
         fs.writeFileSync(outputFilePath, entityTemplate, 'utf8');
     }
 

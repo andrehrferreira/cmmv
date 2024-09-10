@@ -10,6 +10,7 @@ export function Controller(prefix: string = ''): ClassDecorator {
 function createMethodDecorator(
     method: 'get' | 'post' | 'put' | 'delete' | 'patch',
     path: string,
+    cb?: Function,
 ): MethodDecorator {
     return (target, propertyKey: string | symbol, context?: any) => {
         ControllerRegistry.registerRoute(
@@ -18,28 +19,29 @@ function createMethodDecorator(
             path,
             propertyKey as string,
             context.value,
+            cb,
         );
     };
 }
 
-export function Get(path: string = ''): MethodDecorator {
-    return createMethodDecorator('get', path);
+export function Get(path: string = '', cb?: Function): MethodDecorator {
+    return createMethodDecorator('get', path, cb);
 }
 
-export function Post(path: string = ''): MethodDecorator {
-    return createMethodDecorator('post', path);
+export function Post(path: string = '', cb?: Function): MethodDecorator {
+    return createMethodDecorator('post', path, cb);
 }
 
-export function Put(path: string = ''): MethodDecorator {
-    return createMethodDecorator('put', path);
+export function Put(path: string = '', cb?: Function): MethodDecorator {
+    return createMethodDecorator('put', path, cb);
 }
 
-export function Delete(path: string = ''): MethodDecorator {
-    return createMethodDecorator('delete', path);
+export function Delete(path: string = '', cb?: Function): MethodDecorator {
+    return createMethodDecorator('delete', path, cb);
 }
 
-export function Patch(path: string = ''): MethodDecorator {
-    return createMethodDecorator('patch', path);
+export function Patch(path: string = '', cb?: Function): MethodDecorator {
+    return createMethodDecorator('patch', path, cb);
 }
 
 function createParamDecorator(paramType: string): ParameterDecorator {

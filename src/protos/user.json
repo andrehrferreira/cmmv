@@ -1,1 +1,0 @@
-{"nested":{"User":{"nested":{"User":{"fields":{"id":{"type":"int32","id":1},"name":{"type":"string","id":2},"username":{"type":"string","id":3},"password":{"type":"string","id":4}}},"UserList":{"fields":{"items":{"rule":"repeated","type":"User","id":1}}}}}}}

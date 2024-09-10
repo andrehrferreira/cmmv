@@ -1,57 +1,65 @@
-import Axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
-
 import { AbstractService, Service } from '@cmmv/core';
+import { AxiosRequestConfig, AxiosResponse } from 'axios';
 
 @Service('http')
 export class HttpService extends AbstractService {
     public name = 'http';
 
-    request<T = any>(config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
+    async request<T = any>(
+        config?: AxiosRequestConfig,
+    ): Promise<AxiosResponse<T>> {
+        const Axios = (await import('axios')).default;
         return Axios.request<T>(config);
     }
 
-    get<T = any>(
+    async get<T = any>(
         url: string,
         config?: AxiosRequestConfig,
     ): Promise<AxiosResponse<T>> {
+        const Axios = (await import('axios')).default;
         return Axios.get<T>(url, config);
     }
 
-    delete<T = any>(
+    async delete<T = any>(
         url: string,
         config?: AxiosRequestConfig,
     ): Promise<AxiosResponse<T>> {
+        const Axios = (await import('axios')).default;
         return Axios.delete<T>(url, config);
     }
 
-    head<T = any>(
+    async head<T = any>(
         url: string,
         config?: AxiosRequestConfig,
     ): Promise<AxiosResponse<T>> {
+        const Axios = (await import('axios')).default;
         return Axios.head<T>(url, config);
     }
 
-    post<T = any>(
+    async post<T = any>(
         url: string,
         data?: any,
         config?: AxiosRequestConfig,
     ): Promise<AxiosResponse<T>> {
+        const Axios = (await import('axios')).default;
         return Axios.post<T>(url, data, config);
     }
 
-    put<T = any>(
+    async put<T = any>(
         url: string,
         data?: any,
         config?: AxiosRequestConfig,
     ): Promise<AxiosResponse<T>> {
+        const Axios = (await import('axios')).default;
         return Axios.put<T>(url, data, config);
     }
 
-    patch<T = any>(
+    async patch<T = any>(
         url: string,
         data?: any,
         config?: AxiosRequestConfig,
     ): Promise<AxiosResponse<T>> {
+        const Axios = (await import('axios')).default;
         return Axios.patch<T>(url, data, config);
     }
 }

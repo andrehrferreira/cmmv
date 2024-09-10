@@ -8,11 +8,9 @@ import { ViewModule } from '@cmmv/view';
 import { RepositoryModule, Repository } from '@cmmv/repository';
 import { CacheModule, CacheService } from '@cmmv/cache';
 import { SchedulingModule, SchedulingService } from '@cmmv/scheduling';
-
-import { CronTests } from './crons/test.cron';
+import { AuthModule } from '@cmmv/auth';
 
 //Contracts
-import { UsersContract } from './contracts/users.contract';
 import { TasksContract } from './contracts/tasks.contract';
 
 Application.create({
@@ -26,7 +24,8 @@ Application.create({
         RepositoryModule,
         CacheModule,
         SchedulingModule,
+        AuthModule,
     ],
-    services: [Repository, CacheService, SchedulingService, CronTests],
-    contracts: [UsersContract, TasksContract],
+    services: [Repository, CacheService, SchedulingService],
+    contracts: [TasksContract],
 });

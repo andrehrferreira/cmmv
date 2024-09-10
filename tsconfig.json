@@ -45,7 +45,9 @@
             "@cmmv/cache": ["packages/cache"],
             "@cmmv/cache/*": ["packages/cache/*"],
             "@cmmv/scheduling": ["packages/scheduling"],
-            "@cmmv/scheduling/*": ["packages/scheduling/*"]
+            "@cmmv/scheduling/*": ["packages/scheduling/*"],
+            "@cmmv/auth": ["packages/auth"],
+            "@cmmv/auth/*": ["packages/auth/*"]
         }
     },
     "include": ["packages/**/*", "src/**/*.ts"],

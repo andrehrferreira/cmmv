@@ -1,1 +1,27 @@
-{"nested":{"WsError":{"nested":{"WsError":{"fields":{"id":{"type":"int32","id":1},"message":{"type":"string","id":2},"code":{"type":"int32","id":3},"context":{"type":"string","id":4}}}}}}}
+{
+    "options": {
+        "syntax": "proto3"
+    },
+    "nested": {
+        "wserror": {
+            "nested": {
+                "WsError": {
+                    "fields": {
+                        "message": {
+                            "type": "string",
+                            "id": 1
+                        },
+                        "code": {
+                            "type": "int32",
+                            "id": 2
+                        },
+                        "context": {
+                            "type": "string",
+                            "id": 3
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

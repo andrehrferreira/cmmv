@@ -4,7 +4,7 @@ syntax = "proto3";
 package wserror;
 
 message WsError {
-  string message = 1;
-  int32 code = 2;
-  string context = 3;
+   string message = 1;
+   int32 code = 2;
+   string context = 3;
 }

@@ -1,12 +1,12 @@
-import { AbstractContract } from "./abstracts";
-import { ITranspile } from "./utils";
+import { AbstractContract } from './abstracts';
+import { ITranspile } from './utils';
 
 export interface IModuleOptions {
-    controllers?: Array<any>; 
-    providers?: Array<any>; 
+    controllers?: Array<any>;
+    providers?: Array<any>;
     transpilers?: Array<new () => ITranspile>;
     submodules?: Array<Module>;
-    contracts?: Array<new () => AbstractContract>
+    contracts?: Array<new () => AbstractContract>;
 }
 
 export interface IModule {
@@ -18,18 +18,30 @@ export interface IModule {
 }
 
 export class Module implements IModule {
+    public static modules: Map<string, Module> = new Map<string, Module>();
+
     private controllers: Array<any>;
     private transpilers: Array<new () => ITranspile>;
     private submodules: Array<Module>;
     private contracts: Array<AbstractContract>;
     private providers: Array<any>;
 
-    constructor(options: IModuleOptions) {
+    constructor(name: string, options: IModuleOptions) {
         this.providers = options.providers || [];
         this.controllers = options.controllers || [];
         this.transpilers = options.transpilers || [];
         this.submodules = options.submodules || [];
-        this.contracts = options.contracts?.map(contractClass => new contractClass()) || [];
+        this.contracts =
+            options.contracts?.map(contractClass => new contractClass()) || [];
+        Module.modules.set(name, this);
+    }
+
+    public static hasModule(name: string): boolean {
+        return Module.modules.has(name);
+    }
+
+    public static getModule(name: string): Module | null {
+        return Module.modules.has(name) ? Module.modules.get(name) : null;
     }
 
     public getControllers(): Array<any> {
@@ -44,7 +56,7 @@ export class Module implements IModule {
         return this.submodules;
     }
 
-    public getContracts(): Array<AbstractContract>{
+    public getContracts(): Array<AbstractContract> {
         return this.contracts;
     }
 

@@ -34,6 +34,7 @@ export class ControllerRegistry {
         path: string,
         handlerName: string,
         context?: any,
+        cb?: Function,
     ) {
         let controller = this.controllers.get(target.constructor);
         let logger = new Logger(target.constructor.name);
@@ -51,11 +52,12 @@ export class ControllerRegistry {
                 route => route.handlerName === handlerName,
             );
 
-            if (context)
+            if (context) {
                 Scope.set(
                     `${method}::/${controller.prefix}${path ? '/' + path : ''}`.toLocaleLowerCase(),
                     context,
                 );
+            }
 
             if (!route) {
                 controller.routes.push({
@@ -65,12 +67,14 @@ export class ControllerRegistry {
                     prefix: controller.prefix,
                     params: [],
                     context,
+                    cb,
                 });
             } else {
                 route.method = method;
                 route.path = path;
                 route.prefix = controller.prefix;
                 route.context = context;
+                route.cb = cb;
             }
         }
     }
@@ -98,7 +102,13 @@ export class ControllerRegistry {
             );
 
             if (!route) {
-                route = { method: '', path: '', handlerName, params: [] };
+                route = {
+                    method: '',
+                    path: '',
+                    handlerName,
+                    params: [],
+                    cb: null,
+                };
                 controller.routes.push(route);
             }
 

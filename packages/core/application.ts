@@ -25,6 +25,7 @@ import {
     CONTROLLER_CUSTOM_PATH_METADATA,
     CONTROLLER_IMPORTS,
     CONTROLLER_CACHE,
+    GENERATE_ENTITIES_METADATA,
 } from './decorators';
 
 import { Config } from './utils/config.util';
@@ -55,7 +56,6 @@ export class Application {
     private httpAdapter: AbstractHttpAdapter;
     private httpBind: string;
     private httpOptions: IHTTPSettings;
-    private httpMiddlewares: Array<any> = new Array<any>();
     private wsAdapter: AbstractWSAdapter;
     private wsServer: any;
     public wSConnections: Map<string, any> = new Map<string, any>();
@@ -65,7 +65,6 @@ export class Application {
     private submodules: Array<Module> = [];
     private contracts: Array<AbstractContract>;
     public providersMap = new Map<string, any>();
-    private bs: any;
 
     private host: string;
     private port: number;
@@ -170,6 +169,7 @@ export class Application {
 
     private async createScriptBundle() {
         let finalbundle = path.resolve('./public/assets/bundle.min.js');
+
         const files = await fg(path.resolve('./public/core/*.min.js'), {
             ignore: ['node_modules/**'],
         });
@@ -246,6 +246,10 @@ export class Application {
                 GENERATE_CONTROLLER_METADATA,
                 contract.constructor,
             );
+            const generateEntities = Reflect.getMetadata(
+                GENERATE_ENTITIES_METADATA,
+                contract.constructor,
+            );
             const auth = Reflect.getMetadata(
                 AUTH_METADATA,
                 contract.constructor,
@@ -271,10 +275,13 @@ export class Application {
                 fields,
                 directMessage,
                 generateController,
+                generateEntities,
                 auth,
                 controllerCustomPath,
                 imports,
                 cache,
+                customProto: contract.customProto,
+                customTypes: contract.customTypes,
             };
 
             Scope.addToArray('__contracts', contractStructure);
@@ -307,7 +314,7 @@ import { Module, ApplicationTranspile } from '@cmmv/core';
 ${Application.appModule.controllers.map(controller => `import { ${controller.name} } from '${controller.path}';`).join('\n')}
 ${Application.appModule.providers.map(provider => `import { ${provider.name} } from '${provider.path}';`).join('\n')}
 
-export let ApplicationModule = new Module({
+export let ApplicationModule = new Module("app", {
     controllers: [${Application.appModule.controllers.map(controller => controller.name).join(', ')}],
     providers: [${Application.appModule.providers.map(provider => provider.name).join(', ')}],
     transpilers: [ApplicationTranspile]

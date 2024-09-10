@@ -4,6 +4,7 @@ export interface ValidationOption {
     type: ValidationType;
     message?: string;
     context?: any;
+    value?: any;
 }
 
 export interface CacheOptions {
@@ -31,6 +32,7 @@ export interface ContractOptions {
     protoPackage?: string;
     directMessage?: boolean;
     generateController?: boolean;
+    generateEntities?: boolean;
     auth?: boolean;
     imports?: Array<string>;
     cache?: CacheOptions;
@@ -46,6 +48,7 @@ export const DIRECTMESSAGE_METADATA = Symbol('contract_directmessage_metadata');
 export const GENERATE_CONTROLLER_METADATA = Symbol(
     'generate_controller_metadata',
 );
+export const GENERATE_ENTITIES_METADATA = Symbol('generate_entities_metadata');
 export const AUTH_METADATA = Symbol('auth_metadata');
 export const CONTROLLER_CUSTOM_PATH_METADATA = Symbol(
     'controller_custom_path_metadata',
@@ -59,6 +62,7 @@ export function Contract(options?: ContractOptions): ClassDecorator {
     const defaultProtoPackage = '';
     const defaultDirectMessage = false;
     const defaultGenerateController = true;
+    const defaultGenerateEntities = true;
     const defaultAuth = true;
     const defaultControllerCustomPath = '';
     const defaultImports = [];
@@ -70,6 +74,7 @@ export function Contract(options?: ContractOptions): ClassDecorator {
         directMessage,
         protoPackage,
         generateController,
+        generateEntities,
         auth,
         controllerCustomPath,
         imports,
@@ -81,6 +86,7 @@ export function Contract(options?: ContractOptions): ClassDecorator {
               defaultDirectMessage,
               defaultProtoPackage,
               defaultGenerateController,
+              defaultGenerateEntities,
               defaultAuth,
               defaultControllerCustomPath,
               defaultImports,
@@ -92,6 +98,7 @@ export function Contract(options?: ContractOptions): ClassDecorator {
               options.directMessage || defaultDirectMessage,
               options.protoPackage || defaultProtoPackage,
               options.generateController ?? defaultGenerateController,
+              options.generateEntities ?? defaultGenerateEntities,
               options.auth ?? defaultAuth,
               options.controllerCustomPath || defaultControllerCustomPath,
               options.imports || defaultImports,
@@ -111,6 +118,11 @@ export function Contract(options?: ContractOptions): ClassDecorator {
         Reflect.defineMetadata(
             GENERATE_CONTROLLER_METADATA,
             generateController,
+            target,
+        );
+        Reflect.defineMetadata(
+            GENERATE_ENTITIES_METADATA,
+            generateEntities,
             target,
         );
         Reflect.defineMetadata(AUTH_METADATA, auth, target);

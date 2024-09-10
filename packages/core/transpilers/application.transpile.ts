@@ -8,12 +8,7 @@ export class ApplicationTranspile implements ITranspile {
 
     run(): void {
         const contracts = Scope.getArray<any>('__contracts');
-
-        contracts?.forEach((contract: any) => {
-            if (contract.generateController) {
-                this.generateModel(contract);
-            }
-        });
+        contracts?.forEach((contract: any) => this.generateModel(contract));
     }
 
     private generateModel(contract: any): void {
@@ -119,17 +114,14 @@ ${contract.fields.map((field: any) => this.generateClassField(field)).join('\n\n
                 const validationName = Array.isArray(validation.type)
                     ? validation.type[0]
                     : validation.type;
-                const validationParams =
-                    Array.isArray(validation.type) && validation.type.length > 1
-                        ? `(${validation.type
-                              .slice(1)
-                              .map(param =>
-                                  typeof param === 'string'
-                                      ? `"${param}"`
-                                      : param,
-                              )
-                              .join(', ')}`
-                        : '(';
+                let validationParams = Array.isArray(validation.type)
+                    ? validation.type
+                          .slice(1)
+                          .map(param => JSON.stringify(param))
+                          .join(', ')
+                    : validation.value !== undefined
+                      ? validation.value
+                      : '';
 
                 const options = [];
                 if (validation.message) {
@@ -141,11 +133,16 @@ ${contract.fields.map((field: any) => this.generateClassField(field)).join('\n\n
                     ).replace(/"([^"]+)":/g, '$1:');
                     options.push(`context: ${contextString}`);
                 }
-                const optionsString =
+                let optionsString =
                     options.length > 0 ? `{ ${options.join(', ')} }` : '';
 
+                if (validationParams && optionsString)
+                    optionsString = ', ' + optionsString;
+
                 decorators.push(
-                    `    @${validationName}${validationParams}${validationParams !== '(' ? ',' : ''}${optionsString})`,
+                    `    @${validationName}(${validationParams}${
+                        optionsString ? optionsString : ''
+                    })`,
                 );
             });
         }

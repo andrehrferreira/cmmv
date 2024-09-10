@@ -1,32 +1,35 @@
 // Generated automatically by CMMV
 
-import { Exclude, Transform } from 'class-transformer';
-import { IsString, IsHash } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { IsString, Min, Max } from 'class-validator';
 import * as crypto from 'crypto';
 
 export interface IUser {
     id?: any;
-    name: string;
     username: string;
     password: string;
+    googleId: string;
+    groups: string;
 }
 
 export class User implements IUser {
     id?: any;
 
-    @IsString({ message: 'Invalid name' })
-    name: string;
-
     @IsString({ message: 'Invalid username' })
+    @Min(5, { message: 'Invalid username' })
+    @Max(30, { message: 'Invalid username' })
     username: string;
 
-    @Exclude({ toClassOnly: true })
-    @Transform(
-        ({ value }) => crypto.createHash('sha256').update(value).digest('hex'),
-        { toClassOnly: true },
+    @Transform(({ value }) =>
+        crypto.createHash('sha256').update(value).digest('hex'),
     )
-    @IsHash('sha256', { message: 'Invalid password format' })
+    @IsString({ message: 'Invalid password' })
     password: string;
+
+    googleId: string;
+
+    @Transform(({ value }) => JSON.stringify(value))
+    groups: string;
 
     constructor(partial: Partial<User>) {
         Object.assign(this, partial);

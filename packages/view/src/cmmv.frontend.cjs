@@ -48,9 +48,8 @@
                         Duration: `${duration.toFixed(2)} ms`,
                     };
                 });
-                           
-                console.log("aki")
-                //if(process.env.NODE_ENV === "dev")
+                        
+                if(process.env.NODE_ENV === "dev")
                     console.table(summary);
             }            
         }

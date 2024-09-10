@@ -4,49 +4,49 @@ syntax = "proto3";
 package task;
 
 message Task {
-  string label = 1;
-  bool checked = 2;
-  bool removed = 3;
+   string label = 1;
+   bool checked = 2;
+   bool removed = 3;
 }
 
 message TaskList {
-  repeated Task items = 1;
+    repeated Task items = 1;
 }
 
 message AddTaskRequest {
-  Task item = 1;
+    Task item = 1;
 }
 message AddTaskResponse {
-  string id = 1;
-  Task item = 2;
+    string id = 1;
+    Task item = 2;
 }
 
 message UpdateTaskRequest {
-  string id = 1;
-  Task item = 2;
+    string id = 1;
+    Task item = 2;
 }
 message UpdateTaskResponse {
-  string id = 1;
-  Task item = 2;
+    string id = 1;
+    Task item = 2;
 }
 
 message DeleteTaskRequest {
-  string id = 1;
+    string id = 1;
 }
 message DeleteTaskResponse {
-  bool success = 1;
-  int32 affected = 2;
-  string id = 3;
+    bool success = 1;
+    int32 affected = 2;
+    string id = 3;
 }
 
 message GetAllTaskRequest {}
 message GetAllTaskResponse {
-  TaskList items = 1;
+    TaskList items = 1;
 }
 
 service TaskService {
-  rpc AddTask (AddTaskRequest) returns (AddTaskResponse);
-  rpc UpdateTask (UpdateTaskRequest) returns (UpdateTaskResponse);
-  rpc DeleteTask (DeleteTaskRequest) returns (DeleteTaskResponse);
-  rpc GetAllTask (GetAllTaskRequest) returns (GetAllTaskResponse);
+   rpc AddTask (AddTaskRequest) returns (AddTaskResponse);
+   rpc UpdateTask (UpdateTaskRequest) returns (UpdateTaskResponse);
+   rpc DeleteTask (DeleteTaskRequest) returns (DeleteTaskResponse);
+   rpc GetAllTask (GetAllTaskRequest) returns (GetAllTaskResponse);
 }

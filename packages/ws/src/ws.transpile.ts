@@ -22,7 +22,7 @@ export class WSTranspile implements ITranspile {
         const hasCache =
             contract.cache !== undefined && contract.cache !== null;
         const cacheKeyPrefix = hasCache
-            ? contract.cache.key || `${contract.controllerName.toLowerCase()}:`
+            ? contract.cache?.key || `${contract.controllerName.toLowerCase()}:`
             : '';
         const cacheTtl = hasCache ? contract.cache.ttl || 300 : 0;
         const cacheCompress =
@@ -30,88 +30,88 @@ export class WSTranspile implements ITranspile {
 
         const serviceTemplate = `// Generated automatically by CMMV
     
-    import { Rpc, Message, Data, Socket, RpcUtils } from "@cmmv/ws";
-    import { plainToClass } from 'class-transformer';
-    import { ${contract.controllerName}Entity } from '../entities/${contract.controllerName.toLowerCase()}.entity';
-    ${hasCache ? `import { Cache, CacheService } from "@cmmv/cache";` : ''}
-    
-    import { 
-        Add${contract.controllerName}Request, 
-        Update${contract.controllerName}Request,   
-        Delete${contract.controllerName}Request 
-    } from "../protos/${contract.controllerName.toLowerCase()}";
-    
-    import { ${serviceName} } from '../services/${contract.controllerName.toLowerCase()}.service';
-    
-    @Rpc("${contract.controllerName.toLowerCase()}")
-    export class ${gatewayName} {
-        constructor(private readonly ${serviceName.toLowerCase()}: ${serviceName}) {}
-    
-        @Message("GetAll${contract.controllerName}Request")
-        ${hasCache ? `@Cache("${cacheKeyPrefix}getAll", { ttl: ${cacheTtl}, compress: ${cacheCompress} })` : ''}
-        async getAll(@Socket() socket){
-            try{
-                const items = await this.${serviceName.toLowerCase()}.getAll();
-                const response = await RpcUtils.pack("${contract.controllerName.toLowerCase()}", "GetAll${contract.controllerName}Response", items);
-    
-                if(response)
-                    socket.send(response);
-            }
-            catch(e){}
-        }
-    
-        @Message("Add${contract.controllerName}Request")
-        async add(@Data() data: Add${contract.controllerName}Request, @Socket() socket){
-            try{
-                const entity = plainToClass(${contract.controllerName}Entity, data.item);
-                const result = await this.${serviceName.toLowerCase()}.add(entity);
-                const response = await RpcUtils.pack("${contract.controllerName.toLowerCase()}", "Add${contract.controllerName}Response", { item: result, id: result.id });
-                ${hasCache ? `CacheService.set(\`${cacheKeyPrefix}\${result.id}\`, JSON.stringify(result), ${cacheTtl});` : ''}
-                ${hasCache ? `CacheService.del("${cacheKeyPrefix}getAll");` : ''}
+import { Rpc, Message, Data, Socket, RpcUtils } from "@cmmv/ws";
+import { plainToClass } from 'class-transformer';
+import { ${contract.controllerName}Entity } from '../entities/${contract.controllerName.toLowerCase()}.entity';
+${hasCache ? `import { Cache, CacheService } from "@cmmv/cache";` : ''}
 
-                if(response)
-                    socket.send(response);
-            }
-            catch(e){}
-        }
-    
-        @Message("Update${contract.controllerName}Request")
-        async update(@Data() data: Update${contract.controllerName}Request, @Socket() socket){
-            try{
-                const entity = plainToClass(${contract.controllerName}Entity, data.item);
-                const result = await this.${serviceName.toLowerCase()}.update(data.id, entity);
-                const response = await RpcUtils.pack("${contract.controllerName.toLowerCase()}", "Update${contract.controllerName}Response", { item: result, id: result.id });
-                ${hasCache ? `CacheService.set(\`${cacheKeyPrefix}\${result.id}\`, JSON.stringify(result), ${cacheTtl});` : ''}
-                ${hasCache ? `CacheService.del("${cacheKeyPrefix}getAll");` : ''}
+import { 
+    Add${contract.controllerName}Request, 
+    Update${contract.controllerName}Request,   
+    Delete${contract.controllerName}Request 
+} from "../protos/${contract.controllerName.toLowerCase()}";
 
-                if(response)
-                    socket.send(response);
-            }
-            catch(e){}
+import { ${serviceName} } from '../services/${contract.controllerName.toLowerCase()}.service';
+
+@Rpc("${contract.controllerName.toLowerCase()}")
+export class ${gatewayName} {
+    constructor(private readonly ${serviceName.toLowerCase()}: ${serviceName}) {}
+
+    @Message("GetAll${contract.controllerName}Request")
+    ${hasCache ? `@Cache("${cacheKeyPrefix}getAll", { ttl: ${cacheTtl}, compress: ${cacheCompress} })` : ''}
+    async getAll(@Socket() socket){
+        try{
+            const items = await this.${serviceName.toLowerCase()}.getAll();
+            const response = await RpcUtils.pack("${contract.controllerName.toLowerCase()}", "GetAll${contract.controllerName}Response", items);
+
+            if(response)
+                socket.send(response);
         }
-    
-        @Message("Delete${contract.controllerName}Request")
-        async delete(@Data() data: Delete${contract.controllerName}Request, @Socket() socket){
-            try{
-                const result = (await this.${serviceName.toLowerCase()}.delete(data.id));
-                const response = await RpcUtils.pack(
-                    "${contract.controllerName.toLowerCase()}", 
-                    "Delete${contract.controllerName}Response", 
-                    { 
-                        success: result.success, 
-                        affected: result.affected, 
-                        id: data.id 
-                    }
-                );
-                ${hasCache ? `CacheService.del(\`${cacheKeyPrefix}\${data.id}\`);` : ''}
-                ${hasCache ? `CacheService.del("${cacheKeyPrefix}getAll");` : ''}
-                
-                if(response)
-                    socket.send(response);
-            }
-            catch(e){}
+        catch(e){}
+    }
+
+    @Message("Add${contract.controllerName}Request")
+    async add(@Data() data: Add${contract.controllerName}Request, @Socket() socket){
+        try{
+            const entity = plainToClass(${contract.controllerName}Entity, data.item);
+            const result = await this.${serviceName.toLowerCase()}.add(entity);
+            const response = await RpcUtils.pack("${contract.controllerName.toLowerCase()}", "Add${contract.controllerName}Response", { item: result, id: result.id });
+            ${hasCache ? `CacheService.set(\`${cacheKeyPrefix}\${result.id}\`, JSON.stringify(result), ${cacheTtl});` : ''}
+            ${hasCache ? `CacheService.del("${cacheKeyPrefix}getAll");` : ''}
+
+            if(response)
+                socket.send(response);
         }
-    }`;
+        catch(e){}
+    }
+
+    @Message("Update${contract.controllerName}Request")
+    async update(@Data() data: Update${contract.controllerName}Request, @Socket() socket){
+        try{
+            const entity = plainToClass(${contract.controllerName}Entity, data.item);
+            const result = await this.${serviceName.toLowerCase()}.update(data.id, entity);
+            const response = await RpcUtils.pack("${contract.controllerName.toLowerCase()}", "Update${contract.controllerName}Response", { item: result, id: result.id });
+            ${hasCache ? `CacheService.set(\`${cacheKeyPrefix}\${result.id}\`, JSON.stringify(result), ${cacheTtl});` : ''}
+            ${hasCache ? `CacheService.del("${cacheKeyPrefix}getAll");` : ''}
+
+            if(response)
+                socket.send(response);
+        }
+        catch(e){}
+    }
+
+    @Message("Delete${contract.controllerName}Request")
+    async delete(@Data() data: Delete${contract.controllerName}Request, @Socket() socket){
+        try{
+            const result = (await this.${serviceName.toLowerCase()}.delete(data.id));
+            const response = await RpcUtils.pack(
+                "${contract.controllerName.toLowerCase()}", 
+                "Delete${contract.controllerName}Response", 
+                { 
+                    success: result.success, 
+                    affected: result.affected, 
+                    id: data.id 
+                }
+            );
+            ${hasCache ? `CacheService.del(\`${cacheKeyPrefix}\${data.id}\`);` : ''}
+            ${hasCache ? `CacheService.del("${cacheKeyPrefix}getAll");` : ''}
+            
+            if(response)
+                socket.send(response);
+        }
+        catch(e){}
+    }
+}`;
 
         Application.appModule.providers.push({
             name: gatewayName,
