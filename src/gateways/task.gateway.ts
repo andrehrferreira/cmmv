@@ -41,7 +41,7 @@ export class TaskGateway {
                 item: result,
                 id: result.id,
             });
-            CacheService.set('task:${result.id}', JSON.stringify(result), 300);
+            CacheService.set(`task:${result.id}`, JSON.stringify(result), 300);
             CacheService.del('task:getAll');
 
             if (response) socket.send(response);
@@ -57,7 +57,7 @@ export class TaskGateway {
                 item: result,
                 id: result.id,
             });
-            CacheService.set('task:${result.id}', JSON.stringify(result), 300);
+            CacheService.set(`task:${result.id}`, JSON.stringify(result), 300);
             CacheService.del('task:getAll');
 
             if (response) socket.send(response);
@@ -67,12 +67,13 @@ export class TaskGateway {
     @Message('DeleteTaskRequest')
     async delete(@Data() data: DeleteTaskRequest, @Socket() socket) {
         try {
-            const result = (await this.taskservice.delete(data.id)).success;
+            const result = await this.taskservice.delete(data.id);
             const response = await RpcUtils.pack('task', 'DeleteTaskResponse', {
-                success: result,
+                success: result.success,
+                affected: result.affected,
                 id: data.id,
             });
-            CacheService.del('task:${data.id}');
+            CacheService.del(`task:${data.id}`);
             CacheService.del('task:getAll');
 
             if (response) socket.send(response);

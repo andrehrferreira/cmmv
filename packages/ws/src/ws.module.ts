@@ -1,9 +1,9 @@
-import { Module } from "@cmmv/core";
+import { Module } from '@cmmv/core';
 
-import { WSTranspile } from "./ws.transpile";
-import { WSContract } from "./ws.contract";
+import { WSTranspile } from './ws.transpile';
+import { WSContract, WSError } from './ws.contract';
 
 export let WSModule = new Module({
-    contracts: [WSContract],
-    transpilers: [WSTranspile]
-})
+    contracts: [WSContract, WSError],
+    transpilers: [WSTranspile],
+});

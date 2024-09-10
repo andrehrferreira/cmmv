@@ -10,8 +10,6 @@ import {
     isJSON,
 } from '@cmmv/core';
 
-import { CacheRegistry } from './cache.registry';
-
 @Service()
 export class CacheService extends Singleton {
     public logger: Logger = new Logger('CacheService');
@@ -118,7 +116,6 @@ export class CacheService extends Singleton {
     ): Promise<boolean> {
         try {
             const instance = CacheService.getInstance();
-            console.log(instance.manager);
             await instance.manager.set(key, value, ttl * 1000);
             return true;
         } catch (e) {

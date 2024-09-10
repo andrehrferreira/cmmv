@@ -66,7 +66,7 @@ export class WSTranspile implements ITranspile {
                 const entity = plainToClass(${contract.controllerName}Entity, data.item);
                 const result = await this.${serviceName.toLowerCase()}.add(entity);
                 const response = await RpcUtils.pack("${contract.controllerName.toLowerCase()}", "Add${contract.controllerName}Response", { item: result, id: result.id });
-                ${hasCache ? `CacheService.set("${cacheKeyPrefix}\${result.id}", JSON.stringify(result), ${cacheTtl});` : ''}
+                ${hasCache ? `CacheService.set(\`${cacheKeyPrefix}\${result.id}\`, JSON.stringify(result), ${cacheTtl});` : ''}
                 ${hasCache ? `CacheService.del("${cacheKeyPrefix}getAll");` : ''}
 
                 if(response)
@@ -81,7 +81,7 @@ export class WSTranspile implements ITranspile {
                 const entity = plainToClass(${contract.controllerName}Entity, data.item);
                 const result = await this.${serviceName.toLowerCase()}.update(data.id, entity);
                 const response = await RpcUtils.pack("${contract.controllerName.toLowerCase()}", "Update${contract.controllerName}Response", { item: result, id: result.id });
-                ${hasCache ? `CacheService.set("${cacheKeyPrefix}\${result.id}", JSON.stringify(result), ${cacheTtl});` : ''}
+                ${hasCache ? `CacheService.set(\`${cacheKeyPrefix}\${result.id}\`, JSON.stringify(result), ${cacheTtl});` : ''}
                 ${hasCache ? `CacheService.del("${cacheKeyPrefix}getAll");` : ''}
 
                 if(response)
@@ -93,9 +93,17 @@ export class WSTranspile implements ITranspile {
         @Message("Delete${contract.controllerName}Request")
         async delete(@Data() data: Delete${contract.controllerName}Request, @Socket() socket){
             try{
-                const result = (await this.${serviceName.toLowerCase()}.delete(data.id)).success;
-                const response = await RpcUtils.pack("${contract.controllerName.toLowerCase()}", "Delete${contract.controllerName}Response", { success: result, id: data.id });
-                ${hasCache ? `CacheService.del("${cacheKeyPrefix}\${data.id}");` : ''}
+                const result = (await this.${serviceName.toLowerCase()}.delete(data.id));
+                const response = await RpcUtils.pack(
+                    "${contract.controllerName.toLowerCase()}", 
+                    "Delete${contract.controllerName}Response", 
+                    { 
+                        success: result.success, 
+                        affected: result.affected, 
+                        id: data.id 
+                    }
+                );
+                ${hasCache ? `CacheService.del(\`${cacheKeyPrefix}\${data.id}\`);` : ''}
                 ${hasCache ? `CacheService.del("${cacheKeyPrefix}getAll");` : ''}
                 
                 if(response)

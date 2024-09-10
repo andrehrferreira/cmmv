@@ -27,4 +27,8 @@ export class User implements IUser {
     )
     @IsHash('sha256', { message: 'Invalid password format' })
     password: string;
+
+    constructor(partial: Partial<User>) {
+        Object.assign(this, partial);
+    }
 }

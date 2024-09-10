@@ -61,9 +61,10 @@ export class UserGateway {
     @Message('DeleteUserRequest')
     async delete(@Data() data: DeleteUserRequest, @Socket() socket) {
         try {
-            const result = (await this.userservice.delete(data.id)).success;
+            const result = await this.userservice.delete(data.id);
             const response = await RpcUtils.pack('user', 'DeleteUserResponse', {
-                success: result,
+                success: result.success,
+                affected: result.affected,
                 id: data.id,
             });
 

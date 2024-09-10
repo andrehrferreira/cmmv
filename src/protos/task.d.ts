@@ -1,4 +1,5 @@
-// Types generated automatically by CMMV
+// Generated automatically by CMMV
+
 export namespace Task {
     export type label = string;
     export type checked = boolean;
@@ -22,6 +23,7 @@ export interface DeleteTaskRequest {
 }
 export interface DeleteTaskResponse {
     success: boolean;
+    affected: number;
 }
 export interface GetAllTaskRequest {}
 export interface GetAllTaskResponse {

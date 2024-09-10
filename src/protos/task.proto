@@ -1,4 +1,5 @@
 // Generated automatically by CMMV
+
 syntax = "proto3";
 package task;
 
@@ -34,7 +35,8 @@ message DeleteTaskRequest {
 }
 message DeleteTaskResponse {
   bool success = 1;
-  string id = 2;
+  int32 affected = 2;
+  string id = 3;
 }
 
 message GetAllTaskRequest {}

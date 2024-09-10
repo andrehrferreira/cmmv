@@ -1,11 +1,11 @@
-import { AbstractContract, Contract, ContractField } from "@cmmv/core";
+import { AbstractContract, Contract, ContractField } from '@cmmv/core';
 
-@Contract({ 
-    controllerName: "WsCall",
-    protoPath: "src/protos/ws.proto",
-    protoPackage: "ws",
+@Contract({
+    controllerName: 'WsCall',
+    protoPath: 'src/protos/ws.proto',
+    protoPackage: 'ws',
     directMessage: true,
-    generateController: false 
+    generateController: false,
 })
 export class WSContract extends AbstractContract {
     @ContractField({ protoType: 'int32' })
@@ -16,4 +16,22 @@ export class WSContract extends AbstractContract {
 
     @ContractField({ protoType: 'bytes' })
     data: Uint8Array;
+}
+
+@Contract({
+    controllerName: 'WsError',
+    protoPath: 'src/protos/wserror.proto',
+    protoPackage: 'wserror',
+    directMessage: true,
+    generateController: false,
+})
+export class WSError extends AbstractContract {
+    @ContractField({ protoType: 'string' })
+    message: string;
+
+    @ContractField({ protoType: 'int32' })
+    code?: number;
+
+    @ContractField({ protoType: 'string' })
+    context?: string;
 }

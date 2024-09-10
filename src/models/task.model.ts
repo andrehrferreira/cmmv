@@ -22,4 +22,8 @@ export class Task implements ITask {
 
     @IsBoolean({ message: 'Invalid removed type' })
     removed: boolean = false;
+
+    constructor(partial: Partial<Task>) {
+        Object.assign(this, partial);
+    }
 }

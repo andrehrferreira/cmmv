@@ -64,17 +64,14 @@
             loaded: false,
             binds: {},
             telemetry: new Telemetry(),
+            reconnectInterval: 10000,
 
             initialize(context, methods, mounted) {
                 this.telemetry.start('Initialize Frontend');
                 try {
                     if (context.config && context.config.rpc && context.config.rpc.enabled) {
                         this.telemetry.start('WebSocket Initialization');
-                        this.socket = new WebSocket(
-                            window.location.href.replace("https", "wss").replace("http", "ws")
-                        );
-                        this.socket.addEventListener("message", this.parseMessage.bind(this));
-                        this.socket.binaryType = 'arraybuffer';
+                        this.connectWebSocket();
                         this.telemetry.end('WebSocket Initialization');
                     }
                 } catch (e) {
@@ -91,6 +88,29 @@
                 });
 
                 this.telemetry.end('Initialize Frontend');
+            },
+
+            connectWebSocket() {
+                const socketUrl = window.location.href.replace("https", "wss").replace("http", "ws");
+                this.socket = new WebSocket(socketUrl);
+                this.socket.binaryType = 'arraybuffer';
+
+                this.socket.addEventListener("message", this.parseMessage.bind(this));
+                this.socket.addEventListener("open", () => {
+                    console.log("WebSocket connected");
+                    this.telemetry.end('WebSocket Initialization');
+                });
+
+                this.socket.addEventListener("close", () => {
+                    console.warn("WebSocket disconnected. Attempting to reconnect in 10 seconds...");
+                    setTimeout(() => {
+                        this.connectWebSocket(); 
+                    }, this.reconnectInterval);
+                });
+
+                this.socket.addEventListener("error", (error) => {
+                    console.error("WebSocket error:", error);
+                });
             },
 
             addContracts(jsonContracts) {
@@ -125,8 +145,13 @@
                     const buffer = event.data instanceof ArrayBuffer ? new Uint8Array(event.data) : event.data;
                     const message = this.contracts["ws"].lookupType("WsCall").decode(buffer);
 
-                    const contractName = Object.keys(this.contractIndex).find(name => this.contractIndex[name].index === message.contract);
-                    const typeName = Object.keys(this.contractIndex[contractName].types).find(key => this.contractIndex[contractName].types[key] === message.message);
+                    const contractName = Object
+                    .keys(this.contractIndex)
+                    .find(name => this.contractIndex[name].index === message.contract);
+                    
+                    const typeName = Object
+                    .keys(this.contractIndex[contractName].types)
+                    .find(key => this.contractIndex[contractName].types[key] === message.message);
 
                     if (contractName && typeName) {
                         const contract = this.getContract(contractName);
@@ -134,7 +159,9 @@
                         const decodedMessage = MessageType.decode(message.data);
 
                         if (this.binds[contractName] && this.binds[contractName][typeName]) {
-                            this.binds[contractName][typeName].forEach(callback => callback.apply(this.contextApp, [decodedMessage, event.socket]));
+                            this.binds[contractName][typeName].forEach(callback => callback.apply(
+                                this.contextApp, [decodedMessage, event.socket]
+                            ));
                         }
                     } else {
                         console.error("Unknown contract or message type:", message.contract, message.message);
@@ -206,7 +233,11 @@
             },
 
             send(buffer){
-                this.socket.send(buffer);
+                if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+                    this.socket.send(buffer);
+                } else {
+                    console.warn("WebSocket is not open. Unable to send message.");
+                }
             },
 
             processExpressions() {
@@ -272,6 +303,7 @@
 
         if (global.cmmvSetup) {            
             let methods = {};
+            
             if (typeof global.cmmvSetup.__methods === "object") {
                 for (let key in global.cmmvSetup.__methods)
                     methods[key] = new Function(`return (${global.cmmvSetup.__methods[key]})`)()

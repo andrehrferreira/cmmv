@@ -1,4 +1,5 @@
-// Types generated automatically by CMMV
+// Generated automatically by CMMV
+
 export namespace User {
     export type name = string;
     export type username = string;
@@ -22,6 +23,7 @@ export interface DeleteUserRequest {
 }
 export interface DeleteUserResponse {
     success: boolean;
+    affected: number;
 }
 export interface GetAllUserRequest {}
 export interface GetAllUserResponse {

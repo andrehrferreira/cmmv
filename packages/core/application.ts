@@ -28,6 +28,7 @@ import {
 } from './decorators';
 
 import { Config } from './utils/config.util';
+import { ApplicationTranspile } from './transpilers';
 
 export interface IApplicationSettings {
     wsAdapter?: new (appOrHttpServer: any) => AbstractWSAdapter;
@@ -99,6 +100,8 @@ export class Application {
             const env = Config.get<string>('env');
             this.loadModules(this.modules);
             this.processContracts();
+
+            this.transpilers.push(ApplicationTranspile);
 
             if (env === 'dev' || env === 'development' || env === 'build') {
                 if (this.transpilers.length > 0) {
@@ -299,14 +302,15 @@ export class Application {
 
             const moduleTemplate = `// Generated automatically by CMMV
     
-    import { Module } from '@cmmv/core';
-    ${Application.appModule.controllers.map(controller => `import { ${controller.name} } from '${controller.path}';`).join('\n')}
-    ${Application.appModule.providers.map(provider => `import { ${provider.name} } from '${provider.path}';`).join('\n')}
-    
-    export let ApplicationModule = new Module({
-        controllers: [${Application.appModule.controllers.map(controller => controller.name).join(', ')}],
-        providers: [${Application.appModule.providers.map(provider => provider.name).join(', ')}]
-    });`;
+import { Module, ApplicationTranspile } from '@cmmv/core';
+${Application.appModule.controllers.map(controller => `import { ${controller.name} } from '${controller.path}';`).join('\n')}
+${Application.appModule.providers.map(provider => `import { ${provider.name} } from '${provider.path}';`).join('\n')}
+
+export let ApplicationModule = new Module({
+    controllers: [${Application.appModule.controllers.map(controller => controller.name).join(', ')}],
+    providers: [${Application.appModule.providers.map(provider => provider.name).join(', ')}],
+    transpilers: [ApplicationTranspile]
+});`;
 
             if (!fs.existsSync(path.dirname(outputPath)))
                 fs.mkdirSync(path.dirname(outputPath), { recursive: true });
