@@ -133,9 +133,10 @@ export class Application {
 
             let servicesLoad = [];
 
-            settings.services?.forEach(async service =>
-                servicesLoad.push(service?.loadConfig(this)),
-            );
+            settings.services?.forEach(async service => {
+                if (service && typeof service.loadConfig === 'function')
+                    servicesLoad.push(service?.loadConfig(this));
+            });
 
             await Promise.all(servicesLoad);
             this.httpAdapter.init(this, this.httpOptions);

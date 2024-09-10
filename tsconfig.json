@@ -43,7 +43,9 @@
             "@cmmv/repository": ["packages/repository"],
             "@cmmv/repository/*": ["packages/repository/*"],
             "@cmmv/cache": ["packages/cache"],
-            "@cmmv/cache/*": ["packages/cache/*"]
+            "@cmmv/cache/*": ["packages/cache/*"],
+            "@cmmv/scheduling": ["packages/scheduling"],
+            "@cmmv/scheduling/*": ["packages/scheduling/*"]
         }
     },
     "include": ["packages/**/*", "src/**/*.ts"],

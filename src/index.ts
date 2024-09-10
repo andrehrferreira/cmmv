@@ -7,6 +7,9 @@ import { WSModule, WSAdapter } from '@cmmv/ws';
 import { ViewModule } from '@cmmv/view';
 import { RepositoryModule, Repository } from '@cmmv/repository';
 import { CacheModule, CacheService } from '@cmmv/cache';
+import { SchedulingModule, SchedulingService } from '@cmmv/scheduling';
+
+import { CronTests } from './crons/test.cron';
 
 //Contracts
 import { UsersContract } from './contracts/users.contract';
@@ -22,7 +25,8 @@ Application.create({
         ViewModule,
         RepositoryModule,
         CacheModule,
+        SchedulingModule,
     ],
-    services: [Repository, CacheService],
+    services: [Repository, CacheService, SchedulingService, CronTests],
     contracts: [UsersContract, TasksContract],
 });

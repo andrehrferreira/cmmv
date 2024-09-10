@@ -1,0 +1,22 @@
+{
+    "name": "@cmmv/scheduling",
+    "version": "0.2.29",
+    "description": "CMMV (@scheduling)",
+    "publishConfig": {
+        "access": "public"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/andrehrferreira/cmmv.git"
+    },
+    "author": "Andre Ferreira",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/andrehrferreira/cmmv/issues"
+    },
+    "homepage": "https://cmmv.io",
+    "dependencies": {
+        "cron": "^3.1.7"
+    },
+    "devDependencies": {}
+}
