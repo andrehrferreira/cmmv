@@ -20,6 +20,7 @@ export interface ContractFieldOptions {
     index?: boolean;
     unique?: boolean;
     exclude?: boolean;
+    nullable?: boolean;
     toClassOnly?: boolean;
     transform?: Function;
     validations?: ValidationOption[];

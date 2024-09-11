@@ -65,6 +65,7 @@
             binds: {},
             telemetry: new Telemetry(),
             reconnectInterval: 10000,
+            isAuth: false,
 
             initialize(context, methods, mounted) {
                 this.telemetry.start('Initialize Frontend');

@@ -5,12 +5,16 @@
         c-show="todolist?.length > 0" 
         s:todolist="services.task.getAll(null, { requestId })"
     >
+        <!-- include("public/views/login.html") -->
+
         <s-if exp="todolist?.length > 0">
             <div>Total Record Loaded SSR: {{ todolist.length }}</div>
             <s-else>
                 <div>No records were loaded via SSR</div>
             </s-else>
         </s-if>  
+
+        <br/>
 
         <s-for 
             c-show="todolist"
@@ -30,6 +34,7 @@
             </div>
             
             <button 
+                :disabled="!isAuth"
                 class="todo-btn-remove"
                 s-i18n="remove" 
                 @click="DeleteTaskRequest(item.id)"
@@ -47,6 +52,7 @@
             >
 
             <button 
+                :disabled="!isAuth"
                 class="todo-btn-add"
                 s-i18n="add" 
                 @click="addTask"
@@ -75,7 +81,11 @@ export default {
     data(){
         return {
             todolist: [],
-            label: ""
+            label: "",
+            login: {
+                username: '', 
+                password: ''
+            }
         }
     },
 

@@ -12,7 +12,7 @@ export class AuthGateway {
     @Message('LoginRequest')
     async login(@Data() data: LoginRequest, @Socket() socket) {
         try {
-            const result = await this.authService.login(data);
+            const { result } = await this.authService.login(data);
             const response = await RpcUtils.pack(
                 'auth',
                 'LoginResponse',

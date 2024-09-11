@@ -20,7 +20,19 @@ message LoginResponse {
     string token = 2;
     string message = 3;
 }
+
+message RegisterRequest {
+    string username = 1;
+    string email = 2;
+    string password = 3;
+}
+
+message RegisterResponse {
+    bool success = 1;
+    string message = 3;
+}
           
 service AuthService {
     rpc Login (LoginRequest) returns (LoginResponse);
+    rpc Register (RegisterRequest) returns (RegisterResponse);
 }

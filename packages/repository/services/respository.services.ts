@@ -10,9 +10,10 @@ import {
     DeleteResult,
 } from 'typeorm';
 
-import { Config, Singleton } from '@cmmv/core';
+import { Config, Logger, Singleton } from '@cmmv/core';
 
 export class Repository extends Singleton {
+    public static logger: Logger = new Logger('Repository');
     public dataSource: DataSource;
 
     public static async loadConfig(): Promise<void> {
@@ -47,33 +48,61 @@ export class Repository extends Singleton {
     public static async findBy<Entity>(
         entity: new () => Entity,
         criteria: FindOptionsWhere<Entity>,
-    ): Promise<Entity> {
-        const repository = this.getRepository(entity);
-        return await repository.findOne({ where: criteria });
+    ): Promise<Entity | null> {
+        try {
+            const repository = this.getRepository(entity);
+            return await repository.findOne({ where: criteria });
+        } catch (e) {
+            if (process.env.NODE_ENV === 'dev')
+                Repository.logger.error(e.message);
+
+            return null;
+        }
     }
 
     public static async findOneBy<Entity>(
         entity: new () => Entity,
         criteria: FindOptionsWhere<Entity>,
     ): Promise<Entity | null> {
-        const repository = this.getRepository(entity);
-        return await repository.findOne({ where: criteria });
+        try {
+            const repository = this.getRepository(entity);
+            return await repository.findOne({ where: criteria });
+        } catch (e) {
+            if (process.env.NODE_ENV === 'dev')
+                Repository.logger.error(e.message);
+
+            return null;
+        }
     }
 
     public static async findAll<Entity>(
         entity: new () => Entity,
     ): Promise<Entity[]> {
-        const repository = this.getRepository(entity);
-        return await repository.find();
+        try {
+            const repository = this.getRepository(entity);
+            return await repository.find();
+        } catch (e) {
+            if (process.env.NODE_ENV === 'dev')
+                Repository.logger.error(e.message);
+
+            return null;
+        }
     }
 
     public static async insert<Entity>(
         entity: new () => Entity,
         data: DeepPartial<Entity>,
     ): Promise<Entity> {
-        const repository = this.getRepository(entity);
-        const newEntity = repository.create(data);
-        return await repository.save(newEntity);
+        try {
+            const repository = this.getRepository(entity);
+            const newEntity = repository.create(data);
+            return await repository.save(newEntity);
+        } catch (e) {
+            if (process.env.NODE_ENV === 'dev')
+                Repository.logger.error(e.message);
+
+            return null;
+        }
     }
 
     public static async update<Entity>(
@@ -81,17 +110,33 @@ export class Repository extends Singleton {
         id: any,
         data: any,
     ): Promise<Entity | null> {
-        const repository = this.getRepository(entity);
-        await repository.update(id, data);
-        return await this.findOneBy(entity, { id } as FindOptionsWhere<Entity>);
+        try {
+            const repository = this.getRepository(entity);
+            await repository.update(id, data);
+            return await this.findOneBy(entity, {
+                id,
+            } as FindOptionsWhere<Entity>);
+        } catch (e) {
+            if (process.env.NODE_ENV === 'dev')
+                Repository.logger.error(e.message);
+
+            return null;
+        }
     }
 
     public static async delete<Entity>(
         entity: new () => Entity,
         id: any,
     ): Promise<DeleteResult> {
-        const repository = this.getRepository(entity);
-        const result = await repository.delete(id);
-        return result;
+        try {
+            const repository = this.getRepository(entity);
+            const result = await repository.delete(id);
+            return result;
+        } catch (e) {
+            if (process.env.NODE_ENV === 'dev')
+                Repository.logger.error(e.message);
+
+            return null;
+        }
     }
 }

@@ -1,4 +1,3 @@
-import * as crypto from 'crypto';
 import { Logger, Scope } from '@cmmv/core';
 
 export class ControllerRegistry {
@@ -6,6 +5,8 @@ export class ControllerRegistry {
         any,
         { prefix: string; routes: any[] }
     >();
+
+    private static middlewares = new Map<string, Function[]>();
 
     public static registerController(
         target: any,
@@ -59,6 +60,15 @@ export class ControllerRegistry {
                 );
             }
 
+            let middleWares = null;
+
+            if (context) {
+                const existingFields =
+                    Reflect.getMetadata('route_metadata', context) || {};
+
+                middleWares = existingFields.middleware;
+            }
+
             if (!route) {
                 controller.routes.push({
                     method,
@@ -68,6 +78,7 @@ export class ControllerRegistry {
                     params: [],
                     context,
                     cb,
+                    middlewares: middleWares,
                 });
             } else {
                 route.method = method;
@@ -75,6 +86,7 @@ export class ControllerRegistry {
                 route.prefix = controller.prefix;
                 route.context = context;
                 route.cb = cb;
+                route.middlewares = middleWares;
             }
         }
     }
@@ -117,6 +129,30 @@ export class ControllerRegistry {
         } else {
             console.log(`${target.constructor.name} not found`);
         }
+    }
+
+    public static setMiddleware(
+        target: any,
+        method: string,
+        path: string,
+        handlerName: string,
+        middleware: Function,
+    ) {
+        const key = `${method}::/${target.constructor.name}/${path}`;
+        console.log(key);
+
+        if (!this.middlewares.has(key)) this.middlewares.set(key, []);
+
+        this.middlewares.get(key)!.push(middleware);
+    }
+
+    public static getMiddlewares(
+        target: any,
+        method: string,
+        path: string,
+    ): Function[] {
+        const key = `${method}::/${target.name}/${path}`;
+        return this.middlewares.get(key) || [];
     }
 
     public static getControllers() {

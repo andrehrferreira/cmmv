@@ -1,7 +1,7 @@
 // Generated automatically by CMMV
 
 import { Transform } from 'class-transformer';
-import { IsString, Min, Max } from 'class-validator';
+import { IsString, MinLength, MaxLength } from 'class-validator';
 import * as crypto from 'crypto';
 
 export interface IUser {
@@ -15,9 +15,12 @@ export interface IUser {
 export class User implements IUser {
     id?: any;
 
+    @Transform(({ value }) =>
+        crypto.createHash('sha1').update(value).digest('hex'),
+    )
     @IsString({ message: 'Invalid username' })
-    @Min(5, { message: 'Invalid username' })
-    @Max(30, { message: 'Invalid username' })
+    @MinLength(4, { message: 'Invalid username' })
+    @MaxLength(40, { message: 'Invalid username' })
     username: string;
 
     @Transform(({ value }) =>
@@ -29,7 +32,7 @@ export class User implements IUser {
     googleId: string;
 
     @Transform(({ value }) => JSON.stringify(value))
-    groups: string;
+    groups: string = '[]';
 
     constructor(partial: Partial<User>) {
         Object.assign(this, partial);

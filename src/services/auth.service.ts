@@ -9,38 +9,131 @@ import { Telemetry, Service, AbstractService, Config } from '@cmmv/core';
 import { Repository } from '@cmmv/repository';
 
 import { User, IUser } from '../models/user.model';
-import { LoginRequest, LoginResponse } from '../protos/auth';
+
+import {
+    LoginRequest,
+    LoginResponse,
+    RegisterRequest,
+    RegisterResponse,
+} from '../protos/auth';
+
 import { UserEntity } from '../entities/user.entity';
 
 @Service('auth')
 export class AuthService extends AbstractService {
-    public async login(payload: LoginRequest): Promise<LoginResponse> {
-        Telemetry.start('AuthService::login');
+    public async login(
+        payload: LoginRequest,
+        req?: any,
+        res?: any,
+        session?: any,
+    ): Promise<{ result: LoginResponse; user: any }> {
+        Telemetry.start('AuthService::login', req?.requestId);
 
         const jwtToken = Config.get('auth.jwtSecret');
-        const { username, password } = payload;
+        const expiresIn = Config.get('auth.expiresIn', 60 * 60);
+        const cookieName = Config.get(
+            'server.session.options.sessionCookieName',
+            'token',
+        );
+        const cookieTTL = Config.get<number>(
+            'server.session.options.cookie.maxAge',
+            24 * 60 * 60 * 100,
+        );
+        const cookieSecure = Config.get<boolean>(
+            'server.session.options.cookie.secure',
+            process.env.NODE_ENV !== 'dev',
+        );
 
-        const user = await Repository.findBy(UserEntity, {
-            username,
-            password,
+        const userValidation = plainToClass(User, payload, {
+            exposeUnsetFields: true,
+            enableImplicitConversion: true,
         });
 
-        if (!user || user.password !== password)
+        const user = await Repository.findBy(UserEntity, userValidation);
+
+        if (!user)
             return {
-                success: false,
-                token: '',
-                message: 'Invalid credentials',
+                result: {
+                    success: false,
+                    token: '',
+                    message: 'Invalid credentials',
+                },
+                user: null,
             };
 
         const token = jwt.sign(
             {
                 id: user.id,
+                username: payload.username,
             },
             jwtToken,
-            { algorithm: 'RS256' },
+            { expiresIn },
         );
 
-        Telemetry.end('AuthService::login');
-        return { success: true, token, message: 'Login successful' };
+        res.cookie(cookieName, `Bearer ${token}`, {
+            httpOnly: true,
+            secure: cookieSecure,
+            sameSite: 'strict',
+            maxAge: cookieTTL,
+        });
+
+        session.user = {
+            username: payload.username,
+            token: token,
+        };
+
+        session.save();
+
+        Telemetry.end('AuthService::login', req?.requestId);
+        return {
+            result: { success: true, token, message: 'Login successful' },
+            user,
+        };
+    }
+
+    public async register(
+        payload: RegisterRequest,
+        req?: any,
+    ): Promise<RegisterResponse> {
+        Telemetry.start('AuthService::register', req?.requestId);
+        const jwtToken = Config.get('auth.jwtSecret');
+
+        const newUser = plainToClass(User, payload, {
+            exposeUnsetFields: true,
+            enableImplicitConversion: true,
+        });
+
+        const errors = await validate(newUser, { skipMissingProperties: true });
+
+        if (errors.length > 0) {
+            console.error(errors);
+            Telemetry.end('AuthService::register', req?.requestId);
+            return {
+                success: false,
+                message: JSON.stringify(errors[0].constraints),
+            };
+        } else {
+            try {
+                const result = await Repository.insert<UserEntity>(
+                    UserEntity,
+                    newUser,
+                );
+                Telemetry.end('AuthService::register', req?.requestId);
+
+                return result
+                    ? {
+                          success: true,
+                          message: 'User registered successfully!',
+                      }
+                    : {
+                          success: false,
+                          message: 'Error trying to register new user',
+                      };
+            } catch (e) {
+                console.error(e);
+                Telemetry.end('AuthService::register', req?.requestId);
+                return { success: false, message: e.message };
+            }
+        }
     }
 }

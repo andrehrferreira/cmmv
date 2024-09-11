@@ -5,7 +5,7 @@ import { Entity, PrimaryGeneratedColumn, Column, Index } from 'typeorm';
 import { User } from '../models/user.model';
 
 @Entity('user')
-@Index('idx_user_username', ['username'])
+@Index('idx_user_username', ['username'], { unique: true })
 @Index('idx_user_googleId', ['googleId'])
 export class UserEntity implements User {
     @PrimaryGeneratedColumn('uuid')
@@ -17,9 +17,9 @@ export class UserEntity implements User {
     @Column({ type: 'varchar' })
     password: string;
 
-    @Column({ type: 'varchar' })
+    @Column({ type: 'varchar', nullable: true })
     googleId: string;
 
-    @Column({ type: 'varchar' })
+    @Column({ type: 'varchar', default: '[]' })
     groups: string;
 }

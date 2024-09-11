@@ -217,7 +217,8 @@ export class ${serviceName} extends AbstractService {
         options.push(`type: '${this.mapToTypeORMType(field.protoType)}'`);
         if (field.defaultValue !== undefined)
             options.push(`default: ${JSON.stringify(field.defaultValue)}`);
-        if (field.protoRepeated) options.push('array: true');
+        if (field.nullable && field.nullable === true)
+            options.push(`nullable: true`);
         return options.join(', ');
     }
 

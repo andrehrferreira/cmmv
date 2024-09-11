@@ -19,6 +19,7 @@ h1 {
 }
 
 .todo-box{
+    position: relative;
     width: 500px;
     margin: auto;
     border: 1px solid #CCC;
@@ -26,6 +27,9 @@ h1 {
     padding: 10px;
     box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2),
 	            0 25px 50px 0 rgba(0, 0, 0, 0.1);
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
 }
 
 .todo-item{
@@ -66,11 +70,11 @@ h1 {
 
 .todo-btn-add, .todo-btn-remove {
     width: 30%;
-    height: 40px;
-    margin: auto;
+    height: 42px;
+    margin: none;
     background-color: #155B22; 
     color: #fff;
-    border: 1px solid #155B22;
+    border: none;
     padding: 5px; 
     cursor: pointer; 
     text-align: center; 
@@ -79,10 +83,33 @@ h1 {
 
 .todo-btn-remove{
     background-color: #a72828; 
-    border: 1px solid #a72828;
+}
+
+.todo-btn-remove[disabled], .todo-btn-add[disabled] {
+    background-color: #ccc;
+    cursor: not-allowed;
+    color: #666;
+}
+
+.todo-btn-remove[disabled]:hover, .todo-btn-add[disabled]:hover {
+    background-color: #ccc;
 }
 
 .todo-btn:hover {
     background-color: #218838; 
     border-color: #1e7e34; 
+}
+
+.box-login {
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.8);
+    top: 0px;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    color: #EFEFEF;
+    padding: 20px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
 }

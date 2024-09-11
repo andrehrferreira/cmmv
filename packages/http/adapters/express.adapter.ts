@@ -47,13 +47,14 @@ export class ExpressAdapter extends AbstractHttpAdapter<
 
         this.instance = this.instance || express();
 
-        if (!Config.get('poweredBy', false))
+        if (!Config.get<boolean>('poweredBy', false))
             this.instance.disable('x-powered-by');
 
-        if (Config.get('compress.enabled', true))
+        if (Config.get<boolean>('compress.enabled', true)) {
             this.instance.use(
                 compression(Config.get('compress.options', { level: 6 })),
             );
+        }
 
         this.instance.use(express.static(publicDir));
         this.instance.set('views', publicDir);
@@ -75,9 +76,9 @@ export class ExpressAdapter extends AbstractHttpAdapter<
             }),
         );
 
-        if (Config.get('cors', true)) this.instance.use(cors());
+        if (Config.get<boolean>('cors', true)) this.instance.use(cors());
 
-        if (Config.get('helmet.enabled', true)) {
+        if (Config.get<boolean>('helmet.enabled', true)) {
             this.instance.use(
                 helmet(
                     Config.get('helmet.options', {
@@ -87,7 +88,7 @@ export class ExpressAdapter extends AbstractHttpAdapter<
             );
         }
 
-        if (Config.get('session.enabled', true)) {
+        if (Config.get<boolean>('session.enabled', true)) {
             this.instance.use(
                 session(
                     Config.get('session.options', {
@@ -167,7 +168,7 @@ export class ExpressAdapter extends AbstractHttpAdapter<
             }
 
             if (req.method === 'GET') {
-                if (!Config.get('removePolicyHeaders', false)) {
+                if (!Config.get<boolean>('removePolicyHeaders', false)) {
                     res.setHeader(
                         'Strict-Transport-Security',
                         'max-age=15552000; includeSubDomains',
@@ -179,7 +180,7 @@ export class ExpressAdapter extends AbstractHttpAdapter<
             }
 
             if (['POST', 'PUT', 'DELETE'].includes(req.method)) {
-                if (!Config.get('removePolicyHeaders', false)) {
+                if (!Config.get<boolean>('removePolicyHeaders', false)) {
                     res.removeHeader('X-DNS-Prefetch-Control');
                     res.removeHeader('X-Download-Options');
                     res.removeHeader('X-Permitted-Cross-Domain-Policies');
@@ -261,143 +262,69 @@ export class ExpressAdapter extends AbstractHttpAdapter<
                 const method = route.method.toLowerCase();
 
                 if (this.instance[method]) {
-                    this.instance[method](
-                        fullPath,
-                        async (
-                            req: ExpressRequest | any,
-                            res: express.Response,
-                            next: any,
-                        ) => {
-                            const startTime = Date.now();
+                    const handler = async (
+                        req: ExpressRequest | any,
+                        res: express.Response,
+                        next: any,
+                    ) => {
+                        const startTime = Date.now();
 
-                            try {
-                                req.contextId = crypto
-                                    .createHash('sha1')
-                                    .update(`${req.method}::${req.route.path}`)
-                                    .digest('hex');
+                        try {
+                            req.contextId = crypto
+                                .createHash('md5')
+                                .update(`${req.method}::${req.route.path}`)
+                                .digest('hex');
 
-                                if (
-                                    Application.appModule.httpInterceptors
-                                        .length > 0
-                                ) {
-                                    for (let interceptor of Application
-                                        .appModule.httpInterceptors) {
-                                        let breakProcess = await interceptor(
-                                            `${req.method}::${req.route.path}`.toLocaleLowerCase(),
-                                            {
-                                                req,
-                                                res,
-                                                next,
-                                                handler:
-                                                    instance[route.handlerName],
-                                            },
-                                        );
+                            if (
+                                Application.appModule.httpInterceptors.length >
+                                0
+                            ) {
+                                for (let interceptor of Application.appModule
+                                    .httpInterceptors) {
+                                    let breakProcess = await interceptor(
+                                        `${req.method}::${req.route.path}`.toLocaleLowerCase(),
+                                        {
+                                            req,
+                                            res,
+                                            next,
+                                            handler:
+                                                instance[route.handlerName],
+                                        },
+                                    );
 
-                                        if (breakProcess) return;
-                                    }
+                                    if (breakProcess) return;
                                 }
+                            }
 
-                                const args = this.buildRouteArgs(
-                                    req,
-                                    res,
-                                    next,
-                                    route.params,
-                                );
+                            const args = this.buildRouteArgs(
+                                req,
+                                res,
+                                next,
+                                route.params,
+                            );
 
-                                Telemetry.start(
-                                    'Controller Handler',
-                                    req.requestId,
-                                );
+                            Telemetry.start(
+                                'Controller Handler',
+                                req.requestId,
+                            );
 
-                                const result = await instance[
-                                    route.handlerName
-                                ](...args);
+                            const result = await instance[route.handlerName](
+                                ...args,
+                            );
 
-                                Telemetry.end(
-                                    'Controller Handler',
-                                    req.requestId,
-                                );
+                            Telemetry.end('Controller Handler', req.requestId);
 
-                                const processingTime = Date.now() - startTime;
-                                Telemetry.end('Request Process', req.requestId);
-                                const telemetry = Telemetry.getTelemetry(
-                                    req.requestId,
-                                );
+                            const processingTime = Date.now() - startTime;
+                            Telemetry.end('Request Process', req.requestId);
+                            const telemetry = Telemetry.getTelemetry(
+                                req.requestId,
+                            );
 
-                                if (this.isJson(result)) {
-                                    let response = {
-                                        status: 200,
-                                        processingTime,
-                                        data: result,
-                                    };
-
-                                    if (req.query.debug) {
-                                        response['requestId'] = req.requestId;
-                                        response['telemetry'] = telemetry;
-                                    }
-
-                                    if (
-                                        Application.appModule.httpAfterRender
-                                            .length > 0
-                                    ) {
-                                        for (let afterRender of Application
-                                            .appModule.httpAfterRender) {
-                                            await afterRender(
-                                                `${req.method}::${req.route.path}`.toLocaleLowerCase(),
-                                                {
-                                                    req,
-                                                    res,
-                                                    next,
-                                                    handler:
-                                                        instance[
-                                                            route.handlerName
-                                                        ],
-                                                    content: response,
-                                                },
-                                            );
-                                        }
-                                    }
-
-                                    res.json(response);
-                                } else if (result) {
-                                    if (
-                                        Application.appModule.httpAfterRender
-                                            .length > 0
-                                    ) {
-                                        for (let afterRender of Application
-                                            .appModule.httpAfterRender) {
-                                            await afterRender(
-                                                `${req.method}::${req.route.path}`.toLocaleLowerCase(),
-                                                {
-                                                    req,
-                                                    res,
-                                                    next,
-                                                    handler:
-                                                        instance[
-                                                            route.handlerName
-                                                        ],
-                                                    content: result,
-                                                },
-                                            );
-                                        }
-                                    }
-
-                                    res.status(200).send(result);
-                                }
-                            } catch (error) {
-                                console.error(error);
-                                const processingTime = Date.now() - startTime;
-                                Telemetry.end('Request Process', req.requestId);
-                                const telemetry = Telemetry.getTelemetry(
-                                    req.requestId,
-                                );
-
+                            if (this.isJson(result)) {
                                 let response = {
-                                    status: 500,
+                                    status: 200,
                                     processingTime,
-                                    message:
-                                        error.message ||
-                                        'Internal Server Error',
+                                    data: result,
                                 };
 
                                 if (req.query.debug) {
@@ -405,12 +332,87 @@ export class ExpressAdapter extends AbstractHttpAdapter<
                                     response['telemetry'] = telemetry;
                                 }
 
-                                res.status(500).json(response);
+                                if (
+                                    Application.appModule.httpAfterRender
+                                        .length > 0
+                                ) {
+                                    for (let afterRender of Application
+                                        .appModule.httpAfterRender) {
+                                        await afterRender(
+                                            `${req.method}::${req.route.path}`.toLocaleLowerCase(),
+                                            {
+                                                req,
+                                                res,
+                                                next,
+                                                handler:
+                                                    instance[route.handlerName],
+                                                content: response,
+                                            },
+                                        );
+                                    }
+                                }
+
+                                res.json(response);
+                            } else if (result) {
+                                if (
+                                    Application.appModule.httpAfterRender
+                                        .length > 0
+                                ) {
+                                    for (let afterRender of Application
+                                        .appModule.httpAfterRender) {
+                                        await afterRender(
+                                            `${req.method}::${req.route.path}`.toLocaleLowerCase(),
+                                            {
+                                                req,
+                                                res,
+                                                next,
+                                                handler:
+                                                    instance[route.handlerName],
+                                                content: result,
+                                            },
+                                        );
+                                    }
+                                }
+
+                                res.status(200).send(result);
+                            } else {
+                                res.status(404).end();
+                            }
+                        } catch (error) {
+                            console.error(error);
+                            const processingTime = Date.now() - startTime;
+                            Telemetry.end('Request Process', req.requestId);
+                            const telemetry = Telemetry.getTelemetry(
+                                req.requestId,
+                            );
+
+                            let response = {
+                                status: 500,
+                                processingTime,
+                                message:
+                                    error.message || 'Internal Server Error',
+                            };
+
+                            if (req.query.debug) {
+                                response['requestId'] = req.requestId;
+                                response['telemetry'] = telemetry;
                             }
 
-                            Telemetry.clearTelemetry(req.requestId);
-                        },
-                    );
+                            res.status(500).json(response);
+                        }
+
+                        Telemetry.clearTelemetry(req.requestId);
+                    };
+
+                    if (route.middlewares) {
+                        this.instance[method](
+                            fullPath,
+                            route.middlewares,
+                            handler,
+                        );
+                    } else {
+                        this.instance[method](fullPath, handler);
+                    }
                 }
             });
         });

@@ -16,13 +16,6 @@
     },
     "homepage": "https://cmmv.io",
     "dependencies": {
-        "jsonwebtoken": "^9.0.2",
-        "passport": "^0.7.0",
-        "passport-google-oauth": "^2.0.0",
-        "passport-local": "^1.0.0"
-    },
-    "devDependencies": {
-        "@types/passport": "^1.0.16",
-        "@types/passport-local": "^1.0.38"
+        "jsonwebtoken": "^9.0.2"
     }
 }
