@@ -94,7 +94,7 @@ module.exports = {
     headers: {
         "Content-Security-Policy": [
             "default-src 'self'",
-            "script-src 'self' 'unsafe-eval'",
+            "script-src 'self' 'unsafe-eval' 'unsafe-hashes'",
             "style-src 'self' 'unsafe-inline'",
             "font-src 'self'",
             "connect-src 'self'"

@@ -315,7 +315,18 @@ export class Template {
         headers = `
             <title>${title}</title>\n
             ${headers}\n
-            <script nonce="${this.nonce}">var process = { env: { NODE_ENV: '${process.env.NODE_ENV}' } };</script>
+            <script nonce="${this.nonce}">
+                var process = { env: { NODE_ENV: '${process.env.NODE_ENV}' } };
+
+                //first paint fix
+                document.addEventListener("DOMContentLoaded", function() {
+                    var preloadLinks = document.querySelectorAll('link[rel="preload"][as="style"]');
+                
+                    preloadLinks.forEach((link) => {
+                        link.rel = 'stylesheet';
+                    });
+                });
+            </script>
         `;
 
         pageContents = pageContents.replace(/<headers\s*\/?>/i, headers);
@@ -347,8 +358,12 @@ export class Template {
             headConfig.link.forEach((link: Record<string, string>) => {
                 let linkString = '<link ';
 
-                for (const [key, value] of Object.entries(link))
-                    linkString += `${key}="${value}" `;
+                for (const [key, value] of Object.entries(link)) {
+                    if (key === 'rel' && value === 'stylesheet')
+                        //first paint fix
+                        linkString += `rel="preload" as="style"`;
+                    else linkString += `${key}="${value}" `;
+                }
 
                 if (this.nonce) linkString += `nonce="${this.nonce}" `;
 
