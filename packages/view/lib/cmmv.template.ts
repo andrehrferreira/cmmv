@@ -8,6 +8,7 @@ import * as UglifyJS from 'uglify-js';
 import { minify } from 'html-minifier';
 
 import { Config, Telemetry } from '@cmmv/core';
+
 import { hasOwnOnlyObject, createNullProtoObjWherePossible } from './utils.cjs';
 
 export type Directive = (

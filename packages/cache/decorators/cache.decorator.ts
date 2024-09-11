@@ -1,4 +1,4 @@
-import { CacheRegistry } from './cache.registry';
+import { CacheRegistry } from '../registries/cache.registry';
 
 export interface CacheOptions {
     ttl?: number;

@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as protobufjs from 'protobufjs';
 import * as UglifyJS from 'uglify-js';
 
-import { ProtoRegistry } from './protobuf.registry';
+import { ProtoRegistry } from '../registries/protobuf.registry';
 
 import { ITranspile, Logger, Scope } from '@cmmv/core';
 

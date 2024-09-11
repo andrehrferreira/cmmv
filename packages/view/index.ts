@@ -1,6 +1,8 @@
-export * from "./src/cmmv.renderview";
-export * from "./src/cmmv.template";
-export * from "./src/cmmv.directives";
+export * from './lib/cmmv.renderview';
+export * from './lib/cmmv.template';
+export * from './lib/cmmv.directives';
+export * from './lib/cmmv.eval';
+export * from './lib/cmmv.utils';
 
-export * from "./src/view.transpile";
-export * from "./src/view.module";
+export * from './transpilers/view.transpile';
+export * from './modules/view.module';

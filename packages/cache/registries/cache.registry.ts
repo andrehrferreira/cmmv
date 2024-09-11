@@ -1,4 +1,4 @@
-import { CacheOptions } from './cache.decorators';
+import { CacheOptions } from '../decorators/cache.decorator';
 
 export class CacheRegistry {
     public static registerHandler(

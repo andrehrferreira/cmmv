@@ -1,3 +1,3 @@
-export * from "./src/repository.transpiler";
-export * from "./src/respository.services";
-export * from "./src/repository.module";
+export * from './modules/repository.module';
+export * from './services/respository.services';
+export * from './transpilers/repository.transpiler';
