@@ -1,6 +1,6 @@
 {
     "name": "@cmmv/scheduling",
-    "version": "0.2.29",
+    "version": "0.2.30",
     "description": "CMMV (@scheduling)",
     "publishConfig": {
         "access": "public"
@@ -17,6 +17,5 @@
     "homepage": "https://cmmv.io",
     "dependencies": {
         "cron": "^3.1.7"
-    },
-    "devDependencies": {}
+    }
 }

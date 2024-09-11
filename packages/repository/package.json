@@ -1,6 +1,6 @@
 {
     "name": "@cmmv/repository",
-    "version": "0.2.29",
+    "version": "0.2.30",
     "description": "CMMV (@repository)",
     "publishConfig": {
         "access": "public"
