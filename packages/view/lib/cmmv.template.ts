@@ -317,8 +317,6 @@ export class Template {
             ${headers}\n
             <script nonce="${this.nonce}">
                 var process = { env: { NODE_ENV: '${process.env.NODE_ENV}' } };
-                var preloadLinks = document.querySelectorAll('link[rel="preload"][as="style"]');
-                preloadLinks.forEach((link) => { link.rel = 'stylesheet'; });
             </script>
         `;
 
@@ -351,12 +349,8 @@ export class Template {
             headConfig.link.forEach((link: Record<string, string>) => {
                 let linkString = '<link ';
 
-                for (const [key, value] of Object.entries(link)) {
-                    if (key === 'rel' && value === 'stylesheet')
-                        //first paint fix
-                        linkString += `rel="preload" as="style"`;
-                    else linkString += `${key}="${value}" `;
-                }
+                for (const [key, value] of Object.entries(link))
+                    linkString += `${key}="${value}" `;
 
                 if (this.nonce) linkString += `nonce="${this.nonce}" `;
 
