@@ -30,7 +30,7 @@
 		"packages:move": "gulp move",
 		"changelog": "lerna-changelog",
 		"release:lerna": "./node_modules/.bin/lerna publish --force-publish --exact -m \"chore: chore(@cmmv) publish %s release\"",
-		"release": "npm run build:prod && npm run packages:move && npm run release:lerna",
+		"release": "npm run build:prod && npm run packages:move && npm run release:lerna && npm run clean",
 		"prepare": "husky",
 		"coverage": "nyc report --reporter=text-lcov | coveralls -v"
 	},

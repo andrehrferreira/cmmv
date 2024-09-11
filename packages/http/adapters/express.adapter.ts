@@ -375,7 +375,7 @@ export class ExpressAdapter extends AbstractHttpAdapter<
                                 }
 
                                 res.status(200).send(result);
-                            } else {
+                            } else if (!res.headersSent) {
                                 res.status(404).end();
                             }
                         } catch (error) {
