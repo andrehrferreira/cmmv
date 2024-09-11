@@ -17,5 +17,6 @@
     "homepage": "https://cmmv.io",
     "dependencies": {
         "jsonwebtoken": "^9.0.2"
-    }
+    },
+    "gitHead": "3dc8ad71128f3616fc226bb64bce37b1cafcf33d"
 }
