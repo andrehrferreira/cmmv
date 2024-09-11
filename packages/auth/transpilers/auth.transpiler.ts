@@ -55,7 +55,7 @@ export class AuthController {
         @Body() payload: LoginRequest, 
         @Req() req, @Res() res, @Session() session
     ): Promise<LoginResponse> {
-        const { user, result } = await this.authService.login(payload, req, res, session);
+        const { result } = await this.authService.login(payload, req, res, session);
         return result;
     }`
             : ''
@@ -89,6 +89,7 @@ export class AuthController {
         const serviceFileName = `auth.service.ts`;
 
         const hasRepository = Module.hasModule('repository');
+        const hasCache = Module.hasModule('cache');
 
         const serviceTemplate = `// Generated automatically by CMMV
     
@@ -102,8 +103,9 @@ import {
 } from "@cmmv/core";
 
 ${hasRepository ? "import { Repository } from '@cmmv/repository';" : ''}
+${hasCache ? "import { CacheService } from '@cmmv/cache';" : ''}
 
-import { User, IUser } from '../models/user.model';
+import { User } from '../models/user.model';
 
 import { 
     LoginRequest, LoginResponse, 
@@ -114,15 +116,28 @@ ${hasRepository ? "import { UserEntity } from '../entities/user.entity';" : ''}
 
 @Service("auth")
 export class AuthService extends AbstractService {
-
-    public async login(payload: LoginRequest, req?: any, res?: any, session?: any): Promise<{ result: LoginResponse, user: any }> {
+    public async login(
+        payload: LoginRequest, 
+        req?: any, res?: any, 
+        session?: any
+    ): Promise<{ result: LoginResponse, user: any }> {
         Telemetry.start('AuthService::login', req?.requestId);
 
-        const jwtToken = Config.get("auth.jwtSecret");
-        const expiresIn = Config.get("auth.expiresIn", 60 * 60);
-        const cookieName = Config.get("server.session.options.sessionCookieName", "token");
-        const cookieTTL = Config.get<number>("server.session.options.cookie.maxAge", 24 * 60 * 60 * 100);
-        const cookieSecure = Config.get<boolean>("server.session.options.cookie.secure", process.env.NODE_ENV !== 'dev');
+        const jwtToken = Config.get<string>("auth.jwtSecret");
+        const expiresIn = Config.get<number>("auth.expiresIn", 60 * 60);
+        const sessionEnabled = Config.get<boolean>("server.session.enabled", true);
+        const cookieName = Config.get<string>(
+            "server.session.options.sessionCookieName", 
+            "token"
+        );
+        const cookieTTL = Config.get<number>(
+            "server.session.options.cookie.maxAge", 
+            24 * 60 * 60 * 100
+        );
+        const cookieSecure = Config.get<boolean>(
+            "server.session.options.cookie.secure", 
+            process.env.NODE_ENV !== 'dev'
+        );
 
         const userValidation = plainToClass(User, payload, { 
             exposeUnsetFields: true,
@@ -152,20 +167,22 @@ export class AuthService extends AbstractService {
             maxAge: cookieTTL
         });
 
-        session.user = {
-            username: payload.username,
-            token: token,
-        };
+        if(sessionEnabled){
+            session.user = {
+                username: payload.username,
+                token: token,
+            };
+    
+            session.save();
+        }
 
-        session.save();
-
+        ${hasCache ? `CacheService.set(\`user:\${user.id}\`, JSON.stringify(user), expiresIn);\n` : ''}        
         Telemetry.end('AuthService::login', req?.requestId);        
         return { result: { success: true, token, message: "Login successful" }, user };
     }
 
     public async register(payload: RegisterRequest, req?: any): Promise<RegisterResponse> {
         Telemetry.start('AuthService::register', req?.requestId);
-        const jwtToken = Config.get("auth.jwtSecret");
 
 ${
     hasRepository
@@ -223,7 +240,8 @@ import { Rpc, Message, Data, Socket, RpcUtils } from "@cmmv/ws";
 import { AuthService } from '../services/auth.service';
 
 import { 
-    LoginRequest  
+    LoginRequest,
+    RegisterRequest  
 } from "../protos/auth";
 
 @Rpc("auth")
@@ -235,6 +253,20 @@ export class AuthGateway {
         try{
             const { result } = await this.authService.login(data);
             const response = await RpcUtils.pack("auth", "LoginResponse", result);
+
+            if(response)
+                socket.send(response);            
+        }
+        catch(e){
+            return null;
+        }
+    }
+
+    @Message("RegisterRequest")
+    async register(@Data() data: RegisterRequest, @Socket() socket) {
+        try{
+            const result = await this.authService.register(data);
+            const response = await RpcUtils.pack("auth", "RegisterResponse", result);
 
             if(response)
                 socket.send(response);            

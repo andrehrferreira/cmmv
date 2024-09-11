@@ -31,7 +31,7 @@ export class AuthController {
         @Res() res,
         @Session() session,
     ): Promise<LoginResponse> {
-        const { user, result } = await this.authService.login(
+        const { result } = await this.authService.login(
             payload,
             req,
             res,

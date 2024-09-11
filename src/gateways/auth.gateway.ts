@@ -3,7 +3,7 @@
 import { Rpc, Message, Data, Socket, RpcUtils } from '@cmmv/ws';
 import { AuthService } from '../services/auth.service';
 
-import { LoginRequest } from '../protos/auth';
+import { LoginRequest, RegisterRequest } from '../protos/auth';
 
 @Rpc('auth')
 export class AuthGateway {
@@ -16,6 +16,22 @@ export class AuthGateway {
             const response = await RpcUtils.pack(
                 'auth',
                 'LoginResponse',
+                result,
+            );
+
+            if (response) socket.send(response);
+        } catch (e) {
+            return null;
+        }
+    }
+
+    @Message('RegisterRequest')
+    async register(@Data() data: RegisterRequest, @Socket() socket) {
+        try {
+            const result = await this.authService.register(data);
+            const response = await RpcUtils.pack(
+                'auth',
+                'RegisterResponse',
                 result,
             );
 

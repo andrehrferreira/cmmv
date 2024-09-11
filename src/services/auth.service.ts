@@ -7,8 +7,9 @@ import { plainToClass } from 'class-transformer';
 import { Telemetry, Service, AbstractService, Config } from '@cmmv/core';
 
 import { Repository } from '@cmmv/repository';
+import { CacheService } from '@cmmv/cache';
 
-import { User, IUser } from '../models/user.model';
+import { User } from '../models/user.model';
 
 import {
     LoginRequest,
@@ -29,9 +30,13 @@ export class AuthService extends AbstractService {
     ): Promise<{ result: LoginResponse; user: any }> {
         Telemetry.start('AuthService::login', req?.requestId);
 
-        const jwtToken = Config.get('auth.jwtSecret');
-        const expiresIn = Config.get('auth.expiresIn', 60 * 60);
-        const cookieName = Config.get(
+        const jwtToken = Config.get<string>('auth.jwtSecret');
+        const expiresIn = Config.get<number>('auth.expiresIn', 60 * 60);
+        const sessionEnabled = Config.get<boolean>(
+            'server.session.enabled',
+            true,
+        );
+        const cookieName = Config.get<string>(
             'server.session.options.sessionCookieName',
             'token',
         );
@@ -77,12 +82,16 @@ export class AuthService extends AbstractService {
             maxAge: cookieTTL,
         });
 
-        session.user = {
-            username: payload.username,
-            token: token,
-        };
+        if (sessionEnabled) {
+            session.user = {
+                username: payload.username,
+                token: token,
+            };
 
-        session.save();
+            session.save();
+        }
+
+        CacheService.set(`user:${user.id}`, JSON.stringify(user), expiresIn);
 
         Telemetry.end('AuthService::login', req?.requestId);
         return {
@@ -96,7 +105,6 @@ export class AuthService extends AbstractService {
         req?: any,
     ): Promise<RegisterResponse> {
         Telemetry.start('AuthService::register', req?.requestId);
-        const jwtToken = Config.get('auth.jwtSecret');
 
         const newUser = plainToClass(User, payload, {
             exposeUnsetFields: true,
