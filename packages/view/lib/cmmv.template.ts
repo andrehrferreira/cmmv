@@ -449,7 +449,7 @@ export class Template {
 
             processedText = processedText.replace(
                 `<\/body>`,
-                `<script nonce="{nonce}">
+                `<script nonce="${self.nonce}">
             (function(global) {
                 try {          
                     if(!global.cmmvTelemetry)
