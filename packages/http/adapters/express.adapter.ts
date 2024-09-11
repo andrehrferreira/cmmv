@@ -56,7 +56,21 @@ export class ExpressAdapter extends AbstractHttpAdapter<
             );
         }
 
-        this.instance.use(express.static(publicDir));
+        this.instance.use(
+            express.static(publicDir, {
+                setHeaders: (res, path) => {
+                    if (path.endsWith('.html')) {
+                        res.setHeader('Cache-Control', 'no-cache');
+                    } else {
+                        res.setHeader(
+                            'Cache-Control',
+                            'public, max-age=31536000, immutable',
+                        );
+                    }
+                },
+            }),
+        );
+
         this.instance.set('views', publicDir);
         this.instance.set('view engine', 'html');
         this.instance.engine('html', (filePath, options, callback) => {
