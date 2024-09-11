@@ -1,8 +1,8 @@
 import { Module } from '@cmmv/core';
 
-import { AuthService } from './auth.service';
-import { AuthTranspile } from './auth.transpiler';
-import { AuthContract } from './auth.contract';
+import { AuthService } from '../services/auth.service';
+import { AuthTranspile } from '../transpilers/auth.transpiler';
+import { AuthContract } from '../contracts/auth.contract';
 
 export let AuthModule = new Module('auth', {
     providers: [AuthService],

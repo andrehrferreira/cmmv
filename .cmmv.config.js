@@ -4,8 +4,31 @@ module.exports = {
     server: {
         host: process.env.HOST || "0.0.0.0",
         port: process.env.PORT || 3000,
-        sessionSecret: process.env.SESSION_SECRET || "secret",
-        sessionCookieName: process.env.SESSION_COOKIENAME || "cmmv-session"
+        sessionCookieName: process.env.SESSION_COOKIENAME || "cmmv-session",
+        poweredBy: false,
+        removePolicyHeaders: false,
+        compress: {
+            enabled: true,
+            options: {
+                level: 6 
+            }
+        },
+        cors: true,
+        helmet: {
+            enabled: true,
+            options: {
+                contentSecurityPolicy: false
+            }
+        },
+        session: {
+            enabled: true,
+            options: {
+                secret: process.env.SESSION_SECRET || "secret",
+                resave: false,
+                saveUninitialized: false,
+                cookie: { secure: true }
+            }
+        }
     },
 
     i18n: {

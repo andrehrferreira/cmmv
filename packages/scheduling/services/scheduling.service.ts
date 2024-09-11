@@ -1,5 +1,5 @@
 import { Scope, Logger, Singleton, Service } from '@cmmv/core';
-import { SchedulingManager } from './scheduling.manager';
+import { SchedulingManager } from '../manager/scheduling.manager';
 
 @Service('scheduling')
 export class SchedulingService extends Singleton {
@@ -14,26 +14,31 @@ export class SchedulingService extends Singleton {
             const boundMethod = method.bind(target);
             const manager = new SchedulingManager(cronTime, boundMethod);
 
-            // Start the cron job
             manager.start();
             instance.managers.push(manager);
 
-            instance.logger.log(
-                `Cron job started for ${method.name} with schedule: ${cronTime}`,
-            );
+            if (process.env.NODE_ENV === 'dev') {
+                instance.logger.log(
+                    `Cron job started for ${method.name} with schedule: ${cronTime}`,
+                );
+            }
         });
     }
 
     public static stopAllJobs(): void {
         const instance = SchedulingService.getInstance();
         instance.managers.forEach(manager => manager.stop());
-        instance.logger.log('All cron jobs stopped');
+
+        if (process.env.NODE_ENV === 'dev')
+            instance.logger.log('All cron jobs stopped');
     }
 
     public static restartAllJobs(): void {
         const instance = SchedulingService.getInstance();
         instance.managers.forEach(manager => manager.restart());
-        instance.logger.log('All cron jobs restarted');
+
+        if (process.env.NODE_ENV === 'dev')
+            instance.logger.log('All cron jobs restarted');
     }
 
     public static changeCronTimeForJob(
@@ -41,13 +46,18 @@ export class SchedulingService extends Singleton {
         newCronTime: string,
     ): void {
         const instance = SchedulingService.getInstance();
+
         if (instance.managers[index]) {
             instance.managers[index].changeCronTime(newCronTime);
-            instance.logger.log(
-                `Cron time changed for job at index ${index} to: ${newCronTime}`,
-            );
+
+            if (process.env.NODE_ENV === 'dev') {
+                instance.logger.log(
+                    `Cron time changed for job at index ${index} to: ${newCronTime}`,
+                );
+            }
         } else {
-            instance.logger.error(`No cron job found at index ${index}`);
+            if (process.env.NODE_ENV === 'dev')
+                instance.logger.error(`No cron job found at index ${index}`);
         }
     }
 
@@ -55,9 +65,14 @@ export class SchedulingService extends Singleton {
         const instance = SchedulingService.getInstance();
         if (instance.managers[index]) {
             instance.managers[index].addObserver(observer);
-            instance.logger.log(`Observer added to cron job at index ${index}`);
+
+            if (process.env.NODE_ENV === 'dev')
+                instance.logger.log(
+                    `Observer added to cron job at index ${index}`,
+                );
         } else {
-            instance.logger.error(`No cron job found at index ${index}`);
+            if (process.env.NODE_ENV === 'dev')
+                instance.logger.error(`No cron job found at index ${index}`);
         }
     }
 }

@@ -11,5 +11,8 @@
         }
     },
     "exclude": ["node_modules", "dist"],
-    "references": [{ "path": "../core/tsconfig.build.json" }]
+    "references": [
+        { "path": "../core/tsconfig.build.json" },
+        { "path": "../http/tsconfig.build.json" }
+    ]
 }

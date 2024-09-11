@@ -10,7 +10,6 @@ export class RepositoryTranspile implements ITranspile {
 
         contracts?.forEach((contract: any) => {
             if (contract.generateEntities) this.generateEntity(contract);
-
             if (contract.generateController) this.generateService(contract);
         });
     }

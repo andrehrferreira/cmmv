@@ -10,22 +10,39 @@ export class Config extends Singleton {
         const rootDir = process.cwd();
         const configPath = path.join(rootDir, '.cmmv.config.js');
 
-        if (!fs.existsSync(configPath)) 
+        if (!fs.existsSync(configPath))
             throw new Error(`Configuration file not found: ${configPath}`);
-        
+
         const configModule = require(configPath);
         const instance = Config.getInstance();
         instance.config = configModule.default || configModule;
     }
 
-    public static get<T = any>(key: string): T | undefined {
+    public static get<T = any>(
+        key: string,
+        defaultValue?: any,
+    ): T | null | any {
         const config = Config.getInstance();
-        return key.split('.').reduce((o, k) => (o && o[k] !== undefined) ? o[k] : undefined, config.config) as T;
+        const value = key
+            .split('.')
+            .reduce(
+                (o, k) =>
+                    o && o[k] !== undefined && o[k] !== null ? o[k] : null,
+                config.config,
+            ) as T;
+        return value ? value : defaultValue;
     }
 
     public static has(key: string): boolean {
         const config = Config.getInstance();
-        return key.split('.').reduce((o, k) => (o && k in o) ? o[k] : undefined, config.config) !== undefined;
+        return (
+            key
+                .split('.')
+                .reduce(
+                    (o, k) => (o && k in o ? o[k] : undefined),
+                    config.config,
+                ) !== undefined
+        );
     }
 
     public static set(key: string, value: any): void {

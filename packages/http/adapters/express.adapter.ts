@@ -46,8 +46,15 @@ export class ExpressAdapter extends AbstractHttpAdapter<
         this.application = application;
 
         this.instance = this.instance || express();
-        this.instance.disable('x-powered-by');
-        this.instance.use(compression({ level: 6 }));
+
+        if (!Config.get('poweredBy', false))
+            this.instance.disable('x-powered-by');
+
+        if (Config.get('compress.enabled', true))
+            this.instance.use(
+                compression(Config.get('compress.options', { level: 6 })),
+            );
+
         this.instance.use(express.static(publicDir));
         this.instance.set('views', publicDir);
         this.instance.set('view engine', 'html');
@@ -67,16 +74,31 @@ export class ExpressAdapter extends AbstractHttpAdapter<
                 extended: true,
             }),
         );
-        this.instance.use(cors());
-        this.instance.use(helmet({ contentSecurityPolicy: false }));
-        this.instance.use(
-            session({
-                secret: process.env.SESSION_SECRET,
-                resave: false,
-                saveUninitialized: false,
-                cookie: { secure: true },
-            }),
-        );
+
+        if (Config.get('cors', true)) this.instance.use(cors());
+
+        if (Config.get('helmet.enabled', true)) {
+            this.instance.use(
+                helmet(
+                    Config.get('helmet.options', {
+                        contentSecurityPolicy: false,
+                    }),
+                ),
+            );
+        }
+
+        if (Config.get('session.enabled', true)) {
+            this.instance.use(
+                session(
+                    Config.get('session.options', {
+                        secret: process.env.SESSION_SECRET,
+                        resave: false,
+                        saveUninitialized: false,
+                        cookie: { secure: true },
+                    }),
+                ),
+            );
+        }
 
         this.setMiddleware();
         this.registerControllers();
@@ -145,25 +167,29 @@ export class ExpressAdapter extends AbstractHttpAdapter<
             }
 
             if (req.method === 'GET') {
-                res.setHeader(
-                    'Strict-Transport-Security',
-                    'max-age=15552000; includeSubDomains',
-                );
-                res.setHeader('X-Content-Type-Options', 'nosniff');
-                res.setHeader('X-Frame-Options', 'SAMEORIGIN');
-                res.setHeader('X-XSS-Protection', '0');
+                if (!Config.get('removePolicyHeaders', false)) {
+                    res.setHeader(
+                        'Strict-Transport-Security',
+                        'max-age=15552000; includeSubDomains',
+                    );
+                    res.setHeader('X-Content-Type-Options', 'nosniff');
+                    res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+                    res.setHeader('X-XSS-Protection', '0');
+                }
             }
 
             if (['POST', 'PUT', 'DELETE'].includes(req.method)) {
-                res.removeHeader('X-DNS-Prefetch-Control');
-                res.removeHeader('X-Download-Options');
-                res.removeHeader('X-Permitted-Cross-Domain-Policies');
-                res.removeHeader('Strict-Transport-Security');
-                res.removeHeader('Content-Security-Policy');
-                res.removeHeader('Cross-Origin-Opener-Policy');
-                res.removeHeader('Cross-Origin-Resource-Policy');
-                res.removeHeader('Origin-Agent-Cluster');
-                res.removeHeader('Referrer-Policy');
+                if (!Config.get('removePolicyHeaders', false)) {
+                    res.removeHeader('X-DNS-Prefetch-Control');
+                    res.removeHeader('X-Download-Options');
+                    res.removeHeader('X-Permitted-Cross-Domain-Policies');
+                    res.removeHeader('Strict-Transport-Security');
+                    res.removeHeader('Content-Security-Policy');
+                    res.removeHeader('Cross-Origin-Opener-Policy');
+                    res.removeHeader('Cross-Origin-Resource-Policy');
+                    res.removeHeader('Origin-Agent-Cluster');
+                    res.removeHeader('Referrer-Policy');
+                }
             }
 
             next();
@@ -206,9 +232,7 @@ export class ExpressAdapter extends AbstractHttpAdapter<
                         nonce: res.locals.nonce,
                         services: ServiceRegistry.getServicesArr(),
                         requestId: req.requestId,
-                        config: {
-                            rpc: config.rpc,
-                        },
+                        config,
                     });
                 }
             }
