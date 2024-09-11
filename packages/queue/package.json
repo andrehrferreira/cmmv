@@ -1,6 +1,6 @@
 {
     "name": "@cmmv/queue",
-    "version": "0.2.37",
+    "version": "0.3.0",
     "description": "CMMV (@queue)",
     "publishConfig": {
         "access": "public"
