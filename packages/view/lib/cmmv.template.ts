@@ -114,7 +114,7 @@ export class Template {
             fs.writeFileSync(tempFilePath, inlineScripts);
             resultHtml = resultHtml.replace(
                 match[0],
-                `<script src="${tempFilePath.replace(cwd(), '').replace('/public', '')}" nonce="${this.nonce}" async></script>`,
+                `<script src="${tempFilePath.replace(cwd(), '').replace('/public', '')}" nonce="${this.nonce}"></script>`,
             );
         }
 
