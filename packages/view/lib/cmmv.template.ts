@@ -317,15 +317,8 @@ export class Template {
             ${headers}\n
             <script nonce="${this.nonce}">
                 var process = { env: { NODE_ENV: '${process.env.NODE_ENV}' } };
-
-                //first paint fix
-                document.addEventListener("DOMContentLoaded", function() {
-                    var preloadLinks = document.querySelectorAll('link[rel="preload"][as="style"]');
-                
-                    preloadLinks.forEach((link) => {
-                        link.rel = 'stylesheet';
-                    });
-                });
+                var preloadLinks = document.querySelectorAll('link[rel="preload"][as="style"]');
+                preloadLinks.forEach((link) => { link.rel = 'stylesheet'; });
             </script>
         `;
 
