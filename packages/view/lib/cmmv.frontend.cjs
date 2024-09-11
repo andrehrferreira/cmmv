@@ -246,11 +246,11 @@
 
                 this.telemetry.start('CreateApp');
                 this.contextApp = this.reactive({
-                    $template: "#app",
-                    loaded: true,
+                    $template: "#app",                    
                     ...this,
                     rpc: this.rpc,
                     ...this.context,
+                    loaded: true,
                     mounted: this.mounted,
                     created: this.created
                 });
