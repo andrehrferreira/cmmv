@@ -9,13 +9,18 @@ export class Config extends Singleton {
     public static loadConfig(): void {
         const rootDir = process.cwd();
         const configPath = path.join(rootDir, '.cmmv.config.js');
+        const configPathTest = path.join(rootDir, '.cmmv.test.js');
 
-        if (!fs.existsSync(configPath))
-            throw new Error(`Configuration file not found: ${configPath}`);
+        if (fs.existsSync(configPath)) {
+            const configModule = require(configPath);
+            const instance = Config.getInstance();
+            instance.config = configModule.default || configModule;
+        }
 
-        const configModule = require(configPath);
-        const instance = Config.getInstance();
-        instance.config = configModule.default || configModule;
+        if (fs.existsSync(configPathTest)) {
+            const configModuleTest = require(configPathTest);
+            Config.assign(configModuleTest);
+        }
     }
 
     public static get<T = any>(
@@ -78,7 +83,8 @@ export class Config extends Singleton {
     }
 
     public static assign(config: Record<string, any>): void {
-        Config.getInstance().config = config;
+        const instance = Config.getInstance();
+        instance.config = { ...instance.config, ...config };
     }
 
     public static clear(): void {

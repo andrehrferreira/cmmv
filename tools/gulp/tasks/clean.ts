@@ -8,24 +8,25 @@ import * as clean from 'gulp-clean';
 import * as deleteEmpty from 'delete-empty';
 
 function cleanOutput() {
-  return src(
-    [
-      `${source}/**/*.js`,
-      `${source}/**/*.d.ts`,
-      `${source}/**/*.js.map`,
-      `${source}/**/*.d.ts.map`,
-      `${source}/**/*.ts.map`,
-      `!${source}/**/globals.d.ts`,
-    ],
-    {
-      read: false,
-    },
-  ).pipe(clean({force: true}));
+    return src(
+        [
+            `${source}/**/*.js`,
+            `${source}/**/*.d.ts`,
+            `${source}/**/*.js.map`,
+            `${source}/**/*.d.ts.map`,
+            `${source}/**/*.ts.map`,
+            `!${source}/**/globals.d.ts`,
+            `!${source}/**/*.config.js`,
+        ],
+        {
+            read: false,
+        },
+    ).pipe(clean({ force: true }));
 }
 
 function cleanDirs(done: () => void) {
-  deleteEmpty.sync(`${source}/`);
-  done();
+    deleteEmpty.sync(`${source}/`);
+    done();
 }
 
 task('clean:output', cleanOutput);

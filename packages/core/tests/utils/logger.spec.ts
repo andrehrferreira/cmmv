@@ -1,5 +1,5 @@
 import { strict as assert } from 'assert';
-import { Logger } from '../../utils/logger.utils';
+import { Logger } from '../../lib/logger';
 
 describe('Logger', function () {
     let logger;
@@ -20,10 +20,10 @@ describe('Logger', function () {
         originalConsoleWarn = console.warn;
         originalConsoleDebug = console.debug;
 
-        console.log = (message) => logOutput.push(message);
-        console.error = (message) => errorOutput.push(message);
-        console.warn = (message) => warnOutput.push(message);
-        console.debug = (message) => debugOutput.push(message);
+        console.log = message => logOutput.push(message);
+        console.error = message => errorOutput.push(message);
+        console.warn = message => warnOutput.push(message);
+        console.debug = message => debugOutput.push(message);
     });
 
     afterEach(function () {

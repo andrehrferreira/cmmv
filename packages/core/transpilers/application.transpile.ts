@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { ITranspile, Logger, Scope } from '../utils';
+import { ITranspile, Logger, Scope } from '../lib';
 
 export class ApplicationTranspile implements ITranspile {
     private logger: Logger = new Logger('ExpressTranspile');
@@ -162,13 +162,35 @@ ${contract.fields.map((field: any) => this.generateClassField(field)).join('\n\n
     private mapToTsType(protoType: string): string {
         const typeMapping: { [key: string]: string } = {
             string: 'string',
+            boolean: 'boolean',
             bool: 'boolean',
+            int: 'number',
             int32: 'number',
+            int64: 'number',
             float: 'number',
             double: 'number',
+            bytes: 'Uint8Array',
+            date: 'string',
+            timestamp: 'string',
+            text: 'string',
+            json: 'any',
+            jsonb: 'any',
+            uuid: 'string',
+            time: 'string',
+            simpleArray: 'string[]',
+            simpleJson: 'any',
+            bigint: 'bigint',
+            uint32: 'number',
+            uint64: 'number',
+            sint32: 'number',
+            sint64: 'number',
+            fixed32: 'number',
+            fixed64: 'number',
+            sfixed32: 'number',
+            sfixed64: 'number',
             any: 'any',
         };
 
-        return typeMapping[protoType] || 'string';
+        return typeMapping[protoType] || 'any';
     }
 }

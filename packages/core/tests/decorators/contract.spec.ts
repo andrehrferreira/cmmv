@@ -1,4 +1,5 @@
 import { strict as assert } from 'assert';
+
 import {
     Contract,
     ContractField,
@@ -6,7 +7,6 @@ import {
     CONTROLLER_NAME_METADATA,
     PROTO_PATH_METADATA,
     PROTO_PACKAGE_METADATA,
-    DATABASE_TYPE_METADATA,
     FIELD_METADATA,
 } from '../../decorators/contract.decorator';
 
@@ -76,16 +76,20 @@ describe('ContractField Decorator', function () {
             unique: false,
         };
 
+        @Contract()
         class TestClass {
             @ContractField(options)
             public testField: string;
         }
 
+        const contract: any = new TestClass();
+        const target = contract.constructor || contract;
+        const prototype = target.prototype || contract.prototype;
+
         const fieldMetadata = Reflect.getMetadata(
             FIELD_METADATA,
-            TestClass.prototype,
-            'testField', // Precisamos usar o nome do campo diretamente aqui
-        );
+            prototype,
+        ).find((field: any) => field.propertyKey === 'testField');
 
         assert.strictEqual(fieldMetadata.protoType, 'string');
         assert.strictEqual(fieldMetadata.protoRepeated, true);
@@ -103,17 +107,19 @@ describe('ContractField Decorator', function () {
             public field2: number;
         }
 
+        const contract: any = new TestClass();
+        const target = contract.constructor || contract;
+        const prototype = target.prototype || contract.prototype;
+
         const field1Metadata = Reflect.getMetadata(
             FIELD_METADATA,
-            TestClass.prototype,
-            'field1',
-        );
+            prototype,
+        ).find((field: any) => field.propertyKey === 'field1');
 
         const field2Metadata = Reflect.getMetadata(
             FIELD_METADATA,
-            TestClass.prototype,
-            'field2',
-        );
+            prototype,
+        ).find((field: any) => field.propertyKey === 'field2');
 
         assert.strictEqual(field1Metadata.protoType, 'string');
         assert.strictEqual(field2Metadata.protoType, 'int32');

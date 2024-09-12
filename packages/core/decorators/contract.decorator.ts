@@ -143,11 +143,10 @@ export function ContractField(
     return (target: object, propertyKey: string | symbol) => {
         const existingFields =
             Reflect.getMetadata(FIELD_METADATA, target) || [];
+
         const newField = { propertyKey, ...options };
-        Reflect.defineMetadata(
-            FIELD_METADATA,
-            [...existingFields, newField],
-            target,
-        );
+        existingFields.push(newField);
+
+        Reflect.defineMetadata(FIELD_METADATA, existingFields, target);
     };
 }

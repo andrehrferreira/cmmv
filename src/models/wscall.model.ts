@@ -4,7 +4,7 @@ export interface IWsCall {
     id?: any;
     contract: number;
     message: number;
-    data: string;
+    data: Uint8Array;
 }
 
 export class WsCall implements IWsCall {
@@ -14,7 +14,7 @@ export class WsCall implements IWsCall {
 
     message: number;
 
-    data: string;
+    data: Uint8Array;
 
     constructor(partial: Partial<WsCall>) {
         Object.assign(this, partial);

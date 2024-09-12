@@ -3,15 +3,15 @@ import * as path from 'path';
 import * as fg from 'fast-glob';
 import * as Terser from 'terser';
 
-import { IHTTPSettings } from './interfaces';
-import { ITranspile, Logger, Scope, Transpile } from './utils';
-import { Module } from './module';
+import { IHTTPSettings } from '../interfaces';
+
+import { ITranspile, Logger, Scope, Transpile, Module, Config } from '.';
 
 import {
     AbstractContract,
     AbstractHttpAdapter,
     AbstractWSAdapter,
-} from './abstracts';
+} from '../abstracts';
 
 import {
     CONTROLLER_NAME_METADATA,
@@ -26,10 +26,9 @@ import {
     CONTROLLER_IMPORTS,
     CONTROLLER_CACHE,
     GENERATE_ENTITIES_METADATA,
-} from './decorators';
+} from '../decorators';
 
-import { Config } from './utils/config.util';
-import { ApplicationTranspile } from './transpilers';
+import { ApplicationTranspile } from '../transpilers';
 
 export interface IApplicationSettings {
     wsAdapter?: new (appOrHttpServer: any) => AbstractWSAdapter;
@@ -38,7 +37,7 @@ export interface IApplicationSettings {
     httpMiddlewares?: Array<any>;
     transpilers?: Array<new () => ITranspile>;
     modules?: Array<Module>;
-    contracts?: Array<new () => AbstractContract>;
+    contracts?: Array<new () => any>;
     services?: Array<any>;
 }
 
@@ -63,7 +62,7 @@ export class Application {
     private transpilers: Array<new () => ITranspile>;
     private controllers: Array<any> = [];
     private submodules: Array<Module> = [];
-    private contracts: Array<AbstractContract>;
+    private contracts: Array<any>;
     public providersMap = new Map<string, any>();
 
     private host: string;
@@ -190,7 +189,7 @@ export class Application {
                 conditionals: true,
                 unused: true,
                 drop_debugger: true,
-                drop_console: process.env.NODE_ENV !== 'dev' || true,
+                drop_console: process.env.NODE_ENV !== 'dev',
             },
             mangle: { toplevel: true },
             output: { beautify: false },
@@ -218,6 +217,9 @@ export class Application {
 
     private processContracts(): void {
         this.contracts.forEach(contract => {
+            const target = contract.constructor || contract;
+            const prototype = target.prototype || contract.prototype;
+
             const controllerName = Reflect.getMetadata(
                 CONTROLLER_NAME_METADATA,
                 contract.constructor,
@@ -230,14 +232,7 @@ export class Application {
                 PROTO_PACKAGE_METADATA,
                 contract.constructor,
             );
-            const databaseType = Reflect.getMetadata(
-                DATABASE_TYPE_METADATA,
-                contract.constructor,
-            );
-            const fields = Reflect.getMetadata(
-                FIELD_METADATA,
-                contract.constructor.prototype,
-            );
+            const fields = Reflect.getMetadata(FIELD_METADATA, prototype);
             const directMessage = Reflect.getMetadata(
                 DIRECTMESSAGE_METADATA,
                 contract.constructor,
@@ -271,7 +266,6 @@ export class Application {
                 controllerName,
                 protoPath,
                 protoPackage,
-                databaseType,
                 fields,
                 directMessage,
                 generateController,

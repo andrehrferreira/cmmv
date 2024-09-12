@@ -12,7 +12,6 @@ export class ProtobufTranspile implements ITranspile {
 
     run(): void {
         const contracts = Scope.getArray<any>('__contracts');
-
         const contractsJson: { [key: string]: any } = {};
 
         contracts?.forEach((contract: any) => {

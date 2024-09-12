@@ -1,5 +1,5 @@
 import { strict as assert } from 'assert';
-import { Transpile, ITranspile } from '../../utils/transpile.util';
+import { Transpile, ITranspile } from '../../lib/transpile';
 
 class MockTranspiler1 implements ITranspile {
     public run(): Promise<string> {
@@ -19,21 +19,24 @@ class FailingTranspiler implements ITranspile {
     }
 }
 
-describe('Transpile', function() {
+describe('Transpile', function () {
     let transpileInstance: Transpile;
 
-    beforeEach(function() {
+    beforeEach(function () {
         transpileInstance = new Transpile();
     });
 
-    it('should add a transpiler to the list', function() {
+    it('should add a transpiler to the list', function () {
         transpileInstance.add(MockTranspiler1);
 
         assert.strictEqual((transpileInstance as any).transpilers.length, 1);
-        assert.strictEqual((transpileInstance as any).transpilers[0], MockTranspiler1);
+        assert.strictEqual(
+            (transpileInstance as any).transpilers[0],
+            MockTranspiler1,
+        );
     });
 
-    it('should execute all transpilers successfully', async function() {
+    it('should execute all transpilers successfully', async function () {
         transpileInstance.add(MockTranspiler1);
         transpileInstance.add(MockTranspiler2);
 
@@ -44,7 +47,7 @@ describe('Transpile', function() {
         assert.strictEqual(results[1], 'Transpiler2 executed');
     });
 
-    it('should throw an error if a transpiler fails', async function() {
+    it('should throw an error if a transpiler fails', async function () {
         transpileInstance.add(MockTranspiler1);
         transpileInstance.add(FailingTranspiler);
 

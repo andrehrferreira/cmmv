@@ -1,4 +1,4 @@
-import { ServiceRegistry } from '../utils/service-registry.util';
+import { ServiceRegistry } from '../registries/service.registry';
 
 export function Service(name: string = ''): ClassDecorator {
     return (target: object) => {

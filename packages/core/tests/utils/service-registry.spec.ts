@@ -1,5 +1,5 @@
 import { strict as assert } from 'assert';
-import { ServiceRegistry } from '../../utils/service-registry.util';
+import { ServiceRegistry } from '../../registries/service.registry';
 
 class TestService {}
 

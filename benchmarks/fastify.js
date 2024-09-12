@@ -2,6 +2,4 @@
 
 const fastify = require('fastify')();
 fastify.get('/', async (req, reply) => reply.send('Hello world'));
-fastify.listen({
-  port: 3000
-});
+fastify.listen({ port: 5001 });

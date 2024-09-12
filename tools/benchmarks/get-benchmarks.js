@@ -15,18 +15,31 @@ const sleep = (time) =>
 
 const BENCHMARK_PATH = join(process.cwd(), 'benchmarks');
 const LIBS = [
-  'express', 'fastify', 'hapi', 'koa'
+	'http:8000', 'express:5000', 'fastify:5001', 
+	'hapi:5002', 'koa:5003', 'vite:5004', 'nitro:5005',
+	{ name: 'h3', cmd: "npx", args: ["listhen", "-w", join(BENCHMARK_PATH, "./h3.js")], port: 3000 }
 ];
 
 async function runBenchmarkOfLib(lib) {
-  const libPath = join(BENCHMARK_PATH, `${lib}.js`);
-  const process = spawn('node', [libPath], {
-    //detached: true,
-  });
+  let cmd = "node";
+  let script = null;
+  let process = null;
+  let port = 0;
 
-  process.stdout.on('data', data => {
-    console.log(`stdout: ${data}`);
-  });
+  if (typeof lib === "object") {
+    cmd = lib.cmd;
+    script = lib.name;
+	port = lib.port;
+	console.log(`Running: ${cmd} ${lib.args.join(' ')}: ${lib.port}`);
+    process = spawn(cmd, lib.args, { shell: true });
+  } else {
+	const [file, portStr] = lib.split(":");
+    script = `${file}.js`;
+	port = portStr;
+    const libPath = join(BENCHMARK_PATH, script);
+	console.log(`Running: ${cmd} ${libPath}: ${port}`);
+    process = spawn(cmd, [libPath], { shell: true });
+  }
 
   process.stderr.on('data', data => {
     console.log(`stderr: ${data}`);
@@ -34,13 +47,13 @@ async function runBenchmarkOfLib(lib) {
 
   process.unref();
 
-  await sleep(5000); 
+  await sleep(10000); // Aumente o tempo de espera para 10 segundos ou mais
 
   const result = await wrk({
-    threads: 8,
-    duration: '10s',
-    connections: 1024,
-    url: 'http://localhost:3000',
+	threads: 8,
+	duration: '10s',
+	connections: 1024,
+	url: `http://localhost:${port}`,
   });
 
   process.kill();
@@ -49,15 +62,20 @@ async function runBenchmarkOfLib(lib) {
 
 async function getBenchmarks() {
   const results = {};
-  for (const lib of LIBS) {
-    console.log(`Running benchmark for ${lib}`);
+
+  for (let lib of LIBS) {
+
+    console.log(`Running benchmark for ${(typeof lib === "object") ? lib.name : lib}`);
+
     try {
       const result = await runBenchmarkOfLib(lib);
-      results[lib] = result;
+	  //console.log((typeof lib === "object") ? lib.name : lib, result)
+      results[(typeof lib === "object") ? lib.name : lib] = result;
     } catch (error) {
-      console.error(`Error during benchmark for ${lib}:`, error);
+      console.error(`Error during benchmark for ${(typeof lib === "object") ? lib.name : lib}:`, error);
     }
   }
+
   return results;
 }
 

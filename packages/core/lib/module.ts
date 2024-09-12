@@ -1,5 +1,5 @@
-import { AbstractContract } from './abstracts';
-import { ITranspile } from './utils';
+import { AbstractContract } from '../abstracts';
+import { ITranspile } from './transpile';
 
 export interface IModuleOptions {
     controllers?: Array<any>;
@@ -23,7 +23,7 @@ export class Module implements IModule {
     private controllers: Array<any>;
     private transpilers: Array<new () => ITranspile>;
     private submodules: Array<Module>;
-    private contracts: Array<AbstractContract>;
+    private contracts: Array<any>;
     private providers: Array<any>;
 
     constructor(name: string, options: IModuleOptions) {
@@ -56,7 +56,7 @@ export class Module implements IModule {
         return this.submodules;
     }
 
-    public getContracts(): Array<AbstractContract> {
+    public getContracts(): Array<any> {
         return this.contracts;
     }
 

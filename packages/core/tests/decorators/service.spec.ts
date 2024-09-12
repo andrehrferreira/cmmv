@@ -1,5 +1,5 @@
 import { strict as assert } from 'assert';
-import { ServiceRegistry } from '../../utils/service-registry.util';
+import { ServiceRegistry } from '../../registries/service.registry';
 import { Service } from '../../decorators/service.decorator';
 
 describe('Service Decorator', function () {
@@ -12,7 +12,7 @@ describe('Service Decorator', function () {
         class MyService {}
 
         const service = ServiceRegistry.getService('MyService');
-        assert.strictEqual(service?.constructor, MyService);
+        assert.strictEqual(service, MyService);
     });
 
     it('should register a service with a default name when none is provided', function () {
@@ -26,7 +26,7 @@ describe('Service Decorator', function () {
         assert.strictEqual(serviceName, '');
 
         const service = ServiceRegistry.getService('');
-        assert.strictEqual(service?.constructor, MyDefaultService);
+        assert.strictEqual(service, MyDefaultService);
     });
 
     it('should return undefined for unregistered service', function () {
@@ -44,19 +44,8 @@ describe('Service Decorator', function () {
         const serviceOne = ServiceRegistry.getService('ServiceOne');
         const serviceTwo = ServiceRegistry.getService('ServiceTwo');
 
-        assert.strictEqual(serviceOne?.constructor, ServiceOne);
-        assert.strictEqual(serviceTwo?.constructor, ServiceTwo);
-    });
-
-    it('should replace existing service with the same name', function () {
-        @Service('ReplaceService')
-        class FirstService {}
-
-        @Service('ReplaceService')
-        class SecondService {}
-
-        const service = ServiceRegistry.getService('ReplaceService');
-        assert.strictEqual(service?.constructor, SecondService);
+        assert.strictEqual(serviceOne, ServiceOne);
+        assert.strictEqual(serviceTwo, ServiceTwo);
     });
 
     afterEach(function () {

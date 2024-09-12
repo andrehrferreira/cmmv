@@ -1,14 +1,14 @@
 import { strict as assert } from 'assert';
-import { Telemetry } from '../../utils/telemetry.util';
+import { Telemetry } from '../../lib/telemetry';
 
-describe('Telemetry', function() {
+describe('Telemetry', function () {
     const requestId = 'testRequestId';
 
-    beforeEach(function() {
+    beforeEach(function () {
         Telemetry.clearTelemetry(requestId);
     });
 
-    it('should start a telemetry record', function() {
+    it('should start a telemetry record', function () {
         Telemetry.start('TestLabel', requestId);
 
         const records = Telemetry.getTelemetry(requestId);
@@ -18,7 +18,7 @@ describe('Telemetry', function() {
         assert.strictEqual(records![0].endTime, undefined);
     });
 
-    it('should end a telemetry record', function() {
+    it('should end a telemetry record', function () {
         Telemetry.start('TestLabel', requestId);
         Telemetry.end('TestLabel', requestId);
 
@@ -29,14 +29,14 @@ describe('Telemetry', function() {
         assert.strictEqual(typeof records![0].endTime, 'number');
     });
 
-    it('should not end a non-existent telemetry record', function() {
+    it('should not end a non-existent telemetry record', function () {
         Telemetry.end('NonExistentLabel', requestId);
 
         const records = Telemetry.getTelemetry(requestId);
         assert.strictEqual(records, null);
     });
 
-    it('should register a plugin', function() {
+    it('should register a plugin', function () {
         const plugin = { name: 'TestPlugin' };
         Telemetry.registerPlugin(plugin);
 
@@ -45,7 +45,7 @@ describe('Telemetry', function() {
         assert.strictEqual(telemetryInstance.plugins[0], plugin);
     });
 
-    it('should clear telemetry records', function() {
+    it('should clear telemetry records', function () {
         Telemetry.start('TestLabel', requestId);
         Telemetry.clearTelemetry(requestId);
 
@@ -53,7 +53,7 @@ describe('Telemetry', function() {
         assert.strictEqual(records, null);
     });
 
-    it('should generate unique ids for telemetry records', function() {
+    it('should generate unique ids for telemetry records', function () {
         Telemetry.start('TestLabel1', requestId);
         Telemetry.start('TestLabel2', requestId);
 
@@ -63,7 +63,7 @@ describe('Telemetry', function() {
         assert.notStrictEqual(records![0].id, records![1].id);
     });
 
-    it('should retrieve all telemetry records', function() {
+    it('should retrieve all telemetry records', function () {
         Telemetry.start('TestLabel1', requestId);
         Telemetry.start('TestLabel2', requestId);
 

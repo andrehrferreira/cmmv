@@ -1,17 +1,19 @@
-import { Application } from "../application";
-import { IHTTPSettings, HttpServer, RequestHandler } from "../interfaces";
+import { Application } from '../lib/application';
+
+import { IHTTPSettings, HttpServer, RequestHandler } from '../interfaces';
 
 export abstract class AbstractHttpAdapter<
     TServer = any,
     TRequest = any,
     TResponse = any,
-> implements HttpServer<TRequest, TResponse>{
+> implements HttpServer<TRequest, TResponse>
+{
     protected httpServer: TServer;
     protected application: Application;
 
     constructor(protected instance?: any) {}
 
-    public async init(application: Application, settings?:IHTTPSettings) {}
+    public async init(application: Application, settings?: IHTTPSettings) {}
 
     public use(...args: any[]) {
         return this.instance.use(...args);
@@ -72,7 +74,11 @@ export abstract class AbstractHttpAdapter<
     }
 
     public listen(port: string | number, callback?: () => void);
-    public listen(port: string | number, hostname: string, callback?: () => void);
+    public listen(
+        port: string | number,
+        hostname: string,
+        callback?: () => void,
+    );
     public listen(port: any, hostname?: any, callback?: any) {
         return this.instance.listen(port, hostname, callback);
     }
@@ -80,32 +86,31 @@ export abstract class AbstractHttpAdapter<
     public getHttpServer(): TServer {
         return this.httpServer as TServer;
     }
-    
+
     public setHttpServer(httpServer: TServer) {
         this.httpServer = httpServer;
     }
-    
+
     public setInstance<T = any>(instance: T) {
         this.instance = instance;
     }
-    
+
     public getInstance<T = any>(): T {
         return this.instance as T;
     }
 
     public isJson(result: any): boolean {
-        if (typeof result === "object" && result !== null) 
-          return true;
-              
-        if (typeof result === "string") {
+        if (typeof result === 'object' && result !== null) return true;
+
+        if (typeof result === 'string') {
             try {
                 const parsed = JSON.parse(result);
-                return typeof parsed === "object" && parsed !== null;
+                return typeof parsed === 'object' && parsed !== null;
             } catch (e) {
                 return false;
             }
         }
-      
+
         return false;
     }
 }
