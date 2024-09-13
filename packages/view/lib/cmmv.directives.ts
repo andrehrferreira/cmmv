@@ -187,7 +187,7 @@ async function forSSR(templateText: string, template: Template) {
 
                 if (keyVar) itemData[keyVar] = items.indexOf(item);
 
-                let itemHTML = innerHTML.replace(
+                const itemHTML = innerHTML.replace(
                     /\{\{\s*([\w.]+)\s*\}\}/g,
                     (_, key) => {
                         return getValueFromKey(itemData, key);

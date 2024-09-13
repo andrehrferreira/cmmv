@@ -36,7 +36,7 @@ export class WSAdapter extends AbstractWSAdapter {
     ) {
         this.application = application;
 
-        let wsServer = new WebSocketServer({
+        const wsServer = new WebSocketServer({
             server: server.getHttpServer(),
             perMessageDeflate: {
                 zlibDeflateOptions: {

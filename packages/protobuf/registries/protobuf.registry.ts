@@ -19,13 +19,13 @@ export class ProtoRegistry extends Singleton {
     public types: Map<string, Types> = new Map<string, Types>();
 
     static async load() {
-        let directoryPackages = path.resolve(
+        const directoryPackages = path.resolve(
             process.env.NODE_ENV === 'prod'
                 ? './node_modules/@cmmv/**/*.proto'
                 : './packages/**/*.proto',
         );
 
-        let directory = path.resolve(
+        const directory = path.resolve(
             process.env.NODE_ENV === 'prod'
                 ? './dist/**/*.proto'
                 : './src/**/*.proto',
@@ -35,7 +35,7 @@ export class ProtoRegistry extends Singleton {
             ignore: ['node_modules/**'],
         });
 
-        for await (let filename of files) {
+        for await (const filename of files) {
             if (!filename.includes('node_modules')) {
                 const protoName = path.basename(filename);
                 const root = await protobuf.load(path.resolve(filename));
@@ -51,11 +51,11 @@ export class ProtoRegistry extends Singleton {
         globalProto.protos.set(key, root);
         globalProto.contracts.set(key, contract);
 
-        let types = {};
+        const types = {};
         let pointerTypes = 0;
 
-        for (let namespace of root.nestedArray) {
-            for (let type in namespace.toJSON().nested) {
+        for (const namespace of root.nestedArray) {
+            for (const type in namespace.toJSON().nested) {
                 types[type] = pointerTypes;
                 pointerTypes++;
             }
@@ -100,7 +100,7 @@ export class ProtoRegistry extends Singleton {
                 ? globalProto.types.get(key)
                 : null;
 
-        for (let key in Types) {
+        for (const key in Types) {
             if (Types[key] === message && typeof message === 'number')
                 return key;
             else if (key == message && typeof message === 'string')
@@ -140,9 +140,9 @@ export class ProtoRegistry extends Singleton {
     static retrieveAll(): object {
         const globalProto = ProtoRegistry.getInstance();
         const contractsArr = Array.from(globalProto.contracts);
-        let returnObj = {};
+        const returnObj = {};
 
-        for (let contract of contractsArr)
+        for (const contract of contractsArr)
             returnObj[contract[0].replace('.proto', '')] = contract[1];
 
         return returnObj;

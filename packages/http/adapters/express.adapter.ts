@@ -294,9 +294,9 @@ export class ExpressAdapter extends AbstractHttpAdapter<
                                 Application.appModule.httpInterceptors.length >
                                 0
                             ) {
-                                for (let interceptor of Application.appModule
+                                for (const interceptor of Application.appModule
                                     .httpInterceptors) {
-                                    let breakProcess = await interceptor(
+                                    const breakProcess = await interceptor(
                                         `${req.method}::${req.route.path}`.toLocaleLowerCase(),
                                         {
                                             req,
@@ -336,7 +336,7 @@ export class ExpressAdapter extends AbstractHttpAdapter<
                             );
 
                             if (this.isJson(result)) {
-                                let response = {
+                                const response = {
                                     status: 200,
                                     processingTime,
                                     data: result,
@@ -351,7 +351,7 @@ export class ExpressAdapter extends AbstractHttpAdapter<
                                     Application.appModule.httpAfterRender
                                         .length > 0
                                 ) {
-                                    for (let afterRender of Application
+                                    for (const afterRender of Application
                                         .appModule.httpAfterRender) {
                                         await afterRender(
                                             `${req.method}::${req.route.path}`.toLocaleLowerCase(),
@@ -373,7 +373,7 @@ export class ExpressAdapter extends AbstractHttpAdapter<
                                     Application.appModule.httpAfterRender
                                         .length > 0
                                 ) {
-                                    for (let afterRender of Application
+                                    for (const afterRender of Application
                                         .appModule.httpAfterRender) {
                                         await afterRender(
                                             `${req.method}::${req.route.path}`.toLocaleLowerCase(),
@@ -399,7 +399,7 @@ export class ExpressAdapter extends AbstractHttpAdapter<
                                 req.requestId,
                             );
 
-                            let response = {
+                            const response = {
                                 status: 500,
                                 processingTime,
                                 message:

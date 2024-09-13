@@ -47,7 +47,7 @@ ${contract.fields.map((field: any) => this.generateClassField(field)).join('\n\n
     }
 
     private generateClassImports(contract: any): string {
-        let importStatements: string[] = [];
+        const importStatements: string[] = [];
 
         const hasExclude = contract.fields.some(
             (field: any) => field.exclude || field.toClassOnly,
@@ -58,7 +58,7 @@ ${contract.fields.map((field: any) => this.generateClassField(field)).join('\n\n
         );
 
         if (hasExclude || hasTransform) {
-            let imports = [];
+            const imports = [];
             if (hasExclude) imports.push('Exclude');
             if (hasTransform) imports.push('Transform');
             importStatements.push(
@@ -85,7 +85,7 @@ ${contract.fields.map((field: any) => this.generateClassField(field)).join('\n\n
         }
 
         if (contract.imports && contract.imports.length > 0) {
-            for (let module of contract.imports)
+            for (const module of contract.imports)
                 importStatements.push(
                     `import * as ${module} from '${module}';`,
                 );
@@ -95,7 +95,7 @@ ${contract.fields.map((field: any) => this.generateClassField(field)).join('\n\n
     }
 
     private generateClassField(field: any): string {
-        let decorators: string[] = [];
+        const decorators: string[] = [];
 
         if (field.exclude && field.toClassOnly) {
             decorators.push(
@@ -114,7 +114,7 @@ ${contract.fields.map((field: any) => this.generateClassField(field)).join('\n\n
                 const validationName = Array.isArray(validation.type)
                     ? validation.type[0]
                     : validation.type;
-                let validationParams = Array.isArray(validation.type)
+                const validationParams = Array.isArray(validation.type)
                     ? validation.type
                           .slice(1)
                           .map(param => JSON.stringify(param))

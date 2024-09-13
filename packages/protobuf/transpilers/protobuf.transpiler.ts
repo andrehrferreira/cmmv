@@ -271,24 +271,25 @@ export class ProtobufTranspile implements ITranspile {
 
         await ProtoRegistry.load();
         const contracts = ProtoRegistry.retrieveAll();
-        let contractsJSON = {};
-        let index = {};
+        const contractsJSON = {};
+        const index = {};
         let pointer = 0;
 
-        for (let key in contracts) {
+        for (const key in contracts) {
             const contract = ProtoRegistry.retrieve(key);
             const jsonProtoFile = path.resolve(`src/protos/${key}.json`);
             contractsJSON[key] = contract.toJSON();
+
             fs.writeFileSync(
                 jsonProtoFile,
                 JSON.stringify(contractsJSON[key], null, 4),
             );
 
-            let types = {};
+            const types = {};
             let pointerTypes = 0;
 
-            for (let namespace of contract.nestedArray) {
-                for (let type in namespace.toJSON().nested) {
+            for (const namespace of contract.nestedArray) {
+                for (const type in namespace.toJSON().nested) {
                     types[type] = pointerTypes;
                     pointerTypes++;
                 }

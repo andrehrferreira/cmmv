@@ -38,7 +38,7 @@ export class ControllerRegistry {
         cb?: Function,
     ) {
         let controller = this.controllers.get(target.constructor);
-        let logger = new Logger(target.constructor.name);
+        const logger = new Logger(target.constructor.name);
 
         if (!controller) {
             const prefix =
@@ -49,7 +49,7 @@ export class ControllerRegistry {
         }
 
         if (controller) {
-            let route = controller.routes.find(
+            const route = controller.routes.find(
                 route => route.handlerName === handlerName,
             );
 

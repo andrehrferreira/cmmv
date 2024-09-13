@@ -43,7 +43,7 @@ export class CMMVRenderer {
 
         if (to !== null && to !== undefined) {
             for (let i = 0; i < list.length; i++) {
-                let p = list[i];
+                const p = list[i];
 
                 if (typeof from[p] !== 'undefined') to[p] = from[p];
             }
@@ -80,7 +80,7 @@ export class CMMVRenderer {
     }
 
     public compile(template: string, opts: any) {
-        let templ = new Template(template, opts);
+        const templ = new Template(template, opts);
 
         templ.use([
             ssrLoadData,

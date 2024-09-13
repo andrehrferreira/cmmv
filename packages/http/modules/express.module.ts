@@ -1,6 +1,6 @@
 import { Module } from '@cmmv/core';
 import { ExpressTranspile } from '../transpilers/express.transpiler';
 
-export let ExpressModule = new Module('express', {
+export const ExpressModule = new Module('express', {
     transpilers: [ExpressTranspile],
 });

@@ -134,7 +134,7 @@ export class Application {
                 this.loadModules([...this.modules, ApplicationModule]);
             }
 
-            let servicesLoad = [];
+            const servicesLoad = [];
 
             settings.services?.forEach(async service => {
                 if (service && typeof service.loadConfig === 'function')
@@ -172,7 +172,7 @@ export class Application {
     }
 
     private async createScriptBundle() {
-        let finalbundle = path.resolve('./public/assets/bundle.min.js');
+        const finalbundle = path.resolve('./public/assets/bundle.min.js');
 
         const files = await fg(path.resolve('./public/core/*.min.js'), {
             ignore: ['node_modules/**'],

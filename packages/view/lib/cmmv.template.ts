@@ -35,7 +35,7 @@ export class Template {
 
     use(directives: Directive | Directive[]) {
         if (Array.isArray(directives)) {
-            for (let key in directives) this.directives.push(directives[key]);
+            for (const key in directives) this.directives.push(directives[key]);
         } else this.directives.push(directives);
     }
 
@@ -291,7 +291,7 @@ export class Template {
                 });
 
                 if (files.length > 0) {
-                    let templateContent = fs.readFileSync(files[0], 'utf-8');
+                    const templateContent = fs.readFileSync(files[0], 'utf-8');
                     templateCache[cacheKey] = templateContent;
                     pageContents = this.parseLayout(
                         templateCache[cacheKey],
@@ -311,7 +311,8 @@ export class Template {
 
         //Headers
         let headers = this.parseHead(setup);
-        let title = setup.title || Config.get('head').title;
+        const title = setup.title || Config.get('head').title;
+
         headers = `
             <title>${title}</title>\n
             ${headers}\n

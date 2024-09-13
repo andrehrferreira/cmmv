@@ -22,7 +22,7 @@ export class RPCRegistry {
         handlerName: string,
     ) {
         let controller = this.controllers.get(target.constructor);
-        let logger = new Logger(target.constructor.name);
+        const logger = new Logger(target.constructor.name);
 
         if (!controller) {
             const contract =
@@ -32,7 +32,7 @@ export class RPCRegistry {
         }
 
         if (controller) {
-            let handler = controller.messages.find(
+            const handler = controller.messages.find(
                 msg => msg.handlerName === handlerName,
             );
 

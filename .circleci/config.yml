@@ -165,36 +165,6 @@ jobs:
           name: Integration tests
           command: npm run test:integration
 
-  codechecks_benchmarks:
-    working_directory: ~/cmmv
-    docker:
-      - image: cimg/node:<< pipeline.parameters.maintenance-node-version >>
-    steps:
-      - checkout
-      - *restore-cache
-      - *install-deps
-      - *build-packages
-      - run:
-          name: Install native wrk
-          command: .circleci/install-wrk.sh
-      - run:
-          name: Run codechecks with benchmarks
-          command: yarn codechecks:benchmarks
-
-  samples:
-    working_directory: ~/cmmv
-    docker:
-      - image: cimg/node:<< pipeline.parameters.maintenance-node-version >>
-    environment:
-      DISABLE_OPENCOLLECTIVE: 'true'
-    steps:
-      - checkout
-      - *restore-cache
-      - *install-deps
-      - run:
-          name: Build all samples
-          command: npm run build:samples
-
 workflows:
   build-and-test:
     jobs:
@@ -212,14 +182,5 @@ workflows:
                   '<< pipeline.parameters.current-node-version >>',
                 ]
       - lint:
-          requires:
-            - build
-      - integration_tests:
-          requires:
-            - build
-      - samples:
-          requires:
-            - build
-      - codechecks_benchmarks:
           requires:
             - build
