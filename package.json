@@ -1,7 +1,7 @@
 {
 	"name": "@cmmv/skeleton",
 	"version": "0.2.29",
-	"description": "CMMV (@skeleton)",
+	"description": "Contract-Model-Model-View (CMMV) - Minimalistic Node.js Server Framework",
 	"main": "dist/index.js",
 	"private": false,
 	"scripts": {
