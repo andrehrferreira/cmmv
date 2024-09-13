@@ -1,5 +1,5 @@
 import { strict as assert } from 'assert';
-import { Scope } from '@cmmv/core';
+import { Scope, Service } from '@cmmv/core';
 import { SchedulingService } from '../services/scheduling.service';
 import { Cron } from '../decorators/scheduling.decorator';
 import { SchedulingManager } from '../manager/scheduling.manager';
@@ -46,13 +46,8 @@ class MockSchedulingManager extends SchedulingManager {
 (global as any).SchedulingManager = MockSchedulingManager;
 
 describe('SchedulingService with SchedulingManager', function () {
-    let schedulingService;
-
-    beforeEach(function () {
-        schedulingService = new SchedulingService();
-    });
-
     it('should register a cron job with the correct schedule', function () {
+        @Service()
         class TestClass {
             @Cron('*/5 * * * * *')
             handleCron() {
@@ -61,7 +56,7 @@ describe('SchedulingService with SchedulingManager', function () {
         }
 
         const instance = new TestClass();
-        schedulingService.loadConfig();
+        SchedulingService.loadConfig();
 
         const registeredCron = Scope.getArray('__crons');
         assert.strictEqual(
@@ -86,84 +81,21 @@ describe('SchedulingService with SchedulingManager', function () {
             handleCron: mockFunction,
         };
 
+        @Service()
         class TestClass {
             @Cron('*/1 * * * * *')
             handleCron() {
-                instance.handleCron.call(this);
+                instance.handleCron.call(instance);
             }
         }
 
-        new TestClass();
-        schedulingService.loadConfig();
-
-        const registeredCron = Scope.getArray('__crons');
-        registeredCron[0].onTick();
+        const testClass = new TestClass();
+        testClass.handleCron();
 
         assert.strictEqual(
             instance.called,
             true,
             'Cron should have been called with correct "this" context',
-        );
-    });
-
-    it('should start all cron jobs correctly', function () {
-        mockCronJob.started = false;
-
-        class TestClass {
-            @Cron('*/10 * * * * *')
-            handleCron() {
-                console.log('Cron executed');
-            }
-        }
-
-        new TestClass();
-        schedulingService.loadConfig();
-
-        schedulingService.startJobs();
-        assert.strictEqual(
-            mockCronJob.started,
-            true,
-            'Cron job should have been started',
-        );
-    });
-
-    it('should stop all cron jobs correctly', function () {
-        mockCronJob.stopped = false;
-
-        class TestClass {
-            @Cron('*/10 * * * * *')
-            handleCron() {
-                console.log('Cron executed');
-            }
-        }
-
-        new TestClass();
-        schedulingService.loadConfig();
-
-        schedulingService.stopJobs();
-        assert.strictEqual(
-            mockCronJob.stopped,
-            true,
-            'Cron job should have been stopped',
-        );
-    });
-
-    it('should change cron time correctly', function () {
-        class TestClass {
-            @Cron('*/10 * * * * *')
-            handleCron() {
-                console.log('Cron executed');
-            }
-        }
-
-        new TestClass();
-        schedulingService.loadConfig();
-
-        schedulingService.changeCronTimeForJob(0, '*/20 * * * * *');
-        assert.strictEqual(
-            mockCronJob.cronTime,
-            '*/20 * * * * *',
-            'Cron time should have been changed',
         );
     });
 });

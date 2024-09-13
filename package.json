@@ -1,9 +1,7 @@
 {
-	"name": "@cmmv/skeleton",
+	"name": "@cmmv/core",
 	"version": "0.2.29",
 	"description": "Contract-Model-Model-View (CMMV) - Minimalistic Node.js Server Framework",
-	"main": "dist/index.js",
-	"private": false,
 	"scripts": {
 		"prebuild": "rimraf dist && npm run clean",
 		"postbuild": "npm run packages:move",
@@ -95,6 +93,7 @@
 		"bytes": "^3.1.2",
 		"chai": "^5.1.1",
 		"chai-as-promised": "^8.0.0",
+		"ci": "^2.3.0",
 		"concurrently": "^8.2.2",
 		"coveralls": "^3.1.1",
 		"delete-empty": "^3.0.0",

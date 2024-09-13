@@ -41,7 +41,7 @@ aliases:
 
 jobs:
   build:
-    working_directory: ~/nest
+    working_directory: ~/cmmv
     docker:
       - image: cimg/node:<< pipeline.parameters.maintenance-node-version >>
     steps:
@@ -58,7 +58,7 @@ jobs:
     parameters:
       node-version:
         type: string
-    working_directory: ~/nest
+    working_directory: ~/cmmv
     docker:
       - image: cimg/node:<< parameters.node-version >>
     steps:
@@ -119,7 +119,7 @@ jobs:
                   - *run-unit-tests
 
   lint:
-    working_directory: ~/nest
+    working_directory: ~/cmmv
     docker:
       - image: cimg/node:<< pipeline.parameters.maintenance-node-version >>
     steps:
@@ -131,7 +131,7 @@ jobs:
           command: npm run lint
 
   integration_tests:
-    working_directory: ~/nest
+    working_directory: ~/cmmv
     machine: true
     steps:
       - checkout
@@ -166,7 +166,7 @@ jobs:
           command: npm run test:integration
 
   codechecks_benchmarks:
-    working_directory: ~/nest
+    working_directory: ~/cmmv
     docker:
       - image: cimg/node:<< pipeline.parameters.maintenance-node-version >>
     steps:
@@ -182,7 +182,7 @@ jobs:
           command: yarn codechecks:benchmarks
 
   samples:
-    working_directory: ~/nest
+    working_directory: ~/cmmv
     docker:
       - image: cimg/node:<< pipeline.parameters.maintenance-node-version >>
     environment:
