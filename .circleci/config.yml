@@ -177,7 +177,6 @@ workflows:
               node-version:
                 [
                   '<< pipeline.parameters.legacy-node-version >>',
-                  '<< pipeline.parameters.maintenance-node-version >>',
                   '<< pipeline.parameters.active-node-version >>',
                   '<< pipeline.parameters.current-node-version >>',
                 ]
