@@ -10,7 +10,7 @@ import {
 
 import { ProtoRegistry } from '@cmmv/protobuf';
 
-import { WebSocketServer } from '../node_modules/ws';
+const { WebSocketServer } = require('ws');
 import { RPCRegistry } from '../registries/rpc.registry';
 
 export class WSCall {
