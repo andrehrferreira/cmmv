@@ -1,8 +1,8 @@
 import { strict as assert } from 'assert';
 import { Scope } from '@cmmv/core';
-import { SchedulingService } from '../src/scheduling.service';
-import { Cron } from '../src/scheduling.decorator';
-import { SchedulingManager } from '../src/scheduling.manager';
+import { SchedulingService } from '../services/scheduling.service';
+import { Cron } from '../decorators/scheduling.decorator';
+import { SchedulingManager } from '../manager/scheduling.manager';
 
 let mockCronJob = {
     start: () => {},
