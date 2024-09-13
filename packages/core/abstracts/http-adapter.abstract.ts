@@ -83,8 +83,8 @@ export abstract class AbstractHttpAdapter<
         return this.instance.listen(port, hostname, callback);
     }
 
-    public getHttpServer(): TServer {
-        return this.httpServer as TServer;
+    public getHttpServer(): any {
+        return this.httpServer;
     }
 
     public setHttpServer(httpServer: TServer) {

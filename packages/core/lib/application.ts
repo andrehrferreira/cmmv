@@ -77,20 +77,25 @@ export class Application {
         this.httpOptions = settings.httpOptions || {};
         this.httpAdapter = new settings.httpAdapter();
 
-        settings?.httpMiddlewares?.forEach(middleware => {
-            this.httpAdapter.use(middleware);
-        });
+        if (this.httpAdapter) {
+            settings?.httpMiddlewares?.forEach(middleware => {
+                this.httpAdapter.use(middleware);
+            });
 
-        if (settings.wsAdapter)
-            this.wsAdapter = new settings.wsAdapter(this.httpAdapter);
+            if (settings.wsAdapter)
+                this.wsAdapter = new settings.wsAdapter(this.httpAdapter);
 
-        this.host = Config.get<string>('server.host') || '0.0.0.0';
-        this.port = Config.get<number>('server.port') || 3000;
-        this.transpilers = settings.transpilers || [];
-        this.modules = settings.modules || [];
-        this.contracts =
-            settings.contracts?.map(contractClass => new contractClass()) || [];
-        this.initialize(settings);
+            this.host = Config.get<string>('server.host') || '0.0.0.0';
+            this.port = Config.get<number>('server.port') || 3000;
+            this.transpilers = settings.transpilers || [];
+            this.modules = settings.modules || [];
+            this.contracts =
+                settings.contracts?.map(contractClass => new contractClass()) ||
+                [];
+            this.initialize(settings);
+        } else {
+            throw new Error('Unable to start HTTP adapter');
+        }
     }
 
     private async initialize(settings: IApplicationSettings): Promise<void> {
@@ -137,7 +142,7 @@ export class Application {
             });
 
             await Promise.all(servicesLoad);
-            this.httpAdapter.init(this, this.httpOptions);
+            await this.httpAdapter.init(this, this.httpOptions);
 
             Application.appModule.httpMiddlewares?.forEach(middleware => {
                 this.httpAdapter.use(middleware);

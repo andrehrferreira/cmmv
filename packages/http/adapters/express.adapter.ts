@@ -8,10 +8,11 @@ import { v4 as uuidv4 } from 'uuid';
 
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
-import * as compression from 'compression';
 import * as cors from 'cors';
 import * as session from 'express-session';
 import helmet from 'helmet';
+
+const compression = require('compression');
 
 import {
     AbstractHttpAdapter,
@@ -51,9 +52,7 @@ export class ExpressAdapter extends AbstractHttpAdapter<
             this.instance.disable('x-powered-by');
 
         if (Config.get<boolean>('compress.enabled', true)) {
-            this.instance.use(
-                compression(Config.get('compress.options', { level: 6 })),
-            );
+            this.instance.use(compression({ level: 6 }));
         }
 
         this.instance.use(
@@ -131,6 +130,8 @@ export class ExpressAdapter extends AbstractHttpAdapter<
         } else {
             this.httpServer = http.createServer(this.instance);
         }
+
+        if (!this.httpServer) throw new Error('Unable to start HTTP adapter');
 
         this.trackOpenConnections();
     }

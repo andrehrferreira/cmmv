@@ -74,7 +74,7 @@
 		]
 	},
 	"devDependencies": {
-		"@codechecks/client": "^0.1.12",
+		"@codechecks/client": "^0.0.55",
 		"@commitlint/cli": "^19.5.0",
 		"@commitlint/config-angular": "^19.5.0",
 		"@commitlint/config-conventional": "^19.5.0",
@@ -86,6 +86,7 @@
 		"@fastify/multipart": "^8.3.0",
 		"@fastify/secure-session": "^7.5.1",
 		"@fastify/static": "^7.0.4",
+		"@fastify/view": "^9.1.0",
 		"@hapi/hapi": "^21.3.10",
 		"@tirke/node-cache-manager-ioredis": "^3.6.0",
 		"@types/browser-sync": "^2.29.0",
@@ -102,7 +103,7 @@
 		"@typescript-eslint/parser": "7.18.0",
 		"axios": "^1.7.7",
 		"body-parser": "^1.20.3",
-		"browser-sync": "^3.0.2",
+		"browser-sync": "^2.26.2",
 		"bytes": "^3.1.2",
 		"cache-manager": "^5.7.6",
 		"cache-manager-redis-store": "^3.0.1",
@@ -120,6 +121,7 @@
 		"eslint-config-prettier": "9.1.0",
 		"eslint-plugin-import": "2.29.1",
 		"esm": "^3.2.25",
+		"express": ">=5.0.0-beta.1",
 		"express-session": "^1.18.0",
 		"fastify": "^4.28.1",
 		"gulp": "^5.0.0",
@@ -149,10 +151,12 @@
 		"prettier": "^3.3.3",
 		"sinon": "^19.0.2",
 		"sql.js": "^1.11.0",
+		"sqlite3": "^5.1.7",
 		"supertest": "^7.0.0",
 		"terser": "^5.32.0",
 		"ts-node": "^10.9.2",
 		"tsconfig-paths": "^4.2.0",
+		"typeorm": "^0.3.6",
 		"typescript": "^5.6.2",
 		"uglify-js": "^3.19.3",
 		"vite": "^5.4.5",
@@ -161,18 +165,14 @@
 	},
 	"dependencies": {
 		"@cmmv/reactivity": "^0.1.0",
-		"@fastify/view": "^9.1.0",
 		"class-transformer": "^0.5.1",
 		"class-validator": "^0.14.1",
 		"dotenv": "^16.4.5",
-		"express": "^4.21.0",
 		"fast-glob": "^3.3.2",
 		"jsonwebtoken": "^9.0.2",
 		"protobufjs": "^7.4.0",
 		"reflect-metadata": "^0.2.2",
 		"rxjs": "^7.8.1",
-		"sqlite3": "^5.1.7",
-		"typeorm": "^0.3.20",
 		"uuid": "^10.0.0"
 	},
 	"nyc": {
@@ -200,11 +200,11 @@
 		"instrument": true
 	},
 	"peerDependencies": {
-		"eslint": "^9.10.0",
+		"eslint": "^8.57.0",
 		"eslint-plugin-import": "^2.30.0"
 	},
 	"resolutions": {
-		"eslint": "^9.10.0",
+		"eslint": "^8.57.0",
 		"eslint-plugin-import": "^2.30.0"
 	}
 }
