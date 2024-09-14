@@ -1,5 +1,3 @@
-import { IHTTPSettings } from "./http-settings.interface";
-
 export type RequestHandler<TRequest = any, TResponse = any> = (
     req: TRequest,
     res: TResponse,

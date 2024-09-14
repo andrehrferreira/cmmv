@@ -30,7 +30,9 @@ export const addLeadingSlash = (path = ''): string =>
     path.startsWith('/') ? path : '/' + path;
 
 export const normalizePath = (path = ''): string =>
-    path ? `/${path.replace(/\/+$/, '').replace(/\/+/g, '/')}` : '/';
+    path
+        ? `/${path.replace(/^\/+/, '').replace(/\/+$/, '').replace(/\/+/g, '/')}`
+        : '/';
 
 export const stripEndSlash = (path: string): string =>
     path.endsWith('/') ? path.slice(0, -1) : path;
