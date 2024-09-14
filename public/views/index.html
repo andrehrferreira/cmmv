@@ -1,3 +1,5 @@
+<div><button @click="toggleTheme()">Swtich Theme: {{ styles.theme }} </button></div>
+
 <div class="todo-box" scope>
     <h1 s-i18n="todo"></h1>
 
@@ -5,7 +7,7 @@
         c-show="todolist?.length > 0" 
         s:todolist="services.task.getAll(null, { requestId })"
     >
-        <!-- include("public/views/login.html") -->
+        <!-- include("login") -->
 
         <s-if exp="todolist?.length > 0">
             <div>Total Record Loaded SSR: {{ todolist.length }}</div>
@@ -90,6 +92,10 @@ export default {
     },
 
     methods: {
+        toggleTheme(){
+            this.styles.switch((this.styles.theme === "default") ? "dark" : "default");
+        },
+
         addTask(){
             this.AddTaskRequest({ label: this.label });
             this.label = '';

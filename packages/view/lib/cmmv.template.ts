@@ -10,6 +10,7 @@ import { minify } from 'html-minifier';
 import { Config, Telemetry } from '@cmmv/core';
 
 import { hasOwnOnlyObject, createNullProtoObjWherePossible } from './utils.cjs';
+import { ViewRegistry } from '../registries/view.registry';
 
 export type Directive = (
     templateText: string,
@@ -57,28 +58,52 @@ export class Template {
         while ((match = includeRegex.exec(templateText)) !== null) {
             const includePath = match[1];
             const resolvedPath = path.resolve(cwd(), includePath);
+            const resolvedPathSimplifly = path.resolve(
+                cwd(),
+                'public',
+                'views',
+                includePath,
+            );
 
-            if (!templateCache[resolvedPath]) {
+            if (
+                !templateCache[resolvedPath] &&
+                !templateCache[resolvedPathSimplifly]
+            ) {
                 if (fs.existsSync(resolvedPath)) {
                     let includeContent = fs.readFileSync(resolvedPath, 'utf-8');
                     includeContent = await this.loadIncludes(includeContent);
                     templateCache[resolvedPath] = includeContent;
-                }
-                if (fs.existsSync(`${resolvedPath}.html`)) {
+                } else if (fs.existsSync(`${resolvedPath}.html`)) {
                     let includeContent = fs.readFileSync(
                         `${resolvedPath}.html`,
                         'utf-8',
                     );
                     includeContent = await this.loadIncludes(includeContent);
                     templateCache[resolvedPath] = includeContent;
+                } else if (fs.existsSync(resolvedPathSimplifly)) {
+                    let includeContent = fs.readFileSync(
+                        resolvedPathSimplifly,
+                        'utf-8',
+                    );
+                    includeContent = await this.loadIncludes(includeContent);
+                    templateCache[resolvedPathSimplifly] = includeContent;
+                } else if (fs.existsSync(`${resolvedPathSimplifly}.html`)) {
+                    let includeContent = fs.readFileSync(
+                        `${resolvedPathSimplifly}.html`,
+                        'utf-8',
+                    );
+                    includeContent = await this.loadIncludes(includeContent);
+                    templateCache[resolvedPathSimplifly] = includeContent;
                 }
             }
 
+            const template =
+                templateCache[resolvedPath] ||
+                templateCache[resolvedPathSimplifly];
+
             resultText = resultText.replace(
                 match[0],
-                templateCache[resolvedPath]
-                    ? templateCache[resolvedPath]
-                    : `<!-- file not found: ${includePath} -->`,
+                template ? template : `<!-- file not found: ${includePath} -->`,
             );
         }
 
@@ -247,6 +272,7 @@ export class Template {
                             global.cmmvSetup.__methods = ${methodsAsString ? methodsAsString : 'null'};
                             global.cmmvSetup.__mounted = ${mountedAsString ? JSON.stringify(mountedAsString) : 'null'};
                             global.cmmvSetup.__created = ${createdAsString ? JSON.stringify(createdAsString) : 'null'};
+                            global.cmmvSetup.__styles = ${JSON.stringify(ViewRegistry.retrieveAll())}
                         } catch (e) {
                             console.error("Error loading contracts or initializing app data:", e);
                         }
@@ -448,27 +474,31 @@ export class Template {
             Telemetry.end('Compile Template', data.requestId);
             Telemetry.end('Request Process', data.requestId);
 
-            processedText = processedText.replace(
-                `<\/body>`,
-                `<script nonce="${self.nonce}">
-            (function(global) {
-                try {          
-                    if(!global.cmmvTelemetry)
-                        global.cmmvTelemetry = ${
-                            process.env.NODE_ENV === 'dev'
-                                ? JSON.stringify(
-                                      Telemetry.getTelemetry(data.requestId),
-                                  )
-                                : '{}'
-                        };
-                } catch (e) { }
-            })(typeof window !== "undefined" ? window : global);
-            </script>
-            </body>`,
-            );
+            if (process.env.NODE_ENV === 'dev') {
+                processedText = processedText.replace(
+                    `<\/body>`,
+                    `<script nonce="${self.nonce}">
+                (function(global) {
+                    try {          
+                        if(!global.cmmvTelemetry)
+                            global.cmmvTelemetry = ${
+                                process.env.NODE_ENV === 'dev'
+                                    ? JSON.stringify(
+                                          Telemetry.getTelemetry(
+                                              data.requestId,
+                                          ),
+                                      )
+                                    : '{}'
+                            };
+                    } catch (e) { }
+                })(typeof window !== "undefined" ? window : global);
+                </script>
+                </body>`,
+                );
+            }
 
             processedText = await self.extractInlineScripts(processedText);
-            //processedText = await self.minifyHtml(processedText);
+            processedText = await self.minifyHtml(processedText);
             Telemetry.clearTelemetry(data.requestId);
 
             return processedText;

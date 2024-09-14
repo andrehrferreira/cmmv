@@ -13,7 +13,7 @@ import {
 @Service()
 export class CacheService extends Singleton {
     public logger: Logger = new Logger('CacheService');
-    public manager: cacheManager.Cache<any>;
+    public manager: cacheManager.Cache<any> | cacheManager.MemoryCache;
 
     public static async loadConfig(application: Application): Promise<void> {
         const instance = CacheService.getInstance();

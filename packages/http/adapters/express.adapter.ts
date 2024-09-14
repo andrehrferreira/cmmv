@@ -48,10 +48,10 @@ export class ExpressAdapter extends AbstractHttpAdapter<
 
         this.instance = this.instance || express();
 
-        if (!Config.get<boolean>('poweredBy', false))
+        if (!Config.get<boolean>('server.poweredBy', false))
             this.instance.disable('x-powered-by');
 
-        if (Config.get<boolean>('compress.enabled', true)) {
+        if (Config.get<boolean>('server.compress.enabled', true)) {
             this.instance.use(compression({ level: 6 }));
         }
 
@@ -89,22 +89,22 @@ export class ExpressAdapter extends AbstractHttpAdapter<
             }),
         );
 
-        if (Config.get<boolean>('cors', true)) this.instance.use(cors());
+        if (Config.get<boolean>('server.cors', true)) this.instance.use(cors());
 
-        if (Config.get<boolean>('helmet.enabled', true)) {
+        if (Config.get<boolean>('server.helmet.enabled', true)) {
             this.instance.use(
                 helmet(
-                    Config.get('helmet.options', {
+                    Config.get('server.helmet.options', {
                         contentSecurityPolicy: false,
                     }),
                 ),
             );
         }
 
-        if (Config.get<boolean>('session.enabled', true)) {
+        if (Config.get<boolean>('server.session.enabled', false)) {
             this.instance.use(
                 session(
-                    Config.get('session.options', {
+                    Config.get('server.session.options', {
                         secret: process.env.SESSION_SECRET,
                         resave: false,
                         saveUninitialized: false,
@@ -183,7 +183,7 @@ export class ExpressAdapter extends AbstractHttpAdapter<
             }
 
             if (req.method === 'GET') {
-                if (!Config.get<boolean>('removePolicyHeaders', false)) {
+                if (!Config.get<boolean>('server.removePolicyHeaders', false)) {
                     res.setHeader(
                         'Strict-Transport-Security',
                         'max-age=15552000; includeSubDomains',
@@ -195,7 +195,7 @@ export class ExpressAdapter extends AbstractHttpAdapter<
             }
 
             if (['POST', 'PUT', 'DELETE'].includes(req.method)) {
-                if (!Config.get<boolean>('removePolicyHeaders', false)) {
+                if (!Config.get<boolean>('server.removePolicyHeaders', false)) {
                     res.removeHeader('X-DNS-Prefetch-Control');
                     res.removeHeader('X-Download-Options');
                     res.removeHeader('X-Permitted-Cross-Domain-Policies');

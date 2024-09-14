@@ -84,11 +84,12 @@ function loadLocaleFile(locale: string): Record<string, string> {
         `${locale}.json`,
     );
 
-    if (!fs.existsSync(localePath))
-        throw new Error(`Locale file not found: ${localePath}`);
+    if (fs.existsSync(localePath)) {
+        const fileContent = fs.readFileSync(localePath, 'utf-8');
+        return JSON.parse(fileContent);
+    }
 
-    const fileContent = fs.readFileSync(localePath, 'utf-8');
-    return JSON.parse(fileContent);
+    return {};
 }
 
 export const i18n: Directive = (

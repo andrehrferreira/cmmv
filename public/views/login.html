@@ -7,13 +7,15 @@
             placeholder="Username" 
             name="username" 
             c-model="login.username"
+            :class="styles.input.container"
         />
 
         <input 
             type="password" 
             placeholder="Password" 
             name="password"
-            c-model="login.password" 
+            c-model="login.password"
+            :class="styles.input.container" 
         />
 
         <button>Login</button>
