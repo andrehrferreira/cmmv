@@ -248,19 +248,23 @@
 
             processExpressions() {
                 this.telemetry.start('Process Expressions');
-                this.styles.load();
-
+     
                 this.telemetry.start('CreateApp');
                 this.contextApp = this.reactive({
                     $template: "#app",                    
                     ...this,
                     rpc: this.rpc,
-                    styles: this.styles,
+                    styles: {
+                        ...this.styles,
+                        styleSettings: this.styleSettings
+                    },
                     ...this.context,
                     loaded: true,
                     mounted: this.mounted,
                     created: this.created
                 });
+
+                this.contextApp.styles.load();
 
                 const app = this.createApp(this.contextApp);
                 this.telemetry.end('CreateApp');
@@ -311,6 +315,8 @@
             styles: {
                 theme: "default",
 
+                styleSettings: {},
+
                 load(){
                     const cachedTheme = localStorage.getItem("theme") || "default";
                     this.theme = cachedTheme;
@@ -321,8 +327,8 @@
                     const themeSufix = ((this.theme !== "default") ? "." + this.theme : "");
                     const protectedNames = ["get", "load", "refresh", "theme", "switch"];
 
-                    for(const index in cmmv.styleSettings){
-                        for(const style in cmmv.styleSettings[index]){
+                    for(const index in this.styleSettings){
+                        for(const style in this.styleSettings[index]){
                             if(style.indexOf(themeSufix) !== -1){
                                 const name = style.replace(themeSufix, "");
 
@@ -330,10 +336,13 @@
                                     this[index] = {};
 
                                 if(!protectedNames.includes(name))
-                                    this[index][name] = cmmv.styleSettings[index][style];
+                                    this[index][name] = this.styleSettings[index][style];
                             }
                         }
                     }
+
+                    console.log(this);
+                    console.log(this.styleSettings);
                 },
 
                 get(name) {
