@@ -103,7 +103,7 @@
 
                 this.socket.addEventListener("message", this.parseMessage.bind(this));
                 this.socket.addEventListener("open", () => {
-                    console.log("WebSocket connected");
+                    //console.log("WebSocket connected");
                     this.telemetry.end('WebSocket Initialization');
                 });
 
@@ -340,9 +340,6 @@
                             }
                         }
                     }
-
-                    console.log(this);
-                    console.log(this.styleSettings);
                 },
 
                 get(name) {
