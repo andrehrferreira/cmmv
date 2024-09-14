@@ -249,7 +249,6 @@
             processExpressions() {
                 this.telemetry.start('Process Expressions');
                 this.styles.load();
-                console.log(this.styles);
 
                 this.telemetry.start('CreateApp');
                 this.contextApp = this.reactive({
