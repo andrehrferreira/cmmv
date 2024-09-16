@@ -376,7 +376,7 @@
 
                     for(const index in cmmv.styleSettings){
                         for(const style in cmmv.styleSettings[index]){
-                            if(style.indexOf(themeSufix) !== -1){
+                            if(style.indexOf(themeSufix) !== -1 || this.theme === "default"){
                                 const name = style.replace(themeSufix, "");
 
                                 if(!this[index])
