@@ -85,10 +85,29 @@
 
                 if (typeof context === 'object') 
                     this.context = Object.assign(this.context, context);
+
+                let stylesObj = {};
+                const themeSufix = ((this.theme !== "default") ? "." + this.theme : "");
+                const protectedNames = ["get", "load", "refresh", "theme", "switch"];
                 
-                if (typeof styles === 'object') 
+                if (typeof styles === 'object') {
                     this.styleSettings = Object.assign(this.styleSettings, styles);
 
+                    for(const index in this.styleSettings){
+                        for(const style in this.styleSettings[index]){
+                            if(style.indexOf(themeSufix) !== -1){
+                                const name = style.replace(themeSufix, "");
+
+                                if(!stylesObj[index])
+                                    stylesObj[index] = {};
+
+                                if(!protectedNames.includes(name))
+                                    stylesObj[index][name] = this.styleSettings[index][style];
+                            }
+                        }
+                    }
+                }
+                    
                 if(components){
                     for(let componentName in components){
                         this.components[componentName] = {};
@@ -107,6 +126,10 @@
                                     components[componentName][field];
                             }
                         }
+
+                        this.components[componentName].$parent = this;
+                        this.components[componentName].$style = this.styles;
+                        this.components[componentName].$style.load();
                     }
                 }
                 
@@ -272,6 +295,7 @@
                 this.telemetry.start('Process Expressions');
      
                 this.telemetry.start('CreateApp');
+
                 this.contextApp = this.reactive({
                     $template: "#app",  
                     components: this.components,                  
@@ -350,8 +374,8 @@
                     const themeSufix = ((this.theme !== "default") ? "." + this.theme : "");
                     const protectedNames = ["get", "load", "refresh", "theme", "switch"];
 
-                    for(const index in this.styleSettings){
-                        for(const style in this.styleSettings[index]){
+                    for(const index in cmmv.styleSettings){
+                        for(const style in cmmv.styleSettings[index]){
                             if(style.indexOf(themeSufix) !== -1){
                                 const name = style.replace(themeSufix, "");
 
@@ -359,7 +383,7 @@
                                     this[index] = {};
 
                                 if(!protectedNames.includes(name))
-                                    this[index][name] = this.styleSettings[index][style];
+                                    this[index][name] = cmmv.styleSettings[index][style];
                             }
                         }
                     }
@@ -368,7 +392,7 @@
                 get(name) {
                     const index = name.split(".")[0];
                     const search = name.replace(index + ".", "") + ((this.theme !== "default") ? "." + this.theme : "");
-                    return (cmmv.style[index][search]) ? cmmv.style[index][search] : "";
+                    return (cmmv.styleSettings[index] && cmmv.styleSettings[index][search]) ? cmmv.styleSettings[index][search] : "";
                 },
 
                 switch(newTheme){

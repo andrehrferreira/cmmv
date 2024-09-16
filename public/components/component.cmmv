@@ -1,5 +1,5 @@
 <template>
-    <div>{{ test }}</div>
+    <div :class="$style.themeSwitch.container">{{ test }}</div>
     <button @click="test++">Add</button>
 </template>
 
