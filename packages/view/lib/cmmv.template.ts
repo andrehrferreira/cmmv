@@ -262,12 +262,12 @@ export class Template {
                               )}}`
                         : null;
 
-                    let componentsAsString = {};
+                    const componentsAsString = {};
                     if (result.setup.components) {
-                        for (let componentName in result.setup.components) {
+                        for (const componentName in result.setup.components) {
                             componentsAsString[componentName] = {};
 
-                            for (let field in result.setup.components[
+                            for (const field in result.setup.components[
                                 componentName
                             ]) {
                                 const fieldSyntax =
