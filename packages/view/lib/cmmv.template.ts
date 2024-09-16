@@ -191,11 +191,13 @@ export class Template {
         Telemetry.start('Process Setup', this.context.requestId);
         let pageContents = result.html;
 
+        let data = {};
+
         if (result.setup) {
             if (result.setup.data && typeof result.setup.data === 'function') {
                 try {
                     const config = Config.getAll();
-                    let data = result.setup.data();
+                    data = result.setup.data();
 
                     data = Object.assign(
                         {
@@ -206,128 +208,116 @@ export class Template {
                         data,
                         this.context,
                     );
-
-                    let methodsAsString = '';
-
-                    if (result.setup.methods) {
-                        methodsAsString = JSON.stringify(
-                            Object.entries(result.setup.methods).reduce(
-                                (acc, [key, func]) => {
-                                    const funcString = func.toString();
-                                    const funcArgs = funcString.slice(
-                                        funcString.indexOf('(') + 1,
-                                        funcString.indexOf(')'),
-                                    );
-                                    const functionBody = funcString.slice(
-                                        funcString.indexOf('{') + 1,
-                                        funcString.lastIndexOf('}'),
-                                    );
-
-                                    if (funcArgs.trim()) {
-                                        acc[key] =
-                                            `function ${key}(${funcArgs}) {${functionBody}}`;
-                                    } else {
-                                        acc[key] =
-                                            `function ${key}() {${functionBody}}`;
-                                    }
-
-                                    return acc;
-                                },
-                                {},
-                            ),
-                        );
-                    }
-
-                    const mountedAsString = result.setup.mounted
-                        ? `function mounted() {${result.setup.mounted
-                              .toString()
-                              .slice(
-                                  result.setup.mounted.toString().indexOf('{') +
-                                      1,
-                                  result.setup.mounted
-                                      .toString()
-                                      .lastIndexOf('}'),
-                              )}}`
-                        : null;
-
-                    const createdAsString = result.setup.created
-                        ? `function created() {${result.setup.created
-                              .toString()
-                              .slice(
-                                  result.setup.created.toString().indexOf('{') +
-                                      1,
-                                  result.setup.created
-                                      .toString()
-                                      .lastIndexOf('}'),
-                              )}}`
-                        : null;
-
-                    const componentsAsString = {};
-                    if (result.setup.components) {
-                        for (const componentName in result.setup.components) {
-                            componentsAsString[componentName] = {};
-
-                            for (const field in result.setup.components[
-                                componentName
-                            ]) {
-                                const fieldSyntax =
-                                    result.setup.components[componentName][
-                                        field
-                                    ];
-                                if (typeof fieldSyntax === 'function') {
-                                    componentsAsString[componentName][field] =
-                                        `function ${field}() {${fieldSyntax
-                                            .toString()
-                                            .slice(
-                                                fieldSyntax
-                                                    .toString()
-                                                    .indexOf('{') + 1,
-                                                fieldSyntax
-                                                    .toString()
-                                                    .lastIndexOf('}'),
-                                            )}}`;
-                                } else {
-                                    componentsAsString[componentName][field] =
-                                        result.setup.components[componentName][
-                                            field
-                                        ];
-                                }
-                            }
-                        }
-                    }
-
-                    let jsContent = `// Generated automatically by CMMV\n`;
-                    jsContent += `(function(global) {
-                        try {          
-                            if(!global.cmmvSetup)
-                                global.cmmvSetup = {};
-
-                            global.cmmvSetup.__data = ${data ? JSON.stringify(data) : '{}'};
-                            global.cmmvSetup.__components = ${componentsAsString ? JSON.stringify(componentsAsString) : '{}'};
-                            global.cmmvSetup.__methods = ${methodsAsString ? methodsAsString : 'null'};
-                            global.cmmvSetup.__mounted = ${mountedAsString ? JSON.stringify(mountedAsString) : 'null'};
-                            global.cmmvSetup.__created = ${createdAsString ? JSON.stringify(createdAsString) : 'null'};
-                            global.cmmvSetup.__styles = ${JSON.stringify(ViewRegistry.retrieveAll())}
-                        } catch (e) {
-                            console.error("Error loading contracts or initializing app data:", e);
-                        }
-                        })(typeof window !== "undefined" ? window : global);`;
-
-                    pageContents += `<script nonce="{nonce}">${
-                        UglifyJS.minify(jsContent, {
-                            compress: {
-                                drop_console: true,
-                                dead_code: true,
-                                conditionals: true,
-                            },
-                            mangle: true,
-                            output: {
-                                beautify: false,
-                            },
-                        }).code
-                    }</script>`;
-                } catch {}
+                } catch (e) {
+                    console.error(e);
+                }
             }
+
+            let methodsAsString = '';
+
+            if (result.setup.methods) {
+                methodsAsString = JSON.stringify(
+                    Object.entries(result.setup.methods).reduce(
+                        (acc, [key, func]) => {
+                            const funcString = func.toString();
+                            const funcArgs = funcString.slice(
+                                funcString.indexOf('(') + 1,
+                                funcString.indexOf(')'),
+                            );
+                            const functionBody = funcString.slice(
+                                funcString.indexOf('{') + 1,
+                                funcString.lastIndexOf('}'),
+                            );
+
+                            if (funcArgs.trim()) {
+                                acc[key] =
+                                    `function ${key}(${funcArgs}) {${functionBody}}`;
+                            } else {
+                                acc[key] =
+                                    `function ${key}() {${functionBody}}`;
+                            }
+
+                            return acc;
+                        },
+                        {},
+                    ),
+                );
+            }
+
+            const mountedAsString = result.setup.mounted
+                ? `function mounted() {${result.setup.mounted
+                      .toString()
+                      .slice(
+                          result.setup.mounted.toString().indexOf('{') + 1,
+                          result.setup.mounted.toString().lastIndexOf('}'),
+                      )}}`
+                : null;
+
+            const createdAsString = result.setup.created
+                ? `function created() {${result.setup.created
+                      .toString()
+                      .slice(
+                          result.setup.created.toString().indexOf('{') + 1,
+                          result.setup.created.toString().lastIndexOf('}'),
+                      )}}`
+                : null;
+
+            const componentsAsString = {};
+            if (result.setup.components) {
+                for (const componentName in result.setup.components) {
+                    componentsAsString[componentName] = {};
+
+                    for (const field in result.setup.components[
+                        componentName
+                    ]) {
+                        const fieldSyntax =
+                            result.setup.components[componentName][field];
+                        if (typeof fieldSyntax === 'function') {
+                            componentsAsString[componentName][field] =
+                                `function ${field}() {${fieldSyntax
+                                    .toString()
+                                    .slice(
+                                        fieldSyntax.toString().indexOf('{') + 1,
+                                        fieldSyntax.toString().lastIndexOf('}'),
+                                    )}}`;
+                        } else {
+                            componentsAsString[componentName][field] =
+                                result.setup.components[componentName][field];
+                        }
+                    }
+                }
+            }
+
+            let jsContent = `// Generated automatically by CMMV\n`;
+            jsContent += `(function(global) {
+                try {          
+                    if(!global.cmmvSetup)
+                        global.cmmvSetup = {};
+
+                    global.cmmvSetup.__data = ${data ? JSON.stringify(data) : '{}'};
+                    global.cmmvSetup.__components = ${componentsAsString ? JSON.stringify(componentsAsString) : '{}'};
+                    global.cmmvSetup.__methods = ${methodsAsString ? methodsAsString : 'null'};
+                    global.cmmvSetup.__mounted = ${mountedAsString ? JSON.stringify(mountedAsString) : 'null'};
+                    global.cmmvSetup.__created = ${createdAsString ? JSON.stringify(createdAsString) : 'null'};
+                    global.cmmvSetup.__styles = ${JSON.stringify(ViewRegistry.retrieveAll())}
+                } catch (e) {
+                    console.error("Error loading contracts or initializing app data:", e);
+                }
+                })(typeof window !== "undefined" ? window : global);`;
+
+            pageContents += `<script nonce="{nonce}">${
+                UglifyJS.minify(jsContent, {
+                    compress: {
+                        drop_console: true,
+                        dead_code: true,
+                        conditionals: true,
+                    },
+                    mangle: true,
+                    output: {
+                        beautify: false,
+                    },
+                }).code
+            }</script>`;
 
             const cacheKey = result.setup.layout || 'default';
 

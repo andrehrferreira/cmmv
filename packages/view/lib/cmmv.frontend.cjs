@@ -94,7 +94,11 @@
                         this.components[componentName] = {};
 
                         for(let field in components[componentName]){
-                            if(components[componentName][field].startsWith("function")) {
+                            if(
+                                components[componentName][field] && 
+                                typeof components[componentName][field] == "string" &&
+                                components[componentName][field].startsWith("function")
+                            ) {
                                 this.components[componentName][field] = 
                                     new Function(`return (${components[componentName][field]})`)();
                             }
