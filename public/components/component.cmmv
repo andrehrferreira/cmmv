@@ -1,0 +1,18 @@
+<template>
+    <div>{{ test }}</div>
+    <button @click="test++">Add</button>
+</template>
+
+<script>
+export default {
+    data(){
+        return {
+            test: 123
+        }
+    },
+
+    mounted() {
+        //console.log("mounted");
+    }
+}
+</script>

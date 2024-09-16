@@ -113,19 +113,78 @@ export const i18n: Directive = (
 };
 
 //Layout
-export const extractSetupScript = (templateText: string): object | string => {
+function resolveImport(filename): string {
+    const resolvedFilename = path.resolve(process.cwd(), 'public', filename);
+
+    if (filename.endsWith('.cmmv') && fs.existsSync(resolvedFilename)) {
+        const src = fs.readFileSync(resolvedFilename, 'utf-8');
+
+        const templateMatch = src.match(/<template>([\s\S]*?)<\/template>/);
+        const scriptMatch = src.match(/<script.*?>([\s\S]*?)<\/script>/);
+        const styleMatch = src.match(/<style.*?>([\s\S]*?)<\/style>/);
+
+        const template = templateMatch ? templateMatch[1].trim() : '';
+        const style = styleMatch ? styleMatch[1].trim() : '';
+        let scriptContent = scriptMatch ? scriptMatch[1].trim() : '';
+
+        if (scriptContent.includes('export default')) {
+            scriptContent = scriptContent.replace(
+                /export default\s*{([\s\S]*?)}/,
+                `{ template: \`${template}\`, styles: \`${style}\`, $1 }`,
+            );
+        }
+
+        return scriptContent;
+    }
+
+    return 'null';
+}
+
+export const extractSetupScript = async (
+    templateText: string,
+): Promise<object | string> => {
     const regex = /<script\s+[^>]*s-setup[^>]*>([\s\S]*?)<\/script>/;
+    const importRegex = /import\s+([^;]+?)\s+from\s+['"]([^'"]+)['"];/g;
     const scriptMatch = templateText.match(regex);
     let scriptObject = null;
 
     if (scriptMatch) {
         const scriptContent = scriptMatch[1].trim();
+        let imports = '';
 
         try {
+            scriptContent.replace(importRegex, (_, imported, from) => {
+                const filename = from
+                    .replace('./', './view')
+                    .replace('@/', './components/')
+                    .replace('@components/', './components/');
+
+                imported.split(',').forEach(part => {
+                    const cleanedImport = part.trim();
+                    if (cleanedImport.startsWith('{')) {
+                        const destructured = cleanedImport
+                            .replace(/[{}]/g, '')
+                            .split(',')
+                            .map(name => `${name.trim()}: ${name.trim()}`)
+                            .join(', ');
+
+                        imports += `const { ${destructured} } = ${resolveImport(filename)};\n`;
+                    } else {
+                        imports += `const ${cleanedImport} = ${resolveImport(filename)};\n`;
+                    }
+                });
+
+                return '';
+            });
+
             const processedScript = scriptContent
+                .replace(importRegex, '')
                 .replace(/export\s+default\s+/, '')
                 .replace(/module\.exports\s*=/, '');
-            const scriptFunction = new Function(`return (${processedScript})`);
+
+            const scriptFunction = new Function(
+                `${imports} return (${processedScript});`,
+            );
             scriptObject = scriptFunction();
 
             if (
@@ -134,7 +193,9 @@ export const extractSetupScript = (templateText: string): object | string => {
                 scriptObject.default
             )
                 return scriptObject.default;
-        } catch (e) {}
+        } catch (e) {
+            console.error(e);
+        }
     }
 
     if (scriptObject) {

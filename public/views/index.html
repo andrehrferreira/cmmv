@@ -7,7 +7,7 @@
         c-show="todolist?.length > 0" 
         s:todolist="services.task.getAll(null, { requestId })"
     >
-        <!-- include("login") -->
+        <!-- /*include("login")*/ -->
 
         <s-if exp="todolist?.length > 0">
             <div>Total Record Loaded SSR: {{ todolist.length }}</div>
@@ -61,13 +61,20 @@
             ></button>
         </div>
 
+        <ComponentTeste ref="componentTest" name="Teste"></ComponentTeste>
+
         <pre>{{ todolist }}</pre>
     </div>
 </div>
 
 <script s-setup>
+import ComponentTeste from "@components/component.cmmv";
+import ComponentTeste2 from "@components/component2.cmmv";
+
 export default {
     layout: "default",
+
+    components: { ComponentTeste },
 
     head: {
         meta: [

@@ -16,7 +16,7 @@
     },
     "homepage": "https://cmmv.io",
     "dependencies": {
-        "@cmmv/reactivity": "^0.1.0",
+        "@cmmv/reactivity": "^0.1.5",
         "fast-glob": "^3.3.2",
         "html-minifier": "^4.0.0",
         "uglify-js": "^3.19.2"

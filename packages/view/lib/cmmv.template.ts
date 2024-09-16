@@ -262,6 +262,40 @@ export class Template {
                               )}}`
                         : null;
 
+                    let componentsAsString = {};
+                    if (result.setup.components) {
+                        for (let componentName in result.setup.components) {
+                            componentsAsString[componentName] = {};
+
+                            for (let field in result.setup.components[
+                                componentName
+                            ]) {
+                                const fieldSyntax =
+                                    result.setup.components[componentName][
+                                        field
+                                    ];
+                                if (typeof fieldSyntax === 'function') {
+                                    componentsAsString[componentName][field] =
+                                        `function ${field}() {${fieldSyntax
+                                            .toString()
+                                            .slice(
+                                                fieldSyntax
+                                                    .toString()
+                                                    .indexOf('{') + 1,
+                                                fieldSyntax
+                                                    .toString()
+                                                    .lastIndexOf('}'),
+                                            )}}`;
+                                } else {
+                                    componentsAsString[componentName][field] =
+                                        result.setup.components[componentName][
+                                            field
+                                        ];
+                                }
+                            }
+                        }
+                    }
+
                     let jsContent = `// Generated automatically by CMMV\n`;
                     jsContent += `(function(global) {
                         try {          
@@ -269,6 +303,7 @@ export class Template {
                                 global.cmmvSetup = {};
 
                             global.cmmvSetup.__data = ${data ? JSON.stringify(data) : '{}'};
+                            global.cmmvSetup.__components = ${componentsAsString ? JSON.stringify(componentsAsString) : '{}'};
                             global.cmmvSetup.__methods = ${methodsAsString ? methodsAsString : 'null'};
                             global.cmmvSetup.__mounted = ${mountedAsString ? JSON.stringify(mountedAsString) : 'null'};
                             global.cmmvSetup.__created = ${createdAsString ? JSON.stringify(createdAsString) : 'null'};

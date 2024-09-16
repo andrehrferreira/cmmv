@@ -68,8 +68,9 @@
             isAuth: false,
             theme: "default",
             styleSettings: {},
+            components: {},
 
-            initialize(context, styles) {
+            initialize(context, styles, components) {
                 this.telemetry.start('Initialize Frontend');
 
                 try {
@@ -87,6 +88,23 @@
                 
                 if (typeof styles === 'object') 
                     this.styleSettings = Object.assign(this.styleSettings, styles);
+
+                if(components){
+                    for(let componentName in components){
+                        this.components[componentName] = {};
+
+                        for(let field in components[componentName]){
+                            if(components[componentName][field].startsWith("function")) {
+                                this.components[componentName][field] = 
+                                    new Function(`return (${components[componentName][field]})`)();
+                            }
+                            else {
+                                this.components[componentName][field] = 
+                                    components[componentName][field];
+                            }
+                        }
+                    }
+                }
                 
                 document.addEventListener('DOMContentLoaded', () => {
                     this.processExpressions();
@@ -251,7 +269,8 @@
      
                 this.telemetry.start('CreateApp');
                 this.contextApp = this.reactive({
-                    $template: "#app",                    
+                    $template: "#app",  
+                    components: this.components,                  
                     ...this,
                     rpc: this.rpc,
                     styles: {
@@ -367,10 +386,14 @@
             let mounted = (global.cmmvSetup.__mounted) ? new Function(`return (${global.cmmvSetup.__mounted})`)() : null;
 
             global.cmmv = Object.assign({ ...methods, mounted }, cmmv, global.cmmvSetup, cmmvMiddleware);
-            global.cmmv.initialize(global.cmmvSetup.__data || {}, global.cmmvSetup.__styles || {});
+            global.cmmv.initialize(
+                global.cmmvSetup.__data || {}, 
+                global.cmmvSetup.__styles || {}, 
+                global.cmmvSetup.__components || {}
+            );
         } else {
             global.cmmv = Object.assign({}, cmmvMiddleware);
-            global.cmmv.initialize({}, {});
+            global.cmmv.initialize({}, {}, {});
         }
     } catch (e) {
         console.error(e);
