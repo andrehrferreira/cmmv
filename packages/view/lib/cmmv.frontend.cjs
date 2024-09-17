@@ -296,10 +296,12 @@
      
                 this.telemetry.start('CreateApp');
 
-                const styleReactive = {
-                    ...this.styles,
+                this.styles.load();
+
+                const styles = this.reactive({
+                    ...this.styles.refresh(),
                     styleSettings: this.styleSettings
-                };
+                });
 
                 this.contextApp = this.reactive({
                     $template: "#app",  
@@ -307,8 +309,8 @@
                     ...this,
                     rpc: this.rpc,
                     $rpc: this.rpc,
-                    styles: styleReactive,
-                    $style: styleReactive,
+                    styles: styles,
+                    $style: styles,
                     ...this.context,
                     loaded: true,
                     mounted: this.mounted,
@@ -366,7 +368,7 @@
             styles: {
                 theme: "default",
 
-                styleSettings: {},
+                styleSettings: null,
 
                 load(){
                     const cachedTheme = localStorage.getItem("theme") || "default";
@@ -377,9 +379,10 @@
                 refresh(){
                     const themeSufix = ((this.theme !== "default") ? "." + this.theme : "");
                     const protectedNames = ["get", "load", "refresh", "theme", "switch"];
+                    const settings = this.styleSettings || cmmv.styleSettings;
 
-                    for(const index in cmmv.styleSettings){
-                        for(const style in cmmv.styleSettings[index]){
+                    for(const index in settings){
+                        for(const style in settings[index]){
                             if(style.indexOf(themeSufix) !== -1 || this.theme === "default"){
                                 const name = style.replace(themeSufix, "");
 
@@ -387,10 +390,12 @@
                                     this[index] = {};
 
                                 if(!protectedNames.includes(name))
-                                    this[index][name] = cmmv.styleSettings[index][style];
+                                    this[index][name] = settings[index][style];
                             }
                         }
                     }
+
+                    return this;
                 },
 
                 get(name) {
