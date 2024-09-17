@@ -8,6 +8,11 @@ body{
 	font-weight: 300;
 }
 
+html[data-theme="dark"] body{
+    background: #666;
+    color: #EFEFFF;
+}
+
 h1 { 
     font-size: 60px;
 	font-weight: 200;
@@ -32,13 +37,22 @@ h1 {
     border-radius: 5px;
 }
 
-.todo-item{
+html[data-theme="dark"] .todo-box {
+    background-color: #2c2c2c;
+    border: 1px solid #000;
+}
+
+.todo-item {
     border: 1px solid #CCC;
     display: flex;
     align-items: center;
     margin-bottom: 10px;
     display: flex;
     align-items: center;
+}
+
+html[data-theme="dark"] .todo-item {
+    border: 1px solid #000;
 }
 
 .todo-item-checked {
@@ -53,6 +67,10 @@ h1 {
     align-items: center;
 }
 
+html[data-theme="dark"] .todo-input-box {
+    border: 1px solid #000;
+}
+
 .todo-input {
     width: 70%;
     margin: auto;
@@ -60,6 +78,11 @@ h1 {
     outline: none;
     padding: 10px;
     font-size: 15px;
+    background-color: #FFF;
+}
+
+html[data-theme="dark"] .todo-input {
+    background-color: #2c2c2c;
 }
 
 .todo-item-content{

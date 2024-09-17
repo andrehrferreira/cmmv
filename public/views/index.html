@@ -36,7 +36,6 @@
             </div>
             
             <button 
-                :disabled="!isAuth"
                 class="todo-btn-remove"
                 s-i18n="remove" 
                 @click="DeleteTaskRequest(item.id)"
@@ -54,14 +53,11 @@
             >
 
             <button 
-                :disabled="!isAuth"
                 class="todo-btn-add"
                 s-i18n="add" 
                 @click="addTask"
             ></button>
         </div>
-
-        <ComponentTeste ref="componentTest" name="Teste"></ComponentTeste>
 
         <pre>{{ todolist }}</pre>
     </div>
@@ -90,6 +86,7 @@ export default {
         return {
             todolist: [],
             label: "",
+            test: 12,
             login: {
                 username: '', 
                 password: ''

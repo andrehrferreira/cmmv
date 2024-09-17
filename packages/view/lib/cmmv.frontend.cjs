@@ -296,15 +296,19 @@
      
                 this.telemetry.start('CreateApp');
 
+                const styleReactive = {
+                    ...this.styles,
+                    styleSettings: this.styleSettings
+                };
+
                 this.contextApp = this.reactive({
                     $template: "#app",  
                     components: this.components,                  
                     ...this,
                     rpc: this.rpc,
-                    styles: {
-                        ...this.styles,
-                        styleSettings: this.styleSettings
-                    },
+                    $rpc: this.rpc,
+                    styles: styleReactive,
+                    $style: styleReactive,
                     ...this.context,
                     loaded: true,
                     mounted: this.mounted,

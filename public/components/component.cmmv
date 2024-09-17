@@ -1,18 +1,16 @@
 <template>
-    <div :class="$style.themeSwitch.container">{{ test }}</div>
-    <button @click="test++">Add</button>
+    <div :class="$style.themeSwitch.container">
+        <slot :count="count" />
+    </div>
 </template>
 
 <script>
 export default {
-    data(){
-        return {
-            test: 123
+    props: {
+        count: {
+            type: Number,
+            default: 123
         }
-    },
-
-    mounted() {
-        //console.log("mounted");
     }
 }
 </script>
