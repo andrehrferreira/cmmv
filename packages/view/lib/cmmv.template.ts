@@ -281,7 +281,7 @@ export class Template {
                                         fieldSyntax.toString().lastIndexOf('}'),
                                     )}}`;
                         } else if (field === 'methods') {
-                            for (let methodName in fieldSyntax) {
+                            for (const methodName in fieldSyntax) {
                                 componentsAsString[componentName][methodName] =
                                     `function ${methodName}() {${fieldSyntax[
                                         methodName
