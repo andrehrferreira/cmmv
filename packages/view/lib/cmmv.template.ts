@@ -280,6 +280,22 @@ export class Template {
                                         fieldSyntax.toString().indexOf('{') + 1,
                                         fieldSyntax.toString().lastIndexOf('}'),
                                     )}}`;
+                        } else if (field === 'methods') {
+                            for (let methodName in fieldSyntax) {
+                                componentsAsString[componentName][methodName] =
+                                    `function ${methodName}() {${fieldSyntax[
+                                        methodName
+                                    ]
+                                        .toString()
+                                        .slice(
+                                            fieldSyntax[methodName]
+                                                .toString()
+                                                .indexOf('{') + 1,
+                                            fieldSyntax
+                                                .toString()
+                                                .lastIndexOf('}'),
+                                        )}}`;
+                            }
                         } else {
                             componentsAsString[componentName][field] =
                                 result.setup.components[componentName][field];
