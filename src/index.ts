@@ -1,6 +1,6 @@
 import './app.config';
 import { Application } from '@cmmv/core';
-import { ExpressAdapter, ExpressModule } from '@cmmv/http';
+import { DefaultAdapter, DefaultHTTPModule } from '@cmmv/http';
 import { ProtobufModule } from '@cmmv/protobuf';
 import { WSModule, WSAdapter } from '@cmmv/ws';
 import { ViewModule } from '@cmmv/view';
@@ -11,12 +11,13 @@ import { AuthModule } from '@cmmv/auth';
 
 //Contracts
 import { TasksContract } from './contracts/tasks.contract';
+import { IndexModule } from './modules/index.module';
 
 Application.create({
-    httpAdapter: ExpressAdapter,
+    httpAdapter: DefaultAdapter,
     wsAdapter: WSAdapter,
     modules: [
-        ExpressModule,
+        DefaultHTTPModule,
         ProtobufModule,
         WSModule,
         ViewModule,
@@ -24,6 +25,7 @@ Application.create({
         CacheModule,
         SchedulingModule,
         AuthModule,
+        IndexModule,
     ],
     services: [Repository, CacheService, SchedulingService],
     contracts: [TasksContract],
