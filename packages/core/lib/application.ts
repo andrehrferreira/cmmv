@@ -130,8 +130,12 @@ export class Application {
                     `app.module.js`,
                 );
 
-                const { ApplicationModule } = await import(outputPath);
-                this.loadModules([...this.modules, ApplicationModule]);
+                if (fs.existsSync(outputPath)) {
+                    const { ApplicationModule } = await import(outputPath);
+                    this.loadModules([...this.modules, ApplicationModule]);
+                } else {
+                    this.loadModules([...this.modules]);
+                }
             }
 
             const servicesLoad = [];

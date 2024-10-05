@@ -16,7 +16,7 @@ export class User implements IUser {
     id?: any;
 
     @Transform(({ value }) =>
-        crypto.createHash('sha1').update(value).digest('hex'),
+        _crypto.createHash('sha1').update(value).digest('hex'),
     )
     @IsString({ message: 'Invalid username' })
     @MinLength(4, { message: 'Invalid username' })
@@ -24,7 +24,7 @@ export class User implements IUser {
     username: string;
 
     @Transform(({ value }) =>
-        crypto.createHash('sha256').update(value).digest('hex'),
+        _crypto.createHash('sha256').update(value).digest('hex'),
     )
     @IsString({ message: 'Invalid password' })
     password: string;

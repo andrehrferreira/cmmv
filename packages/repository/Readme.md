@@ -43,7 +43,7 @@ Below is a simple example of how to create a new CMMV application:
 
 ```typescript
 import { Application } from "@cmmv/core";
-import { ExpressAdapter, ExpressModule } from "@cmmv/http";
+import { DefaultAdapter, DefaultHTTPModule } from "@cmmv/http";
 import { ProtobufModule } from "@cmmv/protobuf";
 import { WSModule, WSAdapter } from "@cmmv/ws";
 import { ViewModule } from "@cmmv/view";
@@ -51,10 +51,10 @@ import { RepositoryModule, Repository } from "@cmmv/repository";
 import { ApplicationModule } from "./app.module";
 
 Application.create({
-    httpAdapter: ExpressAdapter,    
+    httpAdapter: DefaultAdapter,    
     wsAdapter: WSAdapter,
     modules: [
-        ExpressModule,
+        DefaultHTTPModule,
         ProtobufModule,
         WSModule,
         ViewModule,
