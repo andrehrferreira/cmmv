@@ -69,4 +69,66 @@ describe('Config', function () {
 
         assert.deepEqual(Config.getAll(), configData);
     });
+
+    it('should return default value if configuration key does not exist', function () {
+        const defaultValue = 'defaultValue';
+        assert.strictEqual(
+            Config.get('nonexistent.key', defaultValue),
+            defaultValue,
+        );
+    });
+
+    it('should merge configurations using assign method', function () {
+        const configData1 = { key1: 'value1' };
+        const configData2 = { key2: 'value2', key1: 'newValue1' };
+
+        Config.assign(configData1);
+        Config.assign(configData2);
+
+        const expectedConfig = { key1: 'newValue1', key2: 'value2' };
+        assert.deepEqual(Config.getAll(), expectedConfig);
+    });
+
+    it('should clear all configurations', function () {
+        const configData = { key: 'value', nested: { key: 'nestedValue' } };
+        Config.assign(configData);
+
+        assert.deepEqual(Config.getAll(), configData);
+
+        Config.clear();
+        assert.deepEqual(Config.getAll(), {});
+    });
+
+    it('should handle deeply nested keys in set, get, and delete methods', function () {
+        Config.set('deep.nested.key', 'deepValue');
+        assert.strictEqual(Config.get('deep.nested.key'), 'deepValue');
+
+        Config.delete('deep.nested.key');
+        assert.strictEqual(Config.get('deep.nested.key'), undefined);
+    });
+
+    it('should handle missing configuration file gracefully without throwing errors', function () {
+        const nonExistentConfigPath = path.join(
+            process.cwd(),
+            '.nonexistent.config.js',
+        );
+        if (fs.existsSync(nonExistentConfigPath)) {
+            fs.unlinkSync(nonExistentConfigPath);
+        }
+
+        assert.doesNotThrow(() => {
+            Config.loadConfig();
+        });
+    });
+
+    it('should handle assigning empty objects', function () {
+        Config.assign({});
+        assert.deepStrictEqual(Config.getAll(), {});
+
+        Config.assign({ key: 'value' });
+        assert.deepStrictEqual(Config.getAll(), { key: 'value' });
+
+        Config.assign({});
+        assert.deepStrictEqual(Config.getAll(), { key: 'value' });
+    });
 });

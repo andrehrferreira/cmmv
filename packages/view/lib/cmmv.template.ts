@@ -27,7 +27,7 @@ export class Template {
     private nonce: string;
     private context: any = {};
 
-    constructor(text: string, optsParam: any) {
+    constructor(text?: string, optsParam?: any) {
         const opts = hasOwnOnlyObject(optsParam);
         const options = createNullProtoObjWherePossible();
         this.templateText = text;

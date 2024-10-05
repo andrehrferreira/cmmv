@@ -89,4 +89,57 @@ describe('Shared Utils', function () {
         assert.strictEqual(isJSON('{"key": "value"}'), true);
         assert.strictEqual(isJSON('invalidJSON'), false);
     });
+
+    it('should return false for non-undefined values in isUndefined', function () {
+        assert.strictEqual(isUndefined(123), false);
+        assert.strictEqual(isUndefined('string'), false);
+        assert.strictEqual(isUndefined({}), false);
+    });
+
+    it('should correctly identify non-plain objects', function () {
+        class CustomClass {}
+        assert.strictEqual(isPlainObject(new CustomClass()), false);
+        assert.strictEqual(isPlainObject(null), false);
+    });
+
+    it('should not add leading slash if path is empty', function () {
+        assert.strictEqual(addLeadingSlash(''), '/');
+    });
+
+    it('should handle paths with no need for normalization', function () {
+        assert.strictEqual(normalizePath('/simple'), '/simple');
+        assert.strictEqual(normalizePath('simple/path'), '/simple/path');
+    });
+
+    it('should correctly strip end slash even for root paths', function () {
+        assert.strictEqual(stripEndSlash('/'), '');
+        assert.strictEqual(stripEndSlash('root/'), 'root');
+    });
+
+    it('should correctly identify arrow functions in isFunction', function () {
+        assert.strictEqual(
+            isFunction(function () {}),
+            true,
+        );
+        assert.strictEqual(
+            isFunction(() => {}),
+            true,
+        );
+        assert.strictEqual(isFunction(null), false);
+    });
+
+    it('should correctly identify if a value is not a constructor', function () {
+        assert.strictEqual(isConstructor('randomString'), false);
+        assert.strictEqual(isConstructor(Object), false);
+    });
+
+    it('should return true for nested arrays in isEmpty', function () {
+        assert.strictEqual(isEmpty([[]]), false);
+        assert.strictEqual(isEmpty([[1, 2, 3]]), false);
+    });
+
+    it('should return false for invalid JSON even with valid syntax', function () {
+        assert.strictEqual(isJSON('{key: value}'), false);
+        assert.strictEqual(isJSON('{"incompleteJson"'), false);
+    });
 });

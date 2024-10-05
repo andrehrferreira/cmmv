@@ -2,7 +2,7 @@ import { Application } from '../lib/application';
 import { AbstractHttpAdapter } from './http-adapter.abstract';
 
 export abstract class AbstractWSAdapter {
-    protected readonly httpServer: any;
+    public readonly httpServer: any;
 
     constructor(appOrHttpServer: any) {
         if (appOrHttpServer && appOrHttpServer instanceof Application)

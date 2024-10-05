@@ -15,8 +15,8 @@ describe('CacheService', function () {
         );
     });
 
-    afterEach(function () {
-        sandbox.restore();
+    afterEach(async function () {
+        await CacheService.getInstance().manager.reset();
     });
 
     it('should set a cache key-value pair', async function () {
@@ -50,7 +50,21 @@ describe('CacheService', function () {
     it('should delete a cache key', async function () {
         await CacheService.set('testKey', 'test');
         const result = await CacheService.del('testKey');
+        assert.strictEqual(result, true);
+    });
+
+    it('should set a cache key-value pair', async function () {
+        const result = await CacheService.set('testKey', 'testValue', 10);
+        const cachedValue = await CacheService.get('testKey');
 
         assert.strictEqual(result, true);
+        assert.strictEqual(cachedValue, 'testValue');
+    });
+
+    it('should get a cached value by key', async function () {
+        await CacheService.set('testKey', 'testValue', 10);
+        const result = await CacheService.get('testKey');
+
+        assert.strictEqual(result, 'testValue');
     });
 });
