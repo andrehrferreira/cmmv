@@ -104,8 +104,12 @@ ${contract.fields?.map((field: any) => this.generateClassField(field)).join('\n\
         }
 
         if (field.transform) {
+            const cleanedTransform = field.transform
+                .toString()
+                .replace(/_([a-zA-Z]+)/g, ' $1');
+
             decorators.push(
-                `    @Transform(${field.transform}${field.toClassOnly ? `, { toClassOnly: true }` : ''})`,
+                `    @Transform(${cleanedTransform}${field.toClassOnly ? `, { toClassOnly: true }` : ''})`,
             );
         }
 
