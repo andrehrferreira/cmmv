@@ -267,6 +267,11 @@ export class ProtobufTranspile implements ITranspile {
     private async generateContractsJs(contractsJson: {
         [key: string]: any;
     }): Promise<void> {
+        const outputDirectory = path.resolve('public/core');
+
+        if (!fs.existsSync(outputDirectory))
+            fs.mkdirSync(outputDirectory, { recursive: true });
+
         const outputFile = path.resolve('public/core/contracts.min.js');
 
         await ProtoRegistry.load();
