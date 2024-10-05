@@ -20,6 +20,7 @@ export class AuthTranspile implements ITranspile {
         const controllerFileName = `auth.controller.ts`;
         const localLogin = Config.get('auth.localLogin', false);
         const localRegister = Config.get('auth.localRegister', false);
+        const hasRepository = Module.hasModule('repository');
 
         const controllerTemplate = `// Generated automatically by CMMV
     
@@ -62,7 +63,7 @@ export class AuthController {
     }
 
     ${
-        localRegister
+        localRegister && hasRepository
             ? `@Post("register")
     async register(@Body() payload: RegisterRequest): Promise<RegisterResponse> {
         return await this.authService.register(payload);
@@ -150,8 +151,8 @@ export class AuthService extends AbstractService {
 
         if (!user) 
             return { result: { success: false, token: "", message: "Invalid credentials" }, user: null  };`
-                : `const user = { result: { username, password: "dummyPasswordHash" }, user: null };
-        if (password !== "dummyPasswordHash") 
+                : `const user = { id: 0, username: "dummyUsername", password: "dummyPasswordHash" };
+        if (userValidation.password !== "dummyPasswordHash") 
             return { result: { success: false, token: "", message: "Invalid credentials" }, user: null };`
         }
 
@@ -181,12 +182,12 @@ export class AuthService extends AbstractService {
         return { result: { success: true, token, message: "Login successful" }, user };
     }
 
-    public async register(payload: RegisterRequest, req?: any): Promise<RegisterResponse> {
-        Telemetry.start('AuthService::register', req?.requestId);
-
 ${
     hasRepository
-        ? `        const newUser = plainToClass(User, payload, { 
+        ? `    public async register(payload: RegisterRequest, req?: any): Promise<RegisterResponse> {
+        Telemetry.start('AuthService::register', req?.requestId);
+
+        const newUser = plainToClass(User, payload, { 
             exposeUnsetFields: true,
             enableImplicitConversion: true
         }); 
@@ -212,10 +213,10 @@ ${
                 Telemetry.end('AuthService::register', req?.requestId);
                 return { success: false, message: e.message };
             }                                                    
-        }`
+        }
+    }`
         : ``
 }
-    }
 }`;
 
         if (!fs.existsSync(outputDir))

@@ -24,13 +24,13 @@ ${this.generateClassImports(contract)}
         
 export interface ${modelInterfaceName} {
     id?: any;
-${contract.fields.map((field: any) => `    ${field.propertyKey}: ${this.mapToTsType(field.protoType)};`).join('\n')}
+${contract.fields?.map((field: any) => `    ${field.propertyKey}: ${this.mapToTsType(field.protoType)};`).join('\n')}
 }
 
 export class ${modelName} implements ${modelInterfaceName} {
     id?: any;
 
-${contract.fields.map((field: any) => this.generateClassField(field)).join('\n\n')}
+${contract.fields?.map((field: any) => this.generateClassField(field)).join('\n\n')}
 
     constructor(partial: Partial<${modelName}>) {
         Object.assign(this, partial);
@@ -49,11 +49,11 @@ ${contract.fields.map((field: any) => this.generateClassField(field)).join('\n\n
     private generateClassImports(contract: any): string {
         const importStatements: string[] = [];
 
-        const hasExclude = contract.fields.some(
+        const hasExclude = contract.fields?.some(
             (field: any) => field.exclude || field.toClassOnly,
         );
 
-        const hasTransform = contract.fields.some(
+        const hasTransform = contract.fields?.some(
             (field: any) => field.transform,
         );
 
@@ -67,9 +67,9 @@ ${contract.fields.map((field: any) => this.generateClassField(field)).join('\n\n
         }
 
         const validationImports = new Set<string>();
-        contract.fields.forEach((field: any) => {
+        contract.fields?.forEach((field: any) => {
             if (field.validations) {
-                field.validations.forEach((validation: any) => {
+                field.validations?.forEach((validation: any) => {
                     const validationName = Array.isArray(validation.type)
                         ? validation.type[0]
                         : validation.type;
@@ -110,7 +110,7 @@ ${contract.fields.map((field: any) => this.generateClassField(field)).join('\n\n
         }
 
         if (field.validations) {
-            field.validations.forEach((validation: any) => {
+            field.validations?.forEach((validation: any) => {
                 const validationName = Array.isArray(validation.type)
                     ? validation.type[0]
                     : validation.type;

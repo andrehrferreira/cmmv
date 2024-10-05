@@ -176,6 +176,11 @@ export class Application {
     }
 
     private async createScriptBundle() {
+        const dirBuild = path.resolve('./public/assets');
+
+        if (!fs.existsSync(dirBuild))
+            fs.mkdirSync(dirBuild, { recursive: true });
+
         const finalbundle = path.resolve('./public/assets/bundle.min.js');
 
         const files = await fg(path.resolve('./public/core/*.min.js'), {

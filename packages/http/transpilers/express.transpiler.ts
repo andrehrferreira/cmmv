@@ -155,8 +155,7 @@ ${hasCache ? `import { Cache, CacheService } from "@cmmv/cache";` : ''}
 export class ${controllerName} {
     constructor(private readonly ${serviceName.toLowerCase()}: ${serviceName}) {}
 
-    @Get()
-    ${hasCache ? `@Cache("${cacheKeyPrefix}getAll", { ttl: ${cacheTtl}, compress: ${cacheCompress} })` : ''}
+    @Get()${hasCache ? `\n    @Cache("${cacheKeyPrefix}getAll", { ttl: ${cacheTtl}, compress: ${cacheCompress} })` : ''}
     async getAll(@Queries() queries: any, @Request() req): Promise<${contract.controllerName}[]> {
         Telemetry.start('${controllerName}::GetAll', req.requestId);
         let result = await this.${serviceName.toLowerCase()}.getAll(queries, req);
@@ -164,8 +163,7 @@ export class ${controllerName} {
         return result;
     }
 
-    @Get(':id')
-    ${hasCache ? `@Cache("${cacheKeyPrefix}{id}", { ttl: ${cacheTtl}, compress: ${cacheCompress} })` : ''}
+    @Get(':id')${hasCache ? `\n    @Cache("${cacheKeyPrefix}{id}", { ttl: ${cacheTtl}, compress: ${cacheCompress} })` : ''}
     async getById(@Param('id') id: string, @Request() req): Promise<${contract.controllerName}> {
         Telemetry.start('${controllerName}::GetById', req.requestId);
         let result = await this.${serviceName.toLowerCase()}.getById(id, req);
