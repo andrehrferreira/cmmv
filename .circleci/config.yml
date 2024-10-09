@@ -42,7 +42,7 @@ jobs:
       - checkout
       - run:
           name: Install pnpm
-          command: 'npm install -g pnpm'
+          command: 'sudo npm install -g pnpm'
       - *restore-cache
       - *install-deps
       - *save-cache
