@@ -217,6 +217,9 @@ importers:
       gulp-clean:
         specifier: ^0.4.0
         version: 0.4.0
+      helmet:
+        specifier: ^8.0.0
+        version: 8.0.0
       husky:
         specifier: ^9.1.6
         version: 9.1.6
