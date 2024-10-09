@@ -20,24 +20,24 @@ parameters:
 aliases:
   - &restore-cache
     restore_cache:
-      key: dependency-cache-{{ checksum "package.json" }}
+      key: dependency-cache-{{ checksum "pnpm-lock.yaml" }}
   - &save-cache
     save_cache:
-      key: dependency-cache-{{ checksum "package.json" }}
+      key: dependency-cache-{{ checksum "pnpm-lock.yaml" }}
       paths:
         - ./node_modules
   - &install-deps
     run:
       name: Install dependencies
-      command: npm ci --legacy-peer-deps
+      command: pnpm install --frozen-lockfile
   - &build-packages
     run:
       name: Build
-      command: npm run build
+      command: pnpm run build
   - &run-unit-tests
     run:
       name: Test
-      command: npm run test
+      command: pnpm run test
 
 jobs:
   build:
@@ -47,8 +47,8 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Update NPM version
-          command: 'sudo npm install -g npm@^9'
+          name: Install pnpm
+          command: 'npm install -g pnpm'
       - *restore-cache
       - *install-deps
       - *save-cache
@@ -88,6 +88,9 @@ jobs:
               - << pipeline.parameters.check-legacy-node-version >>
           steps:
             - checkout
+            - run:
+                name: Install pnpm
+                command: 'npm install -g pnpm'
             - *restore-cache
             - *install-deps
             - *build-packages
@@ -101,10 +104,10 @@ jobs:
                 steps:
                   - run:
                       name: Test (coverage)
-                      command: npm run test:cov
+                      command: pnpm run test:cov
                   - run:
                       name: Collect coverage
-                      command: npm run coverage
+                      command: pnpm run coverage
                   - store_artifacts:
                       path: coverage
             - when:
@@ -124,11 +127,14 @@ jobs:
       - image: cimg/node:<< pipeline.parameters.maintenance-node-version >>
     steps:
       - checkout
+      - run:
+          name: Install pnpm
+          command: 'npm install -g pnpm'
       - *restore-cache
       - *install-deps
       - run:
           name: Lint
-          command: npm run lint
+          command: pnpm run lint
 
   integration_tests:
     working_directory: ~/cmmv
@@ -152,6 +158,9 @@ jobs:
             curl -L https://github.com/docker/compose/releases/download/1.19.0/docker-compose-`uname -s`-`uname -m` > ~/docker-compose
             chmod +x ~/docker-compose
             sudo mv ~/docker-compose /usr/local/bin/docker-compose
+      - run:
+          name: Install pnpm
+          command: 'npm install -g pnpm'
       - *install-deps
       - run:
           name: Prepare tests
@@ -163,7 +172,7 @@ jobs:
           command: docker ps
       - run:
           name: Integration tests
-          command: npm run test:integration
+          command: pnpm run test:integration
 
 workflows:
   build-and-test:
