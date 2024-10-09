@@ -16,9 +16,9 @@
     },
     "homepage": "https://cmmv.io",
     "dependencies": {
-        "@cmmv/reactivity": "^0.2.3",
+        "@cmmv/reactivity": "^0.3.0",
         "fast-glob": "^3.3.2",
-        "html-minifier": "^4.0.0",
+        "html-minifier-terser": "^7.2.0",
         "uglify-js": "^3.19.2"
     },
     "gitHead": "3dc8ad71128f3616fc226bb64bce37b1cafcf33d"

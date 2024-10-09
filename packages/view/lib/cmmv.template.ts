@@ -5,7 +5,7 @@ import * as path from 'path';
 import { cwd } from 'process';
 import * as fg from 'fast-glob';
 import * as UglifyJS from 'uglify-js';
-import { minify } from 'html-minifier';
+import { minify } from 'html-minifier-terser';
 
 import { Config, Telemetry } from '@cmmv/core';
 
