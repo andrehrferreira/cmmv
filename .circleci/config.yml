@@ -84,7 +84,7 @@ jobs:
             - checkout
             - run:
                 name: Install pnpm
-                command: 'npm install -g pnpm'
+                command: 'sudo npm install -g pnpm'
             - *restore-cache
             - *install-deps
             - *build-packages
@@ -123,7 +123,7 @@ jobs:
       - checkout
       - run:
           name: Install pnpm
-          command: 'npm install -g pnpm'
+          command: 'sudo npm install -g pnpm'
       - *restore-cache
       - *install-deps
       - run:
@@ -154,7 +154,7 @@ jobs:
             sudo mv ~/docker-compose /usr/local/bin/docker-compose
       - run:
           name: Install pnpm
-          command: 'npm install -g pnpm'
+          command: 'sudo npm install -g pnpm'
       - *install-deps
       - run:
           name: Prepare tests
