@@ -22,6 +22,7 @@
         "@cmmv/cors": "^0.4.0",
         "@cmmv/etag": "^0.4.0",
         "@cmmv/helmet": "^0.4.0",
+        "@cmmv/reactivity": "^0.4.0",
         "@cmmv/server": "^0.4.0",
         "@cmmv/server-static": "^0.4.0",
         "@cmmv/view": "0.4.1",

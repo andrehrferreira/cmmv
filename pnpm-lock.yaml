@@ -13,32 +13,32 @@ importers:
   .:
     dependencies:
       '@cmmv/body-parser':
-        specifier: ^0.0.12
-        version: 0.0.12
+        specifier: ^0.4.0
+        version: 0.4.0
       '@cmmv/compression':
-        specifier: ^0.0.12
-        version: 0.0.12
+        specifier: ^0.4.0
+        version: 0.4.0
       '@cmmv/cookie-parser':
-        specifier: ^0.0.12
-        version: 0.0.12
+        specifier: ^0.4.0
+        version: 0.4.0
       '@cmmv/cors':
-        specifier: ^0.0.12
-        version: 0.0.12
+        specifier: ^0.4.0
+        version: 0.4.0
       '@cmmv/etag':
-        specifier: ^0.0.12
-        version: 0.0.12
+        specifier: ^0.4.0
+        version: 0.4.0
       '@cmmv/helmet':
-        specifier: ^0.0.12
-        version: 0.0.12
+        specifier: ^0.4.0
+        version: 0.4.0
       '@cmmv/reactivity':
-        specifier: ^0.2.3
-        version: 0.2.3
+        specifier: ^0.4.0
+        version: 0.4.0
       '@cmmv/server':
-        specifier: ^0.0.12
-        version: 0.0.12
+        specifier: ^0.4.0
+        version: 0.4.0
       '@cmmv/server-static':
-        specifier: ^0.0.12
-        version: 0.0.12
+        specifier: ^0.4.0
+        version: 0.4.0
       '@fastify/compress':
         specifier: ^8.0.1
         version: 8.0.1
@@ -462,32 +462,32 @@ packages:
   '@bcoe/v8-coverage@0.2.3':
     resolution: {integrity: sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==}
 
-  '@cmmv/body-parser@0.0.12':
-    resolution: {integrity: sha512-s+m4uRLpGuwwGH6ZowLuo0cUsKYOv6mfjy7eEsStDBAGOUCfKIVu+SngVpdO81QoH8Ks2KQ8Q2qy2/Ft9xpX2w==}
+  '@cmmv/body-parser@0.4.0':
+    resolution: {integrity: sha512-vzinb/qbxbuKTZIGTnfmT4AZgKFJe/nfgPWXfh9iCqKLuWOT+phH3YcdqxNyS1waPY5eyOUoTuLXU7dvIRd2pg==}
 
-  '@cmmv/compression@0.0.12':
-    resolution: {integrity: sha512-HxxfW/vu3x3b/t3AjBz/55sko6ju0P4T+8OPMGB9/Cd/sr4UKY0FGYqBqntbLAzD92BTXYAYhICHdFBj4o+gEA==}
+  '@cmmv/compression@0.4.0':
+    resolution: {integrity: sha512-tvK4nzzdFxK9ayEz9SRhAGMOnrsrI1J7DZcUch9+zDtSWpKNq8euGTjTBMEt3zZrv/l1a38OhMMbr2GssQngMg==}
 
-  '@cmmv/cookie-parser@0.0.12':
-    resolution: {integrity: sha512-XTKMceqXfRQFZafWatDKgTJca2r8plQU9tKUhgclbQKMgip0gI2PHXUZPYPLdc8S2RhN9UgLwKQjmX9UP/zD/w==}
+  '@cmmv/cookie-parser@0.4.0':
+    resolution: {integrity: sha512-1XgrH5NVUzyxDwG2hcEqDoU/zNr4zKenayb9ENBjQbyqj/WVNd+/rOIS6au9UfX98/8ctHxRELt0ieyPgMLvxw==}
 
-  '@cmmv/cors@0.0.12':
-    resolution: {integrity: sha512-RApKSP7aPVlZeDdPLeA8DjVJ0NKeqEGvjB5PPt2/x1H6wkXki5bwEJBwNp132v6ZR3dz65qKSzXP+qvdYSSlCQ==}
+  '@cmmv/cors@0.4.0':
+    resolution: {integrity: sha512-1ras7lYhuKmjaX4EksnDQo2+hA25RILuypj8400CAP+7T9+zREnOeaNG69S1lsQXpiqhtkA1P3SRtKkX8UJS4w==}
 
-  '@cmmv/etag@0.0.12':
-    resolution: {integrity: sha512-x0L9wF1IMR4T3InGeoWsQGOwAa654q2xNL9uGoe41XxPpJgvjlnFfBQ7VL2Vw8jZ4rVXMlgmnWnfrcD0Yc8IPg==}
+  '@cmmv/etag@0.4.0':
+    resolution: {integrity: sha512-jcpyobuKGJF/L3pw3xPTfJPlqf17aXmjwCGm9koh2/8zJUF4tVN3v2coefwNhsoXCMVt6ysH6H5WtBF3gnVarQ==}
 
-  '@cmmv/helmet@0.0.12':
-    resolution: {integrity: sha512-wjWncrJd7MHVHb9v5LJJeG2uJlq2Ap9K7fAZYaTFOeWQzJmA1JL266qhUSLHQiaC3CIIOEmXRw+lcJ+2GtcWSQ==}
+  '@cmmv/helmet@0.4.0':
+    resolution: {integrity: sha512-T1t3w8fR29FXcVv33xXNK9TyYDbdK5BqGG3DEox0dgH9dKqdrKtm/pjitoCjIOdHlaJSfWHvFPTodjYDah2lRA==}
 
-  '@cmmv/reactivity@0.2.3':
-    resolution: {integrity: sha512-ljaT6pHXDMXrqcfbVUrHQP5UcYP4py+cP2d0vgFCEF9Rv+U3vjsWvZImOTi1wEY3Mrl1AOhpyjUytcwDW5Hq5w==}
+  '@cmmv/reactivity@0.4.0':
+    resolution: {integrity: sha512-x9PgD3Ur+jb5QqQ+h22GCGoAOSxAuV6i3BGkvXKDIwZqgf0Tej+/0OOYPW+wlJUB93Nhak+tAp0/ahBFV68J8A==}
 
-  '@cmmv/server-static@0.0.12':
-    resolution: {integrity: sha512-9torvhpQTflZsi65VIPtoXsn34lnEHejvKCF/qsFE4fcDgx2Z1ibFpVtbLmSQlG44gA46Zl6ov1a9GcFTyk1PA==}
+  '@cmmv/server-static@0.4.0':
+    resolution: {integrity: sha512-bF55GKoR7UuQFygbB/EfgMXMTZ2mgjtx44M/mdgVVr4a/axcPJmKFFupLZzig0RynkYx+ATIy3j8+YGwPU68OQ==}
 
-  '@cmmv/server@0.0.12':
-    resolution: {integrity: sha512-gD7GgiI+aygEW5jogSim7nflSYaAxq45IMdpPdQN9zahxJatqLFI59hOOrNoFpmFNcAA3iZzqSJCCsBuLCDUKQ==}
+  '@cmmv/server@0.4.0':
+    resolution: {integrity: sha512-hpSJ6QumpsiU2pLSOs7ZbSzApiAkScRS85fzs76pLBiwhcRoCCtsLA31dUcy3N6xGdakKD48ddBlbKQt1CgOGA==}
 
   '@codechecks/client@0.0.50':
     resolution: {integrity: sha512-CP/39x1gIFCsrgUOBwwZ+YsRgOqQARt4jbkOLPe+ZvIj+TRY4c5rvjJ4NCqj1C6qlFdJRnoh5EM4tm/qoSWPAQ==}
@@ -6683,7 +6683,7 @@ snapshots:
 
   '@bcoe/v8-coverage@0.2.3': {}
 
-  '@cmmv/body-parser@0.0.12':
+  '@cmmv/body-parser@0.4.0':
     dependencies:
       async_hooks: 1.0.0
       bytes: 3.1.2
@@ -6695,7 +6695,7 @@ snapshots:
       type-is: 1.6.18
       unpipe: 1.0.0
 
-  '@cmmv/compression@0.0.12':
+  '@cmmv/compression@0.4.0':
     dependencies:
       accepts: 1.3.8
       compressible: 2.0.18
@@ -6703,7 +6703,7 @@ snapshots:
       safe-buffer: 5.2.1
       vary: 1.1.2
 
-  '@cmmv/cookie-parser@0.0.12':
+  '@cmmv/cookie-parser@0.4.0':
     dependencies:
       accepts: 1.3.8
       compressible: 2.0.18
@@ -6713,7 +6713,7 @@ snapshots:
       safe-buffer: 5.2.1
       vary: 1.1.2
 
-  '@cmmv/cors@0.0.12':
+  '@cmmv/cors@0.4.0':
     dependencies:
       accepts: 1.3.8
       compressible: 2.0.18
@@ -6723,17 +6723,17 @@ snapshots:
       safe-buffer: 5.2.1
       vary: 1.1.2
 
-  '@cmmv/etag@0.0.12': {}
+  '@cmmv/etag@0.4.0': {}
 
-  '@cmmv/helmet@0.0.12':
+  '@cmmv/helmet@0.4.0':
     dependencies:
       helmet: 8.0.0
 
-  '@cmmv/reactivity@0.2.3':
+  '@cmmv/reactivity@0.4.0':
     dependencies:
       '@vue/reactivity': 3.5.11
 
-  '@cmmv/server-static@0.0.12':
+  '@cmmv/server-static@0.4.0':
     dependencies:
       '@fastify/accept-negotiator': 1.1.0
       '@fastify/send': 3.1.1
@@ -6751,10 +6751,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@cmmv/server@0.0.12':
+  '@cmmv/server@0.4.0':
     dependencies:
-      '@cmmv/body-parser': 0.0.12
-      '@cmmv/server-static': 0.0.12
+      '@cmmv/body-parser': 0.4.0
+      '@cmmv/server-static': 0.4.0
       '@fastify/send': 3.1.1
       accepts: 1.3.8
       after: 0.8.2

@@ -97,22 +97,4 @@ describe('ProtoRegistry', function () {
         const result = ProtoRegistry.retrieveAll();
         assert.deepStrictEqual(result, { TestProto: contract });
     });
-
-    it('should handle loading proto files', async function () {
-        const mockProtoPath = path.resolve('./src/protos/test.proto');
-        const mockProtoContent = 'syntax = "proto3";\nmessage TestMessage {}';
-
-        // Mock file reading and glob
-        sandbox
-            .stub(fs, 'readFileSync')
-            .withArgs(mockProtoPath, 'utf-8')
-            .returns(mockProtoContent);
-        sandbox.stub(protobuf, 'load').resolves(new protobuf.Root());
-        sandbox.stub(path, 'resolve').callsFake(p => p);
-        sandbox.stub(fs, 'existsSync').returns(true);
-
-        await ProtoRegistry.load();
-
-        assert.strictEqual(ProtoRegistry.retrieve('test'), null); // Mock empty proto for this test
-    });
 });

@@ -9,32 +9,35 @@ importers:
   .:
     dependencies:
       '@cmmv/body-parser':
-        specifier: ^0.0.12
-        version: 0.0.12
-      '@cmmv/compression':
-        specifier: ^0.0.12
-        version: 0.0.12
-      '@cmmv/cookie-parser':
-        specifier: ^0.0.12
-        version: 0.0.12
-      '@cmmv/cors':
-        specifier: ^0.0.12
-        version: 0.0.12
-      '@cmmv/etag':
-        specifier: ^0.0.12
-        version: 0.0.12
-      '@cmmv/helmet':
-        specifier: ^0.0.12
-        version: 0.0.12
-      '@cmmv/server':
-        specifier: ^0.0.12
-        version: 0.0.12
-      '@cmmv/server-static':
-        specifier: ^0.0.12
-        version: 0.0.12
-      '@cmmv/view':
-        specifier: 0.4.0
+        specifier: ^0.4.0
         version: 0.4.0
+      '@cmmv/compression':
+        specifier: ^0.4.0
+        version: 0.4.0
+      '@cmmv/cookie-parser':
+        specifier: ^0.4.0
+        version: 0.4.0
+      '@cmmv/cors':
+        specifier: ^0.4.0
+        version: 0.4.0
+      '@cmmv/etag':
+        specifier: ^0.4.0
+        version: 0.4.0
+      '@cmmv/helmet':
+        specifier: ^0.4.0
+        version: 0.4.0
+      '@cmmv/reactivity':
+        specifier: ^0.4.0
+        version: 0.4.0
+      '@cmmv/server':
+        specifier: ^0.4.0
+        version: 0.4.0
+      '@cmmv/server-static':
+        specifier: ^0.4.0
+        version: 0.4.0
+      '@cmmv/view':
+        specifier: 0.4.1
+        version: 0.4.1
       '@fastify/compress':
         specifier: ^7.0.3
         version: 7.0.3
@@ -96,35 +99,35 @@ importers:
 
 packages:
 
-  '@cmmv/body-parser@0.0.12':
-    resolution: {integrity: sha512-s+m4uRLpGuwwGH6ZowLuo0cUsKYOv6mfjy7eEsStDBAGOUCfKIVu+SngVpdO81QoH8Ks2KQ8Q2qy2/Ft9xpX2w==}
+  '@cmmv/body-parser@0.4.0':
+    resolution: {integrity: sha512-vzinb/qbxbuKTZIGTnfmT4AZgKFJe/nfgPWXfh9iCqKLuWOT+phH3YcdqxNyS1waPY5eyOUoTuLXU7dvIRd2pg==}
 
-  '@cmmv/compression@0.0.12':
-    resolution: {integrity: sha512-HxxfW/vu3x3b/t3AjBz/55sko6ju0P4T+8OPMGB9/Cd/sr4UKY0FGYqBqntbLAzD92BTXYAYhICHdFBj4o+gEA==}
+  '@cmmv/compression@0.4.0':
+    resolution: {integrity: sha512-tvK4nzzdFxK9ayEz9SRhAGMOnrsrI1J7DZcUch9+zDtSWpKNq8euGTjTBMEt3zZrv/l1a38OhMMbr2GssQngMg==}
 
-  '@cmmv/cookie-parser@0.0.12':
-    resolution: {integrity: sha512-XTKMceqXfRQFZafWatDKgTJca2r8plQU9tKUhgclbQKMgip0gI2PHXUZPYPLdc8S2RhN9UgLwKQjmX9UP/zD/w==}
+  '@cmmv/cookie-parser@0.4.0':
+    resolution: {integrity: sha512-1XgrH5NVUzyxDwG2hcEqDoU/zNr4zKenayb9ENBjQbyqj/WVNd+/rOIS6au9UfX98/8ctHxRELt0ieyPgMLvxw==}
 
-  '@cmmv/cors@0.0.12':
-    resolution: {integrity: sha512-RApKSP7aPVlZeDdPLeA8DjVJ0NKeqEGvjB5PPt2/x1H6wkXki5bwEJBwNp132v6ZR3dz65qKSzXP+qvdYSSlCQ==}
+  '@cmmv/cors@0.4.0':
+    resolution: {integrity: sha512-1ras7lYhuKmjaX4EksnDQo2+hA25RILuypj8400CAP+7T9+zREnOeaNG69S1lsQXpiqhtkA1P3SRtKkX8UJS4w==}
 
-  '@cmmv/etag@0.0.12':
-    resolution: {integrity: sha512-x0L9wF1IMR4T3InGeoWsQGOwAa654q2xNL9uGoe41XxPpJgvjlnFfBQ7VL2Vw8jZ4rVXMlgmnWnfrcD0Yc8IPg==}
+  '@cmmv/etag@0.4.0':
+    resolution: {integrity: sha512-jcpyobuKGJF/L3pw3xPTfJPlqf17aXmjwCGm9koh2/8zJUF4tVN3v2coefwNhsoXCMVt6ysH6H5WtBF3gnVarQ==}
 
-  '@cmmv/helmet@0.0.12':
-    resolution: {integrity: sha512-wjWncrJd7MHVHb9v5LJJeG2uJlq2Ap9K7fAZYaTFOeWQzJmA1JL266qhUSLHQiaC3CIIOEmXRw+lcJ+2GtcWSQ==}
+  '@cmmv/helmet@0.4.0':
+    resolution: {integrity: sha512-T1t3w8fR29FXcVv33xXNK9TyYDbdK5BqGG3DEox0dgH9dKqdrKtm/pjitoCjIOdHlaJSfWHvFPTodjYDah2lRA==}
 
-  '@cmmv/reactivity@0.3.0':
-    resolution: {integrity: sha512-7dpKE9Adgr/YrSwzGO8Szx5+Y8PAM8E1q7Lc48Y21j+oPuv7dzc+/FDE5iy90Dp7fv0VDebhxc/Vd1fuAQR96g==}
+  '@cmmv/reactivity@0.4.0':
+    resolution: {integrity: sha512-x9PgD3Ur+jb5QqQ+h22GCGoAOSxAuV6i3BGkvXKDIwZqgf0Tej+/0OOYPW+wlJUB93Nhak+tAp0/ahBFV68J8A==}
 
-  '@cmmv/server-static@0.0.12':
-    resolution: {integrity: sha512-9torvhpQTflZsi65VIPtoXsn34lnEHejvKCF/qsFE4fcDgx2Z1ibFpVtbLmSQlG44gA46Zl6ov1a9GcFTyk1PA==}
+  '@cmmv/server-static@0.4.0':
+    resolution: {integrity: sha512-bF55GKoR7UuQFygbB/EfgMXMTZ2mgjtx44M/mdgVVr4a/axcPJmKFFupLZzig0RynkYx+ATIy3j8+YGwPU68OQ==}
 
-  '@cmmv/server@0.0.12':
-    resolution: {integrity: sha512-gD7GgiI+aygEW5jogSim7nflSYaAxq45IMdpPdQN9zahxJatqLFI59hOOrNoFpmFNcAA3iZzqSJCCsBuLCDUKQ==}
+  '@cmmv/server@0.4.0':
+    resolution: {integrity: sha512-hpSJ6QumpsiU2pLSOs7ZbSzApiAkScRS85fzs76pLBiwhcRoCCtsLA31dUcy3N6xGdakKD48ddBlbKQt1CgOGA==}
 
-  '@cmmv/view@0.4.0':
-    resolution: {integrity: sha512-Lu9d5L9RIaSilaUcBPH+fAVwJfh7DmKGE/+u4q5fwuRDeON+j1Rpc3DpbOlN9/vkyeNvHluRQi8R8xUmhVAfVg==}
+  '@cmmv/view@0.4.1':
+    resolution: {integrity: sha512-HyZOfeP39q6L2zRsoNJbiPqeuQ3zfhk67b6/UTeT4KjS5Gh18PCSL1rjRr0qF0tlk9VEC6uqmGdYy753UgWiFQ==}
 
   '@fastify/accept-negotiator@1.1.0':
     resolution: {integrity: sha512-OIHZrb2ImZ7XG85HXOONLcJWGosv7sIvM2ifAPQVhg9Lv7qdmMBNVaai4QTdyuaqbKM5eO6sLSQOYI7wEQeCJQ==}
@@ -657,8 +660,8 @@ packages:
     resolution: {integrity: sha512-Ld2g8rrAyMYFXBhEqMz8ZAHBi4J4uS1i/CxGMDnjyFWddMXLVcDp051DZfu+t7+ab7Wv6SMqpWmyFIj5UbfFvg==}
     engines: {node: '>=14'}
 
-  form-data@4.0.0:
-    resolution: {integrity: sha512-ETEklSGi5t0QMZuiXoA/Q6vcnxcLQP5vdugSpuAyi6SVGi2clPPp+xgEhuMaHC+zGgn31Kd235W35f7Hykkaww==}
+  form-data@4.0.1:
+    resolution: {integrity: sha512-tzN8e4TX8+kkxGPK8D5u0FNmjPUjw3lwC9lSLxxoB/+GtsJG91CO8bSWy73APlgAZzZbXEYZJuxjkHH2w+Ezhw==}
     engines: {node: '>= 6'}
 
   formidable@3.5.1:
@@ -1090,8 +1093,8 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
-  send@0.19.0:
-    resolution: {integrity: sha512-dW41u5VfLXu8SJh5bwRmyYUbAoSB3c9uQh6L8h/KtsFREPWpbX1lrljJo186Jc4nmci/sGUZ9a0a0J2zgfq2hw==}
+  send@0.19.1:
+    resolution: {integrity: sha512-p4rRk4f23ynFEfcD9LA0xRYngj+IyGiEYyqqOak8kaN0TvNmuxC2dcVeBn62GpCeR2CpWqyHCNScTP91QbAVFg==}
     engines: {node: '>= 0.8.0'}
 
   send@1.1.0:
@@ -1272,7 +1275,7 @@ packages:
 
 snapshots:
 
-  '@cmmv/body-parser@0.0.12':
+  '@cmmv/body-parser@0.4.0':
     dependencies:
       async_hooks: 1.0.0
       bytes: 3.1.2
@@ -1284,7 +1287,7 @@ snapshots:
       type-is: 1.6.18
       unpipe: 1.0.0
 
-  '@cmmv/compression@0.0.12':
+  '@cmmv/compression@0.4.0':
     dependencies:
       accepts: 1.3.8
       compressible: 2.0.18
@@ -1292,7 +1295,7 @@ snapshots:
       safe-buffer: 5.2.1
       vary: 1.1.2
 
-  '@cmmv/cookie-parser@0.0.12':
+  '@cmmv/cookie-parser@0.4.0':
     dependencies:
       accepts: 1.3.8
       compressible: 2.0.18
@@ -1302,7 +1305,7 @@ snapshots:
       safe-buffer: 5.2.1
       vary: 1.1.2
 
-  '@cmmv/cors@0.0.12':
+  '@cmmv/cors@0.4.0':
     dependencies:
       accepts: 1.3.8
       compressible: 2.0.18
@@ -1312,17 +1315,17 @@ snapshots:
       safe-buffer: 5.2.1
       vary: 1.1.2
 
-  '@cmmv/etag@0.0.12': {}
+  '@cmmv/etag@0.4.0': {}
 
-  '@cmmv/helmet@0.0.12':
+  '@cmmv/helmet@0.4.0':
     dependencies:
       helmet: 8.0.0
 
-  '@cmmv/reactivity@0.3.0':
+  '@cmmv/reactivity@0.4.0':
     dependencies:
       '@vue/reactivity': 3.5.11
 
-  '@cmmv/server-static@0.0.12':
+  '@cmmv/server-static@0.4.0':
     dependencies:
       '@fastify/accept-negotiator': 1.1.0
       '@fastify/send': 3.1.1
@@ -1335,15 +1338,15 @@ snapshots:
       on-headers: 1.0.2
       parseurl: 1.3.3
       safe-buffer: 5.2.1
-      send: 0.19.0
+      send: 0.19.1
       vary: 1.1.2
     transitivePeerDependencies:
       - supports-color
 
-  '@cmmv/server@0.0.12':
+  '@cmmv/server@0.4.0':
     dependencies:
-      '@cmmv/body-parser': 0.0.12
-      '@cmmv/server-static': 0.0.12
+      '@cmmv/body-parser': 0.4.0
+      '@cmmv/server-static': 0.4.0
       '@fastify/send': 3.1.1
       accepts: 1.3.8
       after: 0.8.2
@@ -1363,7 +1366,7 @@ snapshots:
       qs: 6.13.0
       rxjs: 7.8.1
       safe-buffer: 5.2.1
-      send: 0.19.0
+      send: 0.19.1
       statuses: 2.0.1
       type-is: 1.6.18
       uuid: 10.0.0
@@ -1371,9 +1374,9 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@cmmv/view@0.4.0':
+  '@cmmv/view@0.4.1':
     dependencies:
-      '@cmmv/reactivity': 0.3.0
+      '@cmmv/reactivity': 0.4.0
       fast-glob: 3.3.2
       html-minifier-terser: 7.2.0
       uglify-js: 3.19.3
@@ -1632,7 +1635,7 @@ snapshots:
   axios@1.7.7:
     dependencies:
       follow-redirects: 1.15.9
-      form-data: 4.0.0
+      form-data: 4.0.1
       proxy-from-env: 1.1.0
     transitivePeerDependencies:
       - debug
@@ -2030,7 +2033,7 @@ snapshots:
       cross-spawn: 7.0.3
       signal-exit: 4.1.0
 
-  form-data@4.0.0:
+  form-data@4.0.1:
     dependencies:
       asynckit: 0.4.0
       combined-stream: 1.0.8
@@ -2445,12 +2448,12 @@ snapshots:
 
   semver@7.6.3: {}
 
-  send@0.19.0:
+  send@0.19.1:
     dependencies:
       debug: 2.6.9
       depd: 2.0.0
       destroy: 1.2.0
-      encodeurl: 1.0.2
+      encodeurl: 2.0.0
       escape-html: 1.0.3
       etag: 1.8.1
       fresh: 0.5.2
