@@ -34,7 +34,7 @@ CMMV aims to simplify the development process by leveraging TypeScript's powerfu
 CMMV is available as a collection of npm packages. To install the core package, use npm:
 
 ```bash
-$ npm install @cmmv/core @cmmv/http @cmmv/protobuf @cmmv/ws @cmmv/view @cmmv/repository
+$ pnpm add @cmmv/core @cmmv/http @cmmv/protobuf @cmmv/ws @cmmv/view @cmmv/repository
 ```
 
 ## Quick Start
