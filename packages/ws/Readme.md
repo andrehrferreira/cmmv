@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://cmmv.io/" target="blank"><img src="https://raw.githubusercontent.com/andrehrferreira/cmmv/main/public/assets/logo.png" width="300" alt="CMMV Logo" /></a>
+  <a href="https://cmmv.io/" target="blank"><img src="https://raw.githubusercontent.com/andrehrferreira/docs.cmmv.io/main/public/assets/logo_CMMV2_icon.png" width="300" alt="CMMV Logo" /></a>
 </p>
 <p align="center">Contract-Model-Model-View (CMMV) <br/> A minimalistic framework for building scalable and modular applications using TypeScript contracts.</p>
 <p align="center">
@@ -34,7 +34,7 @@ CMMV aims to simplify the development process by leveraging TypeScript's powerfu
 CMMV is available as a collection of npm packages. To install the core package, use npm:
 
 ```bash
-$ npm install @cmmv/core @cmmv/http @cmmv/protobuf @cmmv/ws @cmmv/view @cmmv/repository
+$ pnpm add @cmmv/core @cmmv/http @cmmv/protobuf @cmmv/ws @cmmv/view @cmmv/repository
 ```
 
 ## Quick Start
