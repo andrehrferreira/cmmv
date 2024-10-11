@@ -1,0 +1,26 @@
+{
+    "name": "@cmmv/keyv",
+    "version": "0.4.1",
+    "description": "CMMV (@keyv)",
+    "publishConfig": {
+        "access": "public"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/andrehrferreira/cmmv.git"
+    },
+    "author": "Andre Ferreira",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/andrehrferreira/cmmv/issues"
+    },
+    "homepage": "https://cmmv.io",
+    "dependencies": {
+        "@keyv/compress-gzip": "^2.0.2",
+        "@keyv/redis": "^3.0.1",
+        "keyv": "^5.1.0"
+    },
+    "devDependencies": {
+        "@types/keyv": "^4.2.0"
+    }
+}

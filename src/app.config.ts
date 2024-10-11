@@ -81,6 +81,15 @@ Config.assign({
         },
     },
 
+    keyv: {
+        uri: 'redis://localhost:6379',
+        options: {
+            namespace: 'cmmv',
+            ttl: 600,
+            adapter: 'redis',
+        },
+    },
+
     head: {
         title: 'CMMV',
         htmlAttrs: {

@@ -5,6 +5,7 @@
         { "path": "./cache/tsconfig.build.json" },
         { "path": "./core/tsconfig.build.json" },
         { "path": "./http/tsconfig.build.json" },
+        { "path": "./keyv/tsconfig.build.json" },
         { "path": "./protobuf/tsconfig.build.json" },
         { "path": "./queue/tsconfig.build.json" },
         { "path": "./repository/tsconfig.build.json" },
