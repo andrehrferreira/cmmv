@@ -1,6 +1,6 @@
 {
     "name": "@cmmv/http",
-    "version": "0.4.1",
+    "version": "0.4.2",
     "description": "CMMV (@http)",
     "publishConfig": {
         "access": "public"
@@ -25,7 +25,7 @@
         "@cmmv/reactivity": "^0.4.0",
         "@cmmv/server": "^0.4.0",
         "@cmmv/server-static": "^0.4.0",
-        "@cmmv/view": "0.4.1",
+        "@cmmv/view": "0.4.2",
         "@fastify/compress": "^7.0.3",
         "@fastify/cors": "^9.0.1",
         "@fastify/formbody": "^7.4.0",
