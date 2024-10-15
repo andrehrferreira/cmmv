@@ -1,6 +1,6 @@
 {
     "name": "@cmmv/cache",
-    "version": "0.4.3",
+    "version": "0.4.4",
     "description": "CMMV (@cache)",
     "publishConfig": {
         "access": "public"
