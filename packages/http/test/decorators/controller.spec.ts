@@ -1,4 +1,4 @@
-import { strict as assert } from 'assert';
+import { describe, it, expect, beforeEach } from 'vitest';
 import {
     Controller,
     Get,
@@ -25,8 +25,8 @@ describe('Controller Decorators', () => {
         class TestController {}
 
         const controllers = ControllerRegistry.getControllers();
-        assert.strictEqual(controllers.length, 1);
-        assert.strictEqual(controllers[0][1].prefix, '/test');
+        expect(controllers.length).toBe(1);
+        expect(controllers[0][1].prefix).toBe('/test');
     });
 
     it('should register a controller with an empty prefix by default', () => {
@@ -34,8 +34,8 @@ describe('Controller Decorators', () => {
         class TestController {}
 
         const controllers = ControllerRegistry.getControllers();
-        assert.strictEqual(controllers.length, 1);
-        assert.strictEqual(controllers[0][1].prefix, '');
+        expect(controllers.length).toBe(1);
+        expect(controllers[0][1].prefix).toBe('');
     });
 
     it('should register a GET route', () => {
@@ -46,9 +46,9 @@ describe('Controller Decorators', () => {
         }
 
         const routes = ControllerRegistry.getRoutes(TestController);
-        assert.strictEqual(routes.length, 1);
-        assert.strictEqual(routes[0].method, 'get');
-        assert.strictEqual(routes[0].path, '/test-get');
+        expect(routes.length).toBe(1);
+        expect(routes[0].method).toBe('get');
+        expect(routes[0].path).toBe('/test-get');
     });
 
     it('should register a POST route', () => {
@@ -59,9 +59,9 @@ describe('Controller Decorators', () => {
         }
 
         const routes = ControllerRegistry.getRoutes(TestController);
-        assert.strictEqual(routes.length, 1);
-        assert.strictEqual(routes[0].method, 'post');
-        assert.strictEqual(routes[0].path, '/test-post');
+        expect(routes.length).toBe(1);
+        expect(routes[0].method).toBe('post');
+        expect(routes[0].path).toBe('/test-post');
     });
 
     it('should register a PUT route', () => {
@@ -72,9 +72,9 @@ describe('Controller Decorators', () => {
         }
 
         const routes = ControllerRegistry.getRoutes(TestController);
-        assert.strictEqual(routes.length, 1);
-        assert.strictEqual(routes[0].method, 'put');
-        assert.strictEqual(routes[0].path, '/test-put');
+        expect(routes.length).toBe(1);
+        expect(routes[0].method).toBe('put');
+        expect(routes[0].path).toBe('/test-put');
     });
 
     it('should register a DELETE route', () => {
@@ -85,9 +85,9 @@ describe('Controller Decorators', () => {
         }
 
         const routes = ControllerRegistry.getRoutes(TestController);
-        assert.strictEqual(routes.length, 1);
-        assert.strictEqual(routes[0].method, 'delete');
-        assert.strictEqual(routes[0].path, '/test-delete');
+        expect(routes.length).toBe(1);
+        expect(routes[0].method).toBe('delete');
+        expect(routes[0].path).toBe('/test-delete');
     });
 
     it('should register a PATCH route', () => {
@@ -98,9 +98,9 @@ describe('Controller Decorators', () => {
         }
 
         const routes = ControllerRegistry.getRoutes(TestController);
-        assert.strictEqual(routes.length, 1);
-        assert.strictEqual(routes[0].method, 'patch');
-        assert.strictEqual(routes[0].path, '/test-patch');
+        expect(routes.length).toBe(1);
+        expect(routes[0].method).toBe('patch');
+        expect(routes[0].path).toBe('/test-patch');
     });
 
     it('should register a method with a Body parameter', () => {
@@ -113,8 +113,8 @@ describe('Controller Decorators', () => {
             TestController.prototype,
             'test',
         );
-        assert.strictEqual(params.length, 1);
-        assert.strictEqual(params[0].paramType, 'body');
+        expect(params.length).toBe(1);
+        expect(params[0].paramType).toBe('body');
     });
 
     it('should register a method with a Param parameter', () => {
@@ -127,9 +127,9 @@ describe('Controller Decorators', () => {
             TestController.prototype,
             'test',
         );
-        assert.strictEqual(params.length, 1);
-        assert.strictEqual(params[0].paramType, 'param:id');
-        assert.strictEqual(params[0].paramName, 'id');
+        expect(params.length).toBe(1);
+        expect(params[0].paramType).toBe('param:id');
+        expect(params[0].paramName).toBe('id');
     });
 
     it('should register a method with a Query parameter', () => {
@@ -142,9 +142,9 @@ describe('Controller Decorators', () => {
             TestController.prototype,
             'test',
         );
-        assert.strictEqual(params.length, 1);
-        assert.strictEqual(params[0].paramType, 'query:search');
-        assert.strictEqual(params[0].paramName, 'search');
+        expect(params.length).toBe(1);
+        expect(params[0].paramType).toBe('query:search');
+        expect(params[0].paramName).toBe('search');
     });
 
     it('should register a method with a Header parameter', () => {
@@ -157,9 +157,9 @@ describe('Controller Decorators', () => {
             TestController.prototype,
             'test',
         );
-        assert.strictEqual(params.length, 1);
-        assert.strictEqual(params[0].paramType, 'header:authorization');
-        assert.strictEqual(params[0].paramName, 'authorization');
+        expect(params.length).toBe(1);
+        expect(params[0].paramType).toBe('header:authorization');
+        expect(params[0].paramName).toBe('authorization');
     });
 
     it('should register a method with a Request parameter', () => {
@@ -172,8 +172,8 @@ describe('Controller Decorators', () => {
             TestController.prototype,
             'test',
         );
-        assert.strictEqual(params.length, 1);
-        assert.strictEqual(params[0].paramType, 'request');
+        expect(params.length).toBe(1);
+        expect(params[0].paramType).toBe('request');
     });
 
     it('should register a method with a Response parameter', () => {
@@ -186,7 +186,7 @@ describe('Controller Decorators', () => {
             TestController.prototype,
             'test',
         );
-        assert.strictEqual(params.length, 1);
-        assert.strictEqual(params[0].paramType, 'response');
+        expect(params.length).toBe(1);
+        expect(params[0].paramType).toBe('response');
     });
 });

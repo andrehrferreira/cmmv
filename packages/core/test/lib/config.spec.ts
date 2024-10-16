@@ -1,14 +1,14 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { strict as assert } from 'assert';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { Config } from '../../lib/config';
 
-describe('Config', function () {
-    beforeEach(function () {
+describe('Config', () => {
+    beforeEach(() => {
         Config.clear();
     });
 
-    it('should load configuration file correctly', async function () {
+    it('should load configuration file correctly', async () => {
         const configData = { key: 'value', nested: { key: 'nestedValue' } };
         const configPath = path.join(process.cwd(), '.cmmv.test.js');
 
@@ -18,67 +18,64 @@ describe('Config', function () {
         );
 
         Config.loadConfig();
-        assert.deepEqual(Config.getAll(), configData);
+        expect(Config.getAll()).toEqual(configData);
 
         fs.unlinkSync(configPath);
     });
 
-    it('should get a configuration value by key', function () {
+    it('should get a configuration value by key', () => {
         const configData = { key: 'value', nested: { key: 'nestedValue' } };
         Config.assign(configData);
 
-        assert.strictEqual(Config.get('key'), 'value');
-        assert.strictEqual(Config.get('nested.key'), 'nestedValue');
-        assert.strictEqual(Config.get('nonexistent.key'), undefined);
+        expect(Config.get('key')).toBe('value');
+        expect(Config.get('nested.key')).toBe('nestedValue');
+        expect(Config.get('nonexistent.key')).toBeUndefined();
     });
 
-    it('should check if a configuration key exists', function () {
+    it('should check if a configuration key exists', () => {
         const configData = { key: 'value', nested: { key: 'nestedValue' } };
         Config.assign(configData);
 
-        assert.strictEqual(Config.has('key'), true);
-        assert.strictEqual(Config.has('nested.key'), true);
-        assert.strictEqual(Config.has('nonexistent.key'), false);
+        expect(Config.has('key')).toBe(true);
+        expect(Config.has('nested.key')).toBe(true);
+        expect(Config.has('nonexistent.key')).toBe(false);
     });
 
-    it('should set a configuration value by key', function () {
+    it('should set a configuration value by key', () => {
         Config.set('key', 'value');
-        assert.strictEqual(Config.get('key'), 'value');
+        expect(Config.get('key')).toBe('value');
 
         Config.set('nested.key', 'nestedValue');
-        assert.strictEqual(Config.get('nested.key'), 'nestedValue');
+        expect(Config.get('nested.key')).toBe('nestedValue');
     });
 
-    it('should delete a configuration value by key', function () {
+    it('should delete a configuration value by key', () => {
         Config.set('key', 'value');
-        assert.strictEqual(Config.get('key'), 'value');
+        expect(Config.get('key')).toBe('value');
 
         Config.delete('key');
-        assert.strictEqual(Config.get('key'), undefined);
+        expect(Config.get('key')).toBeUndefined();
 
         Config.set('nested.key', 'nestedValue');
-        assert.strictEqual(Config.get('nested.key'), 'nestedValue');
+        expect(Config.get('nested.key')).toBe('nestedValue');
 
         Config.delete('nested.key');
-        assert.strictEqual(Config.get('nested.key'), undefined);
+        expect(Config.get('nested.key')).toBeUndefined();
     });
 
-    it('should return all configuration values', function () {
+    it('should return all configuration values', () => {
         const configData = { key: 'value', nested: { key: 'nestedValue' } };
         Config.assign(configData);
 
-        assert.deepEqual(Config.getAll(), configData);
+        expect(Config.getAll()).toEqual(configData);
     });
 
-    it('should return default value if configuration key does not exist', function () {
+    it('should return default value if configuration key does not exist', () => {
         const defaultValue = 'defaultValue';
-        assert.strictEqual(
-            Config.get('nonexistent.key', defaultValue),
-            defaultValue,
-        );
+        expect(Config.get('nonexistent.key', defaultValue)).toBe(defaultValue);
     });
 
-    it('should merge configurations using assign method', function () {
+    it('should merge configurations using assign method', () => {
         const configData1 = { key1: 'value1' };
         const configData2 = { key2: 'value2', key1: 'newValue1' };
 
@@ -86,28 +83,28 @@ describe('Config', function () {
         Config.assign(configData2);
 
         const expectedConfig = { key1: 'newValue1', key2: 'value2' };
-        assert.deepEqual(Config.getAll(), expectedConfig);
+        expect(Config.getAll()).toEqual(expectedConfig);
     });
 
-    it('should clear all configurations', function () {
+    it('should clear all configurations', () => {
         const configData = { key: 'value', nested: { key: 'nestedValue' } };
         Config.assign(configData);
 
-        assert.deepEqual(Config.getAll(), configData);
+        expect(Config.getAll()).toEqual(configData);
 
         Config.clear();
-        assert.deepEqual(Config.getAll(), {});
+        expect(Config.getAll()).toEqual({});
     });
 
-    it('should handle deeply nested keys in set, get, and delete methods', function () {
+    it('should handle deeply nested keys in set, get, and delete methods', () => {
         Config.set('deep.nested.key', 'deepValue');
-        assert.strictEqual(Config.get('deep.nested.key'), 'deepValue');
+        expect(Config.get('deep.nested.key')).toBe('deepValue');
 
         Config.delete('deep.nested.key');
-        assert.strictEqual(Config.get('deep.nested.key'), undefined);
+        expect(Config.get('deep.nested.key')).toBeUndefined();
     });
 
-    it('should handle missing configuration file gracefully without throwing errors', function () {
+    it('should handle missing configuration file gracefully without throwing errors', () => {
         const nonExistentConfigPath = path.join(
             process.cwd(),
             '.nonexistent.config.js',
@@ -116,19 +113,19 @@ describe('Config', function () {
             fs.unlinkSync(nonExistentConfigPath);
         }
 
-        assert.doesNotThrow(() => {
+        expect(() => {
             Config.loadConfig();
-        });
+        }).not.toThrow();
     });
 
-    it('should handle assigning empty objects', function () {
+    it('should handle assigning empty objects', () => {
         Config.assign({});
-        assert.deepStrictEqual(Config.getAll(), {});
+        expect(Config.getAll()).toEqual({});
 
         Config.assign({ key: 'value' });
-        assert.deepStrictEqual(Config.getAll(), { key: 'value' });
+        expect(Config.getAll()).toEqual({ key: 'value' });
 
         Config.assign({});
-        assert.deepStrictEqual(Config.getAll(), { key: 'value' });
+        expect(Config.getAll()).toEqual({ key: 'value' });
     });
 });

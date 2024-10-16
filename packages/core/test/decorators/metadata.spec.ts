@@ -1,5 +1,5 @@
-import { strict as assert } from 'assert';
-
+import 'reflect-metadata';
+import { describe, it, expect } from 'vitest';
 import {
     SetMetadata,
     CustomDecorator,
@@ -14,7 +14,7 @@ describe('SetMetadata Decorator', () => {
         class TestClass {}
 
         const metadata = Reflect.getMetadata(METADATA_KEY, TestClass);
-        assert.strictEqual(metadata, METADATA_VALUE);
+        expect(metadata).toBe(METADATA_VALUE);
     });
 
     it('should set metadata on a method', () => {
@@ -30,7 +30,7 @@ describe('SetMetadata Decorator', () => {
             METADATA_KEY,
             TestClass.prototype.testMethod,
         );
-        assert.strictEqual(methodMetadata, METADATA_VALUE);
+        expect(methodMetadata).toBe(METADATA_VALUE);
     });
 
     it('should set different metadata on multiple methods', () => {
@@ -57,8 +57,8 @@ describe('SetMetadata Decorator', () => {
             TestClass.prototype.methodTwo,
         );
 
-        assert.strictEqual(methodOneMetadata, METADATA_VALUE1);
-        assert.strictEqual(methodTwoMetadata, METADATA_VALUE2);
+        expect(methodOneMetadata).toBe(METADATA_VALUE1);
+        expect(methodTwoMetadata).toBe(METADATA_VALUE2);
     });
 
     it('should return the decorator with KEY property', () => {
@@ -70,7 +70,7 @@ describe('SetMetadata Decorator', () => {
             METADATA_VALUE,
         );
 
-        assert.strictEqual(decorator.KEY, METADATA_KEY);
+        expect(decorator.KEY).toBe(METADATA_KEY);
     });
 
     it('should apply the decorator on both methods and classes', () => {
@@ -89,8 +89,8 @@ describe('SetMetadata Decorator', () => {
             TestClass.prototype.method,
         );
 
-        assert.strictEqual(classMetadata, METADATA_VALUE);
-        assert.strictEqual(methodMetadata, METADATA_VALUE);
+        expect(classMetadata).toBe(METADATA_VALUE);
+        expect(methodMetadata).toBe(METADATA_VALUE);
     });
 
     it('should return descriptor when applied on a method', () => {
@@ -107,7 +107,7 @@ describe('SetMetadata Decorator', () => {
             'method',
         );
 
-        assert.notStrictEqual(descriptor, undefined);
-        assert.strictEqual(typeof descriptor!.value, 'function');
+        expect(descriptor).not.toBeUndefined();
+        expect(typeof descriptor!.value).toBe('function');
     });
 });

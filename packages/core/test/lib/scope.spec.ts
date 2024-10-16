@@ -1,115 +1,115 @@
-import { strict as assert } from 'assert';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { Scope } from '../../lib/scope';
 
-describe('Scope', function () {
-    beforeEach(function () {
+describe('Scope', () => {
+    beforeEach(() => {
         // Clear any existing data before each test to ensure isolation
         Scope.clear('testData');
         Scope.clear('testArray');
     });
 
-    it('should set and retrieve data by name', function () {
+    it('should set and retrieve data by name', () => {
         const result = Scope.set('testData', { key: 'value' });
-        assert.strictEqual(result, true);
+        expect(result).toBe(true);
 
         const data = Scope.get<{ key: string }>('testData');
-        assert.deepStrictEqual(data, { key: 'value' });
+        expect(data).toEqual({ key: 'value' });
     });
 
-    it('should not overwrite existing data', function () {
+    it('should not overwrite existing data', () => {
         Scope.set('testData', { key: 'value1' });
         const result = Scope.set('testData', { key: 'value2' });
 
-        assert.strictEqual(result, false);
+        expect(result).toBe(false);
         const data = Scope.get<{ key: string }>('testData');
-        assert.deepStrictEqual(data, { key: 'value1' });
+        expect(data).toEqual({ key: 'value1' });
     });
 
-    it('should return true if data exists', function () {
+    it('should return true if data exists', () => {
         Scope.set('testData', { key: 'value' });
-        assert.strictEqual(Scope.has('testData'), true);
+        expect(Scope.has('testData')).toBe(true);
     });
 
-    it('should return false if data does not exist', function () {
-        assert.strictEqual(Scope.has('nonExistentData'), false);
+    it('should return false if data does not exist', () => {
+        expect(Scope.has('nonExistentData')).toBe(false);
     });
 
-    it('should return null for non-existent data', function () {
+    it('should return null for non-existent data', () => {
         const data = Scope.get('nonExistentData');
-        assert.strictEqual(data, null);
+        expect(data).toBe(null);
     });
 
-    it('should clear data by name', function () {
+    it('should clear data by name', () => {
         Scope.set('testData', { key: 'value' });
         Scope.clear('testData');
 
         const data = Scope.get('testData');
-        assert.strictEqual(data, null);
+        expect(data).toBe(null);
     });
 
-    it('should add to an array in scope', function () {
+    it('should add to an array in scope', () => {
         const result1 = Scope.addToArray('testArray', 'value1');
         const result2 = Scope.addToArray('testArray', 'value2');
 
-        assert.strictEqual(result1, true);
-        assert.strictEqual(result2, true);
+        expect(result1).toBe(true);
+        expect(result2).toBe(true);
 
         const array = Scope.getArray<string>('testArray');
-        assert.deepStrictEqual(array, ['value1', 'value2']);
+        expect(array).toEqual(['value1', 'value2']);
     });
 
-    it('should not add to non-array data', function () {
+    it('should not add to non-array data', () => {
         Scope.set('testData', { key: 'value' });
         const result = Scope.addToArray('testData', 'value2');
 
-        assert.strictEqual(result, false);
+        expect(result).toBe(false);
     });
 
-    it('should remove from an array in scope', function () {
+    it('should remove from an array in scope', () => {
         Scope.addToArray('testArray', 'value1');
         Scope.addToArray('testArray', 'value2');
 
         const result = Scope.removeFromArray('testArray', 'value1');
-        assert.strictEqual(result, true);
+        expect(result).toBe(true);
 
         const array = Scope.getArray<string>('testArray');
-        assert.deepStrictEqual(array, ['value2']);
+        expect(array).toEqual(['value2']);
     });
 
-    it('should not remove from non-array data', function () {
+    it('should not remove from non-array data', () => {
         Scope.set('testData', { key: 'value' });
         const result = Scope.removeFromArray('testData', 'value2');
 
-        assert.strictEqual(result, false);
+        expect(result).toBe(false);
     });
 
-    it('should return array from scope', function () {
+    it('should return array from scope', () => {
         Scope.addToArray('testArray', 'value1');
         Scope.addToArray('testArray', 'value2');
 
         const array = Scope.getArray<string>('testArray');
-        assert.deepStrictEqual(array, ['value1', 'value2']);
+        expect(array).toEqual(['value1', 'value2']);
     });
 
-    it('should return null if scope data is not an array', function () {
+    it('should return null if scope data is not an array', () => {
         Scope.set('testData', { key: 'value' });
 
         const array = Scope.getArray<string>('testData');
-        assert.strictEqual(array, null);
+        expect(array).toBe(null);
     });
 
-    it('should return array element by index', function () {
+    it('should return array element by index', () => {
         Scope.addToArray('testArray', 'value1');
         Scope.addToArray('testArray', 'value2');
 
         const element = Scope.getArrayFromIndex<string>('testArray', 1);
-        assert.strictEqual(element, 'value2');
+        expect(element).toBe('value2');
     });
 
-    it('should return null for out of bounds index', function () {
+    it('should return null for out of bounds index', () => {
         Scope.addToArray('testArray', 'value1');
 
         const element = Scope.getArrayFromIndex<string>('testArray', 2);
-        assert.strictEqual(element, null);
+        expect(element).toBe(null);
     });
 });

@@ -1,70 +1,75 @@
-import { strict as assert } from 'assert';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { CacheService } from '../services/cache.service';
-import { Application, Config } from '@cmmv/core';
 import * as cacheManager from 'cache-manager';
 import * as sinon from 'sinon';
 
-describe('CacheService', function () {
-    let sandbox: sinon.SinonSandbox;
+describe('CacheService', () => {
+    let sandbox: any;
 
-    beforeEach(async function () {
-        sandbox = sinon.createSandbox();
+    beforeEach(async () => {
         CacheService.getInstance().manager = await cacheManager.caching(
             'memory',
-            { max: 100, ttl: 10 },
+            {
+                max: 100,
+                ttl: 10,
+            },
         );
+
+        sandbox = vi.spyOn(CacheService.getInstance().manager, 'set');
     });
 
-    afterEach(async function () {
-        await CacheService.getInstance().manager.reset();
+    afterEach(async () => {
+        if (CacheService.getInstance().manager)
+            await CacheService.getInstance().manager.reset();
+
+        vi.restoreAllMocks();
     });
 
-    it('should set a cache key-value pair', async function () {
-        const setSpy = sandbox.spy(CacheService.getInstance().manager, 'set');
-
+    it('should set a cache key-value pair', async () => {
+        const setSpy = vi.spyOn(CacheService.getInstance().manager, 'set');
         const result = await CacheService.set('testKey', 'testValue', 10);
-        assert.strictEqual(result, true);
-        assert(setSpy.calledWith('testKey', 'testValue', 10000));
+        expect(result).toBe(true);
+        expect(setSpy).toHaveBeenCalledWith('testKey', 'testValue', 10000);
     });
 
-    it('should get a cached value by key', async function () {
-        const getStub = sandbox
-            .stub(CacheService.getInstance().manager, 'get')
-            .resolves('testValue');
+    it('should get a cached value by key', async () => {
+        const getStub = vi
+            .spyOn(CacheService.getInstance().manager, 'get')
+            .mockResolvedValue('testValue');
+
         const result = await CacheService.get('testKey');
-
-        assert.strictEqual(result, 'testValue');
-        assert(getStub.calledWith('testKey'));
+        expect(result).toBe('testValue');
+        expect(getStub).toHaveBeenCalledWith('testKey');
     });
 
-    it('should return null when cache key does not exist', async function () {
-        const getStub = sandbox
-            .stub(CacheService.getInstance().manager, 'get')
-            .resolves(null);
+    it('should return null when cache key does not exist', async () => {
+        const getStub = vi
+            .spyOn(CacheService.getInstance().manager, 'get')
+            .mockResolvedValue(null);
+
         const result = await CacheService.get('nonExistentKey');
-
-        assert.strictEqual(result, null);
-        assert(getStub.calledWith('nonExistentKey'));
+        expect(result).toBeNull();
+        expect(getStub).toHaveBeenCalledWith('nonExistentKey');
     });
 
-    it('should delete a cache key', async function () {
+    it('should delete a cache key', async () => {
         await CacheService.set('testKey', 'test');
         const result = await CacheService.del('testKey');
-        assert.strictEqual(result, true);
+        expect(result).toBe(true);
     });
 
-    it('should set a cache key-value pair', async function () {
+    it('should set a cache key-value pair', async () => {
         const result = await CacheService.set('testKey', 'testValue', 10);
         const cachedValue = await CacheService.get('testKey');
 
-        assert.strictEqual(result, true);
-        assert.strictEqual(cachedValue, 'testValue');
+        expect(result).toBe(true);
+        expect(cachedValue).toBe('testValue');
     });
 
-    it('should get a cached value by key', async function () {
+    it('should get a cached value by key', async () => {
         await CacheService.set('testKey', 'testValue', 10);
         const result = await CacheService.get('testKey');
 
-        assert.strictEqual(result, 'testValue');
+        expect(result).toBe('testValue');
     });
 });

@@ -1,16 +1,7 @@
-<div>
-    <button @click="toggleTheme()">
-        <div c-show="styles.theme === 'default'">
-            <icon-dark-mode></icon-dark-mode>
-        </div>
-        <div c-show="styles.theme === 'dark'">
-            <icon-light-mode ></icon-light-mode>
-        </div>
-        Swtich Theme: {{ styles.theme }}
-    </button>
-</div>
-
 <div class="todo-box" scope>
+
+    
+
     <h1 s-i18n="todo"></h1>
 
     <div 
@@ -74,14 +65,12 @@
 </div>
 
 <script s-setup>
-import ComponentTeste from "@components/component.cmmv";
-import IconDarkMode from "@components/iconDarkMode.cmmv";
-import IconLightMode from "@components/iconLightMode.cmmv";
+import SwitchTheme from "@components/switchTheme.cmmv";
 
 export default {
     layout: "default",
 
-    components: { ComponentTeste, IconDarkMode, IconLightMode },
+    components: { SwitchTheme },
 
     head: {
         meta: [

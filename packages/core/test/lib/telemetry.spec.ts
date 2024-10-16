@@ -1,75 +1,75 @@
-import { strict as assert } from 'assert';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { Telemetry } from '../../lib/telemetry';
 
-describe('Telemetry', function () {
+describe('Telemetry', () => {
     const requestId = 'testRequestId';
 
-    beforeEach(function () {
+    beforeEach(() => {
         Telemetry.clearTelemetry(requestId);
     });
 
-    it('should start a telemetry record', function () {
+    it('should start a telemetry record', () => {
         Telemetry.start('TestLabel', requestId);
 
         const records = Telemetry.getTelemetry(requestId);
-        assert(records);
-        assert.strictEqual(records!.length, 1);
-        assert.strictEqual(records![0].label, 'TestLabel');
-        assert.strictEqual(records![0].endTime, undefined);
+        expect(records).toBeTruthy();
+        expect(records!.length).toBe(1);
+        expect(records![0].label).toBe('TestLabel');
+        expect(records![0].endTime).toBeUndefined();
     });
 
-    it('should end a telemetry record', function () {
+    it('should end a telemetry record', () => {
         Telemetry.start('TestLabel', requestId);
         Telemetry.end('TestLabel', requestId);
 
         const records = Telemetry.getTelemetry(requestId);
-        assert(records);
-        assert.strictEqual(records!.length, 1);
-        assert.strictEqual(records![0].label, 'TestLabel');
-        assert.strictEqual(typeof records![0].endTime, 'number');
+        expect(records).toBeTruthy();
+        expect(records!.length).toBe(1);
+        expect(records![0].label).toBe('TestLabel');
+        expect(typeof records![0].endTime).toBe('number');
     });
 
-    it('should not end a non-existent telemetry record', function () {
+    it('should not end a non-existent telemetry record', () => {
         Telemetry.end('NonExistentLabel', requestId);
 
         const records = Telemetry.getTelemetry(requestId);
-        assert.strictEqual(records, null);
+        expect(records).toBeNull();
     });
 
-    it('should register a plugin', function () {
+    it('should register a plugin', () => {
         const plugin = { name: 'TestPlugin' };
         Telemetry.registerPlugin(plugin);
 
         const telemetryInstance = Telemetry.getInstance();
-        assert.strictEqual(telemetryInstance.plugins.length, 1);
-        assert.strictEqual(telemetryInstance.plugins[0], plugin);
+        expect(telemetryInstance.plugins.length).toBe(1);
+        expect(telemetryInstance.plugins[0]).toBe(plugin);
     });
 
-    it('should clear telemetry records', function () {
+    it('should clear telemetry records', () => {
         Telemetry.start('TestLabel', requestId);
         Telemetry.clearTelemetry(requestId);
 
         const records = Telemetry.getTelemetry(requestId);
-        assert.strictEqual(records, null);
+        expect(records).toBeNull();
     });
 
-    it('should generate unique ids for telemetry records', function () {
+    it('should generate unique ids for telemetry records', () => {
         Telemetry.start('TestLabel1', requestId);
         Telemetry.start('TestLabel2', requestId);
 
         const records = Telemetry.getTelemetry(requestId);
-        assert(records);
-        assert.strictEqual(records!.length, 2);
-        assert.notStrictEqual(records![0].id, records![1].id);
+        expect(records).toBeTruthy();
+        expect(records!.length).toBe(2);
+        expect(records![0].id).not.toBe(records![1].id);
     });
 
-    it('should retrieve all telemetry records', function () {
+    it('should retrieve all telemetry records', () => {
         Telemetry.start('TestLabel1', requestId);
         Telemetry.start('TestLabel2', requestId);
 
         const allRecords = Telemetry.getRecords();
-        assert(allRecords);
-        assert.strictEqual(allRecords.size, 1);
-        assert.strictEqual(allRecords.get(requestId)!.length, 2);
+        expect(allRecords).toBeTruthy();
+        expect(allRecords.size).toBe(1);
+        expect(allRecords.get(requestId)!.length).toBe(2);
     });
 });

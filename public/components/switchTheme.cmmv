@@ -1,0 +1,18 @@
+<template>
+    <button @click="toggleTheme()">
+        <div c-show="styles.theme === 'default'">
+            <icon-dark-mode></icon-dark-mode>
+        </div>
+        <div c-show="styles.theme === 'dark'">
+            <icon-light-mode ></icon-light-mode>
+        </div>
+        Swtich Theme: {{ styles.theme }}
+    </button>
+</template>
+
+<script>
+import IconDarkMode from "@components/iconDarkMode.cmmv";
+import IconLightMode from "@components/iconLightMode.cmmv";
+
+export default { name: "switchTheme" }
+</script>

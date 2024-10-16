@@ -1,5 +1,5 @@
-import { strict as assert } from 'assert';
-
+import 'reflect-metadata';
+import { describe, it, expect } from 'vitest';
 import {
     Contract,
     ContractField,
@@ -14,30 +14,22 @@ import {
     CONTROLLER_CACHE,
 } from '../../decorators/contract.decorator';
 
-describe('Contract Decorator', function () {
-    it('should apply default metadata when no options are provided', function () {
+describe('Contract Decorator', () => {
+    it('should apply default metadata when no options are provided', () => {
         @Contract()
         class TestClass {}
 
-        assert.strictEqual(
-            Reflect.getMetadata(CONTRACT_WATERMARK, TestClass),
-            true,
-        );
-        assert.strictEqual(
-            Reflect.getMetadata(CONTROLLER_NAME_METADATA, TestClass),
+        expect(Reflect.getMetadata(CONTRACT_WATERMARK, TestClass)).toBe(true);
+        expect(Reflect.getMetadata(CONTROLLER_NAME_METADATA, TestClass)).toBe(
             'DefaultContract',
         );
-        assert.strictEqual(
-            Reflect.getMetadata(PROTO_PATH_METADATA, TestClass),
+        expect(Reflect.getMetadata(PROTO_PATH_METADATA, TestClass)).toBe(
             'contract.proto',
         );
-        assert.strictEqual(
-            Reflect.getMetadata(PROTO_PACKAGE_METADATA, TestClass),
-            '',
-        );
+        expect(Reflect.getMetadata(PROTO_PACKAGE_METADATA, TestClass)).toBe('');
     });
 
-    it('should apply provided metadata options', function () {
+    it('should apply provided metadata options', () => {
         const options = {
             controllerName: 'CustomContract',
             protoPath: 'custom.proto',
@@ -51,27 +43,21 @@ describe('Contract Decorator', function () {
         @Contract(options)
         class TestClass {}
 
-        assert.strictEqual(
-            Reflect.getMetadata(CONTRACT_WATERMARK, TestClass),
-            true,
-        );
-        assert.strictEqual(
-            Reflect.getMetadata(CONTROLLER_NAME_METADATA, TestClass),
+        expect(Reflect.getMetadata(CONTRACT_WATERMARK, TestClass)).toBe(true);
+        expect(Reflect.getMetadata(CONTROLLER_NAME_METADATA, TestClass)).toBe(
             'CustomContract',
         );
-        assert.strictEqual(
-            Reflect.getMetadata(PROTO_PATH_METADATA, TestClass),
+        expect(Reflect.getMetadata(PROTO_PATH_METADATA, TestClass)).toBe(
             'custom.proto',
         );
-        assert.strictEqual(
-            Reflect.getMetadata(PROTO_PACKAGE_METADATA, TestClass),
+        expect(Reflect.getMetadata(PROTO_PACKAGE_METADATA, TestClass)).toBe(
             'custom.package',
         );
     });
 });
 
-describe('ContractField Decorator', function () {
-    it('should apply field metadata to class properties', function () {
+describe('ContractField Decorator', () => {
+    it('should apply field metadata to class properties', () => {
         const options = {
             protoType: 'string',
             protoRepeated: true,
@@ -95,14 +81,14 @@ describe('ContractField Decorator', function () {
             prototype,
         ).find((field: any) => field.propertyKey === 'testField');
 
-        assert.strictEqual(fieldMetadata.protoType, 'string');
-        assert.strictEqual(fieldMetadata.protoRepeated, true);
-        assert.strictEqual(fieldMetadata.defaultValue, 'default');
-        assert.strictEqual(fieldMetadata.index, true);
-        assert.strictEqual(fieldMetadata.unique, false);
+        expect(fieldMetadata.protoType).toBe('string');
+        expect(fieldMetadata.protoRepeated).toBe(true);
+        expect(fieldMetadata.defaultValue).toBe('default');
+        expect(fieldMetadata.index).toBe(true);
+        expect(fieldMetadata.unique).toBe(false);
     });
 
-    it('should handle multiple fields on the same class', function () {
+    it('should handle multiple fields on the same class', () => {
         class TestClass {
             @ContractField({ protoType: 'string' })
             public field1: string;
@@ -119,20 +105,19 @@ describe('ContractField Decorator', function () {
             FIELD_METADATA,
             prototype,
         ).find((field: any) => field.propertyKey === 'field1');
-
         const field2Metadata = Reflect.getMetadata(
             FIELD_METADATA,
             prototype,
         ).find((field: any) => field.propertyKey === 'field2');
 
-        assert.strictEqual(field1Metadata.protoType, 'string');
-        assert.strictEqual(field2Metadata.protoType, 'int32');
-        assert.strictEqual(field2Metadata.defaultValue, 42);
+        expect(field1Metadata.protoType).toBe('string');
+        expect(field2Metadata.protoType).toBe('int32');
+        expect(field2Metadata.defaultValue).toBe(42);
     });
 });
 
-describe('Contract Decorator Additional Tests', function () {
-    it('should apply auth and cache metadata when provided', function () {
+describe('Contract Decorator Additional Tests', () => {
+    it('should apply auth and cache metadata when provided', () => {
         const options = {
             controllerName: 'AuthContract',
             protoPath: 'auth.proto',
@@ -144,26 +129,23 @@ describe('Contract Decorator Additional Tests', function () {
         @Contract(options)
         class AuthClass {}
 
-        assert.strictEqual(
-            Reflect.getMetadata(CONTROLLER_NAME_METADATA, AuthClass),
+        expect(Reflect.getMetadata(CONTROLLER_NAME_METADATA, AuthClass)).toBe(
             'AuthContract',
         );
-        assert.strictEqual(
-            Reflect.getMetadata(PROTO_PATH_METADATA, AuthClass),
+        expect(Reflect.getMetadata(PROTO_PATH_METADATA, AuthClass)).toBe(
             'auth.proto',
         );
-        assert.strictEqual(
-            Reflect.getMetadata(PROTO_PACKAGE_METADATA, AuthClass),
+        expect(Reflect.getMetadata(PROTO_PACKAGE_METADATA, AuthClass)).toBe(
             'auth.package',
         );
-        assert.strictEqual(Reflect.getMetadata(AUTH_METADATA, AuthClass), true);
-        assert.deepStrictEqual(
-            Reflect.getMetadata(CONTROLLER_CACHE, AuthClass),
-            { key: 'authCacheKey', ttl: 3600 },
-        );
+        expect(Reflect.getMetadata(AUTH_METADATA, AuthClass)).toBe(true);
+        expect(Reflect.getMetadata(CONTROLLER_CACHE, AuthClass)).toEqual({
+            key: 'authCacheKey',
+            ttl: 3600,
+        });
     });
 
-    it('should handle contract imports and custom paths', function () {
+    it('should handle contract imports and custom paths', () => {
         const options = {
             controllerName: 'ImportContract',
             protoPath: 'import.proto',
@@ -174,23 +156,21 @@ describe('Contract Decorator Additional Tests', function () {
         @Contract(options)
         class ImportClass {}
 
-        assert.strictEqual(
-            Reflect.getMetadata(CONTROLLER_NAME_METADATA, ImportClass),
+        expect(Reflect.getMetadata(CONTROLLER_NAME_METADATA, ImportClass)).toBe(
             'ImportContract',
         );
-        assert.deepStrictEqual(
-            Reflect.getMetadata(CONTROLLER_IMPORTS, ImportClass),
-            ['import1', 'import2'],
-        );
-        assert.strictEqual(
+        expect(Reflect.getMetadata(CONTROLLER_IMPORTS, ImportClass)).toEqual([
+            'import1',
+            'import2',
+        ]);
+        expect(
             Reflect.getMetadata(CONTROLLER_CUSTOM_PATH_METADATA, ImportClass),
-            'custom/import/path',
-        );
+        ).toBe('custom/import/path');
     });
 });
 
-describe('ContractField Decorator Additional Tests', function () {
-    it('should apply transform and validation options correctly', function () {
+describe('ContractField Decorator Additional Tests', () => {
+    it('should apply transform and validation options correctly', () => {
         const options = {
             protoType: 'string',
             transform: (value: string) => value.toUpperCase(),
@@ -212,14 +192,14 @@ describe('ContractField Decorator Additional Tests', function () {
             prototype,
         ).find((field: any) => field.propertyKey === 'name');
 
-        assert.strictEqual(fieldMetadata.protoType, 'string');
-        assert.strictEqual(typeof fieldMetadata.transform, 'function');
-        assert.deepStrictEqual(fieldMetadata.validations, [
+        expect(fieldMetadata.protoType).toBe('string');
+        expect(typeof fieldMetadata.transform).toBe('function');
+        expect(fieldMetadata.validations).toEqual([
             { type: 'required', message: 'Field is required' },
         ]);
     });
 
-    it('should apply nullable and exclude options', function () {
+    it('should apply nullable and exclude options', () => {
         const options1 = { protoType: 'string', nullable: true };
         const options2 = { protoType: 'int32', exclude: true };
 
@@ -245,14 +225,14 @@ describe('ContractField Decorator Additional Tests', function () {
             prototype,
         ).find((field: any) => field.propertyKey === 'excludedField');
 
-        assert.strictEqual(field1Metadata.protoType, 'string');
-        assert.strictEqual(field1Metadata.nullable, true);
+        expect(field1Metadata.protoType).toBe('string');
+        expect(field1Metadata.nullable).toBe(true);
 
-        assert.strictEqual(field2Metadata.protoType, 'int32');
-        assert.strictEqual(field2Metadata.exclude, true);
+        expect(field2Metadata.protoType).toBe('int32');
+        expect(field2Metadata.exclude).toBe(true);
     });
 
-    it('should handle toClassOnly option correctly', function () {
+    it('should handle toClassOnly option correctly', () => {
         const options = { protoType: 'string', toClassOnly: true };
 
         @Contract()
@@ -270,7 +250,7 @@ describe('ContractField Decorator Additional Tests', function () {
             prototype,
         ).find((field: any) => field.propertyKey === 'classOnlyField');
 
-        assert.strictEqual(fieldMetadata.protoType, 'string');
-        assert.strictEqual(fieldMetadata.toClassOnly, true);
+        expect(fieldMetadata.protoType).toBe('string');
+        expect(fieldMetadata.toClassOnly).toBe(true);
     });
 });

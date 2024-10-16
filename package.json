@@ -11,12 +11,12 @@
 		"build:prod": "rm -rf ./packages/**/*.tsbuildinfo && tsc -b -v packages",
 		"prod:packages": "tsc -b -v packages",
 		"build:test": "rm -rf ./packages/**/*.tsbuildinfo && tsc -b -v packages",
-		"dev": "rm -rf ./node_modules/@cmmv && NODE_ENV=dev nodemon",
+		"dev": "./cleanupPackages.sh && pnpm run clean && NODE_ENV=dev nodemon",
 		"clean:tsfiles": "find ./src -type f \\( -name '*.d.ts' -o -name '*.js' \\) -exec rm -f {} +",
 		"clean:packages": "find ./packages -name 'node_modules' -prune -o -type f \\( -name '*.d.ts' -o -name '*.js' \\) -exec rm -f {} +",
 		"clean": "pnpm run clean:tsfiles && pnpm run clean:packages > /dev/null 2>&1",
 		"format": "prettier \"**/*.ts\" \"packages/**/*.json\" --ignore-path ./.prettierignore --write && git status",
-		"test": "pnpm run build:test && pnpm run packages:move && mocha && pnpm run clean",
+		"test": "vitest",
 		"test:dev": "mocha -w --watch-files \"packages\" packages/**/*.spec.js",
 		"test:cov": "nyc mocha packages/**/*.spec.ts --reporter spec",
 		"lint": "concurrently 'pnpm run lint:packages' 'pnpm run lint:spec'",
@@ -47,13 +47,6 @@
 	},
 	"engines": {
 		"node": ">= 18.2.0"
-	},
-	"mocha": {
-		"require": [
-			"node_modules/reflect-metadata/Reflect.js",
-			"hooks/mocha-init-hook.js"
-		],
-		"exit": true
 	},
 	"changelog": {
 		"labels": {
@@ -119,7 +112,6 @@
 		"lint-staged": "^15.2.10",
 		"listhen": "^1.7.2",
 		"markdown-table": "^3.0.3",
-		"mocha": "^10.7.3",
 		"nodemon": "^3.1.4",
 		"npm-run-all": "^4.1.5",
 		"nyc": "^17.0.0",
@@ -128,11 +120,10 @@
 		"sqlite3": "^5.1.7",
 		"supertest": "^7.0.0",
 		"terser": "^5.32.0",
-		"ts-node": "^10.9.2",
-		"tsconfig-paths": "^4.2.0",
 		"typeorm": "^0.3.6",
 		"typescript": "^5.6.2",
 		"uglify-js": "^3.19.3",
+		"vitest": "^2.1.3",
 		"ws": "^8.18.0"
 	},
 	"dependencies": {
@@ -142,7 +133,7 @@
 		"@cmmv/cors": "^0.4.2",
 		"@cmmv/etag": "^0.4.2",
 		"@cmmv/helmet": "^0.4.2",
-		"@cmmv/reactivity": "^0.4.2",
+		"@cmmv/reactivity": "^0.4.6",
 		"@cmmv/server": "^0.4.2",
 		"@cmmv/server-static": "^0.4.2",
 		"@fastify/compress": "^8.0.1",

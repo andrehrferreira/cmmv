@@ -1,4 +1,4 @@
-import { strict as assert } from 'assert';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { Application } from '../../lib/application';
 import { AbstractWSAdapter } from '../../abstracts/ws-adapter.abstract';
 import { AbstractHttpAdapter } from '../../abstracts/http-adapter.abstract';
@@ -23,12 +23,12 @@ class TestWSAdapter extends AbstractWSAdapter {
     }
 }
 
-describe('AbstractWSAdapter', function () {
+describe('AbstractWSAdapter', () => {
     let appMock;
     let httpServerMock;
     let wsAdapter;
 
-    beforeEach(function () {
+    beforeEach(() => {
         httpServerMock = { listen: () => {} };
         appMock = {
             getUnderlyingHttpServer: () => httpServerMock,
@@ -36,12 +36,12 @@ describe('AbstractWSAdapter', function () {
         wsAdapter = new TestWSAdapter(appMock);
     });
 
-    it('should initialize with an HTTP server instance', function () {
+    it('should initialize with an HTTP server instance', () => {
         const adapterWithHttp = new TestWSAdapter(httpServerMock);
-        assert.strictEqual(adapterWithHttp.httpServer, httpServerMock);
+        expect(adapterWithHttp.httpServer).toBe(httpServerMock);
     });
 
-    it('should correctly call the create method with server and application', function () {
+    it('should correctly call the create method with server and application', () => {
         const serverMock = {};
         const applicationMock = {};
         const options = { optionKey: 'optionValue' };
@@ -52,8 +52,8 @@ describe('AbstractWSAdapter', function () {
             options,
         );
 
-        assert.strictEqual(result.server, serverMock);
-        assert.strictEqual(result.application, applicationMock);
-        assert.strictEqual(result.options.optionKey, 'optionValue');
+        expect(result.server).toBe(serverMock);
+        expect(result.application).toBe(applicationMock);
+        expect(result.options.optionKey).toBe('optionValue');
     });
 });

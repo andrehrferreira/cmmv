@@ -1,51 +1,51 @@
-import { strict as assert } from 'assert';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { ServiceRegistry } from '../../registries/service.registry';
 
 class TestService {}
 
-describe('ServiceRegistry', function () {
-    beforeEach(function () {
+describe('ServiceRegistry', () => {
+    beforeEach(() => {
         ServiceRegistry.clear();
     });
 
-    it('should register a service with the given name', function () {
+    it('should register a service with the given name', () => {
         ServiceRegistry.registerService(TestService, 'TestService');
         const services = ServiceRegistry.getServices();
 
-        assert.strictEqual(services.length, 1);
-        assert.strictEqual(services[0][1].name, 'TestService');
+        expect(services.length).toBe(1);
+        expect(services[0][1].name).toBe('TestService');
     });
 
-    it('should return the correct service by name', function () {
+    it('should return the correct service by name', () => {
         ServiceRegistry.registerService(TestService, 'TestService');
         const service = ServiceRegistry.getService('TestService');
 
-        assert.strictEqual(service, TestService);
+        expect(service).toBe(TestService);
     });
 
-    it('should return undefined for a non-existent service', function () {
+    it('should return undefined for a non-existent service', () => {
         const service = ServiceRegistry.getService('NonExistentService');
 
-        assert.strictEqual(service, undefined);
+        expect(service).toBeUndefined();
     });
 
-    it('should return all registered services', function () {
+    it('should return all registered services', () => {
         class AnotherService {}
         ServiceRegistry.registerService(TestService, 'TestService');
         ServiceRegistry.registerService(AnotherService, 'AnotherService');
 
         const services = ServiceRegistry.getServices();
 
-        assert.strictEqual(services.length, 2);
-        assert.strictEqual(services[0][1].name, 'TestService');
-        assert.strictEqual(services[1][1].name, 'AnotherService');
+        expect(services.length).toBe(2);
+        expect(services[0][1].name).toBe('TestService');
+        expect(services[1][1].name).toBe('AnotherService');
     });
 
-    it('should clear all registered services', function () {
+    it('should clear all registered services', () => {
         ServiceRegistry.registerService(TestService, 'TestService');
         ServiceRegistry.clear();
 
         const services = ServiceRegistry.getServices();
-        assert.strictEqual(services.length, 0);
+        expect(services.length).toBe(0);
     });
 });

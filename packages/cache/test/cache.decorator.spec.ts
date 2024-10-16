@@ -1,10 +1,10 @@
-import { strict as assert } from 'assert';
+import { describe, it, expect } from 'vitest';
 import { CacheRegistry } from '../registries/cache.registry';
 import { Cache } from '../decorators/cache.decorator';
 import 'reflect-metadata';
 
-describe('Cache Decorator', function () {
-    it('should register a cache handler with the correct key and options', function () {
+describe('Cache Decorator', () => {
+    it('should register a cache handler with the correct key and options', () => {
         class TestClass {
             @Cache('testKey', { ttl: 300, compress: true })
             public testMethod() {
@@ -18,14 +18,14 @@ describe('Cache Decorator', function () {
             instance.testMethod,
         );
 
-        assert.deepStrictEqual(metadata, {
+        expect(metadata).toEqual({
             handler: 'testMethod',
             key: 'testKey',
             options: { ttl: 300, compress: true },
         });
     });
 
-    it('should register a cache handler without options', function () {
+    it('should register a cache handler without options', () => {
         class TestClass {
             @Cache('testKey')
             public testMethod() {
@@ -39,14 +39,14 @@ describe('Cache Decorator', function () {
             instance.testMethod,
         );
 
-        assert.deepStrictEqual(metadata, {
+        expect(metadata).toEqual({
             handler: 'testMethod',
             key: 'testKey',
             options: undefined,
         });
     });
 
-    it('should register handler for a method without crashing', function () {
+    it('should register handler for a method without crashing', () => {
         class TestClass {
             @Cache('simpleKey')
             public simpleMethod() {
@@ -60,11 +60,11 @@ describe('Cache Decorator', function () {
             instance.simpleMethod,
         );
 
-        assert.strictEqual(metadata.key, 'simpleKey');
-        assert.strictEqual(metadata.handler, 'simpleMethod');
+        expect(metadata.key).toBe('simpleKey');
+        expect(metadata.handler).toBe('simpleMethod');
     });
 
-    it('should call the cached method correctly', function () {
+    it('should call the cached method correctly', () => {
         class TestClass {
             @Cache('methodKey', { ttl: 500 })
             public cachedMethod(a: number, b: number) {
@@ -75,10 +75,10 @@ describe('Cache Decorator', function () {
         const instance = new TestClass();
         const result = instance.cachedMethod(2, 3);
 
-        assert.strictEqual(result, 5);
+        expect(result).toBe(5);
     });
 
-    it('should handle multiple methods with different cache keys', function () {
+    it('should handle multiple methods with different cache keys', () => {
         class TestClass {
             @Cache('keyOne', { ttl: 300 })
             public methodOne() {
@@ -101,13 +101,13 @@ describe('Cache Decorator', function () {
             instance.methodTwo,
         );
 
-        assert.strictEqual(methodOneMetadata.key, 'keyOne');
-        assert.strictEqual(methodTwoMetadata.key, 'keyTwo');
-        assert.strictEqual(methodOneMetadata.options.ttl, 300);
-        assert.strictEqual(methodTwoMetadata.options.ttl, 600);
+        expect(methodOneMetadata.key).toBe('keyOne');
+        expect(methodTwoMetadata.key).toBe('keyTwo');
+        expect(methodOneMetadata.options.ttl).toBe(300);
+        expect(methodTwoMetadata.options.ttl).toBe(600);
     });
 
-    it('should support cache options with compression enabled', function () {
+    it('should support cache options with compression enabled', () => {
         class TestClass {
             @Cache('compressKey', { compress: true })
             public compressedMethod() {
@@ -121,11 +121,11 @@ describe('Cache Decorator', function () {
             instance.compressedMethod,
         );
 
-        assert.strictEqual(metadata.key, 'compressKey');
-        assert.strictEqual(metadata.options.compress, true);
+        expect(metadata.key).toBe('compressKey');
+        expect(metadata.options.compress).toBe(true);
     });
 
-    it('should apply cache metadata even with a complex cache key structure', function () {
+    it('should apply cache metadata even with a complex cache key structure', () => {
         class TestClass {
             @Cache('complex:key:structure', { ttl: 400 })
             public complexKeyMethod() {
@@ -139,7 +139,7 @@ describe('Cache Decorator', function () {
             instance.complexKeyMethod,
         );
 
-        assert.strictEqual(metadata.key, 'complex:key:structure');
-        assert.strictEqual(metadata.options.ttl, 400);
+        expect(metadata.key).toBe('complex:key:structure');
+        expect(metadata.options.ttl).toBe(400);
     });
 });

@@ -1,4 +1,4 @@
-import { strict as assert } from 'assert';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { ControllerRegistry } from '../../utils/controller-registry.utils';
 
 class TestController {
@@ -14,8 +14,8 @@ describe('ControllerRegistry', function () {
         ControllerRegistry.registerController(TestController, '/test');
         const controllers = ControllerRegistry.getControllers();
 
-        assert.strictEqual(controllers.length, 1);
-        assert.strictEqual(controllers[0][1].prefix, '/test');
+        expect(controllers.length).toBe(1);
+        expect(controllers[0][1].prefix).toBe('/test');
     });
 
     it('should register a route for the controller', function () {
@@ -29,10 +29,10 @@ describe('ControllerRegistry', function () {
 
         const routes = ControllerRegistry.getRoutes(TestController);
 
-        assert.strictEqual(routes.length, 1);
-        assert.strictEqual(routes[0].method, 'get');
-        assert.strictEqual(routes[0].path, '/path');
-        assert.strictEqual(routes[0].handlerName, 'testMethod');
+        expect(routes.length).toBe(1);
+        expect(routes[0].method).toBe('get');
+        expect(routes[0].path).toBe('/path');
+        expect(routes[0].handlerName).toBe('testMethod');
     });
 
     it('should update the method and path if the route already exists', function () {
@@ -52,9 +52,9 @@ describe('ControllerRegistry', function () {
 
         const routes = ControllerRegistry.getRoutes(TestController);
 
-        assert.strictEqual(routes.length, 1);
-        assert.strictEqual(routes[0].method, 'post');
-        assert.strictEqual(routes[0].path, '/newpath');
+        expect(routes.length).toBe(1);
+        expect(routes[0].method).toBe('post');
+        expect(routes[0].path).toBe('/newpath');
     });
 
     it('should register a parameter for a route handler', function () {
@@ -78,15 +78,15 @@ describe('ControllerRegistry', function () {
             'testMethod',
         );
 
-        assert.strictEqual(params.length, 1);
-        assert.strictEqual(params[0].paramType, 'param');
-        assert.strictEqual(params[0].index, 0);
-        assert.strictEqual(params[0].paramName, 'id');
+        expect(params.length).toBe(1);
+        expect(params[0].paramType).toBe('param');
+        expect(params[0].index).toBe(0);
+        expect(params[0].paramName).toBe('id');
     });
 
     it('should return an empty array if no routes are registered for a controller', function () {
         const routes = ControllerRegistry.getRoutes(TestController);
-        assert.strictEqual(routes.length, 0);
+        expect(routes.length).toBe(0);
     });
 
     it('should return an empty array if no params are registered for a route handler', function () {
@@ -94,7 +94,7 @@ describe('ControllerRegistry', function () {
             TestController.prototype,
             'nonExistentMethod',
         );
-        assert.strictEqual(params.length, 0);
+        expect(params.length).toBe(0);
     });
 
     it('should clear all registered controllers and routes', function () {
@@ -109,6 +109,6 @@ describe('ControllerRegistry', function () {
         ControllerRegistry.clear();
         const controllers = ControllerRegistry.getControllers();
 
-        assert.strictEqual(controllers.length, 0);
+        expect(controllers.length).toBe(0);
     });
 });

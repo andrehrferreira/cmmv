@@ -1,9 +1,9 @@
-import { strict as assert } from 'assert';
+import { describe, it, expect } from 'vitest';
 import 'reflect-metadata';
 import { CacheRegistry } from '../registries/cache.registry';
 
-describe('CacheRegistry', function () {
-    it('should register cache handler metadata correctly', function () {
+describe('CacheRegistry', () => {
+    it('should register cache handler metadata correctly', () => {
         class TestClass {}
         const context = TestClass.prototype;
         const key = 'cacheKey';
@@ -20,14 +20,14 @@ describe('CacheRegistry', function () {
 
         const metadata = Reflect.getMetadata('cache_metadata', context);
 
-        assert.deepStrictEqual(metadata, {
+        expect(metadata).toEqual({
             handler: handlerName,
             key: key,
             options: options,
         });
     });
 
-    it('should register handler metadata without options', function () {
+    it('should register handler metadata without options', () => {
         class TestClass {}
         const context = TestClass.prototype;
         const key = 'cacheKey';
@@ -43,7 +43,7 @@ describe('CacheRegistry', function () {
 
         const metadata = Reflect.getMetadata('cache_metadata', context);
 
-        assert.deepStrictEqual(metadata, {
+        expect(metadata).toEqual({
             handler: handlerName,
             key: key,
             options: undefined,

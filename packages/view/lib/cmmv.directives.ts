@@ -122,16 +122,53 @@ function resolveImport(filename): string {
         const templateMatch = src.match(/<template>([\s\S]*?)<\/template>/);
         const scriptMatch = src.match(/<script.*?>([\s\S]*?)<\/script>/);
         const styleMatch = src.match(/<style.*?>([\s\S]*?)<\/style>/);
+        const importRegex = /import\s+([^;]+?)\s+from\s+['"]([^'"]+)['"];/g;
+        const importMatch = src.match(
+            /import\s+([^;]+?)\s+from\s+['"]([^'"]+)['"];/g,
+        );
 
         const template = templateMatch ? templateMatch[1].trim() : '';
         const style = styleMatch ? styleMatch[1].trim() : '';
         let scriptContent = scriptMatch ? scriptMatch[1].trim() : '';
+        const imports = {};
+
+        scriptContent.replace(importRegex, (_, imported, from) => {
+            const filename = from
+                .replace('./', './view')
+                .replace('@/', './components/')
+                .replace('@components/', './components/');
+
+            imported.split(',').forEach(part => {
+                const cleanedImport = part.trim();
+
+                if (cleanedImport.startsWith('{')) {
+                    const destructured = cleanedImport
+                        .replace(/[{}]/g, '')
+                        .split(',')
+                        .map(name => `${name.trim()}: ${name.trim()}`)
+                        .join(', ');
+
+                    imports[destructured] = resolveImport(filename);
+                } else {
+                    imports[cleanedImport] = resolveImport(filename);
+                }
+            });
+
+            return '';
+        });
+
+        const componentObjectString = Object.keys(imports)
+            .map(key => `${key}: ${imports[key]}`)
+            .join(', ');
 
         if (scriptContent.includes('export default')) {
-            scriptContent = scriptContent.replace(
-                /export default\s*{([\s\S]*?)}/,
-                `{ template: \`${template}\`, styles: \`${style}\`, $1 }`,
-            );
+            scriptContent = scriptContent
+                .replace(importRegex, '')
+                .replace(
+                    /export default\s*{([\s\S]*?)}/,
+                    `{ template: \`${template}\`, components: { ${componentObjectString} },  styles: \`${style}\`, $1 }`,
+                );
+            //
         }
 
         return scriptContent;
@@ -161,6 +198,7 @@ export const extractSetupScript = async (
 
                 imported.split(',').forEach(part => {
                     const cleanedImport = part.trim();
+
                     if (cleanedImport.startsWith('{')) {
                         const destructured = cleanedImport
                             .replace(/[{}]/g, '')

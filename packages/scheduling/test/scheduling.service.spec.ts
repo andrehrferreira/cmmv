@@ -1,4 +1,4 @@
-import { strict as assert } from 'assert';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { Scope, Service } from '@cmmv/core';
 import { SchedulingService } from '../services/scheduling.service';
 import { Cron } from '../decorators/scheduling.decorator';
@@ -45,8 +45,8 @@ class MockSchedulingManager extends SchedulingManager {
 
 (global as any).SchedulingManager = MockSchedulingManager;
 
-describe('SchedulingService with SchedulingManager', function () {
-    it('should register a cron job with the correct schedule', function () {
+describe('SchedulingService with SchedulingManager', () => {
+    it('should register a cron job with the correct schedule', () => {
         @Service()
         class TestClass {
             @Cron('*/5 * * * * *')
@@ -59,19 +59,11 @@ describe('SchedulingService with SchedulingManager', function () {
         SchedulingService.loadConfig();
 
         const registeredCron = Scope.getArray('__crons');
-        assert.strictEqual(
-            registeredCron.length,
-            1,
-            'Should have 1 registered cron job',
-        );
-        assert.strictEqual(
-            registeredCron[0].cronTime,
-            '*/5 * * * * *',
-            'Cron time should match the provided pattern',
-        );
+        expect(registeredCron.length).toBe(1);
+        expect(registeredCron[0].cronTime).toBe('*/5 * * * * *');
     });
 
-    it('should correctly execute the cron job and maintain the correct "this" context', function () {
+    it('should correctly execute the cron job and maintain the correct "this" context', () => {
         const mockFunction = function (this: any) {
             this.called = true;
         };
@@ -92,10 +84,6 @@ describe('SchedulingService with SchedulingManager', function () {
         const testClass = new TestClass();
         testClass.handleCron();
 
-        assert.strictEqual(
-            instance.called,
-            true,
-            'Cron should have been called with correct "this" context',
-        );
+        expect(instance.called).toBe(true);
     });
 });

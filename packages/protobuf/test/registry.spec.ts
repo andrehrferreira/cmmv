@@ -1,14 +1,12 @@
-import { strict as assert } from 'assert';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as protobuf from 'protobufjs';
 import { ProtoRegistry } from '../registries/protobuf.registry';
-import * as path from 'path';
-import * as fs from 'fs';
 import * as sinon from 'sinon';
 
-describe('ProtoRegistry', function () {
+describe('ProtoRegistry', () => {
     let sandbox: sinon.SinonSandbox;
 
-    beforeEach(function () {
+    beforeEach(() => {
         ProtoRegistry.getInstance().protos.clear();
         ProtoRegistry.getInstance().index.clear();
         ProtoRegistry.getInstance().contracts.clear();
@@ -16,85 +14,82 @@ describe('ProtoRegistry', function () {
         sandbox = sinon.createSandbox();
     });
 
-    afterEach(function () {
+    afterEach(() => {
         sandbox.restore();
     });
 
-    it('should register a proto file correctly', async function () {
+    it('should register a proto file correctly', async () => {
         const root = new protobuf.Root();
         const contract = 'syntax = "proto3";\nmessage TestMessage {}';
 
         ProtoRegistry.register('TestProto', root, contract);
 
-        assert.strictEqual(ProtoRegistry.retrieve('TestProto'), root);
-        assert.strictEqual(
-            ProtoRegistry.retrieveContract('TestProto'),
-            contract,
-        );
+        expect(ProtoRegistry.retrieve('TestProto')).toBe(root);
+        expect(ProtoRegistry.retrieveContract('TestProto')).toBe(contract);
     });
 
-    it('should retrieve proto by key', function () {
+    it('should retrieve proto by key', () => {
         const root = new protobuf.Root();
         ProtoRegistry.getInstance().protos.set('TestProto', root);
 
         const result = ProtoRegistry.retrieve('TestProto');
-        assert.strictEqual(result, root);
+        expect(result).toBe(root);
     });
 
-    it('should return null if proto not found', function () {
+    it('should return null if proto not found', () => {
         const result = ProtoRegistry.retrieve('NonExistentProto');
-        assert.strictEqual(result, null);
+        expect(result).toBeNull();
     });
 
-    it('should retrieve contract by key', function () {
+    it('should retrieve contract by key', () => {
         const contract = 'syntax = "proto3";\nmessage TestMessage {}';
         ProtoRegistry.getInstance().contracts.set('TestProto', contract);
 
         const result = ProtoRegistry.retrieveContract('TestProto');
-        assert.strictEqual(result, contract);
+        expect(result).toBe(contract);
     });
 
-    it('should return null if contract not found', function () {
+    it('should return null if contract not found', () => {
         const result = ProtoRegistry.retrieveContract('NonExistentProto');
-        assert.strictEqual(result, null);
+        expect(result).toBeNull();
     });
 
-    it('should retrieve types by key and message', function () {
+    it('should retrieve types by key and message', () => {
         const typesMap = { TestMessage: 0 };
         ProtoRegistry.getInstance().types.set('TestProto', typesMap);
 
         const result = ProtoRegistry.retrieveTypes('TestProto', 'TestMessage');
-        assert.strictEqual(result, 0);
+        expect(result).toBe(0);
     });
 
-    it('should return null if types not found', function () {
+    it('should return null if types not found', () => {
         const result = ProtoRegistry.retrieveTypes(
             'NonExistentProto',
             'TestMessage',
         );
-        assert.strictEqual(result, null);
+        expect(result).toBeNull();
     });
 
-    it('should retrieve contract name by index', function () {
+    it('should retrieve contract name by index', () => {
         ProtoRegistry.getInstance().index.set(0, 'TestProto');
         const result = ProtoRegistry.retrieveContractName(0);
-        assert.strictEqual(result, 'TestProto');
+        expect(result).toBe('TestProto');
     });
 
-    it('should retrieve proto by index', function () {
+    it('should retrieve proto by index', () => {
         const root = new protobuf.Root();
         ProtoRegistry.getInstance().protos.set('TestProto', root);
         ProtoRegistry.getInstance().index.set(0, 'TestProto');
 
         const result = ProtoRegistry.retrieveByIndex(0);
-        assert.strictEqual(result, root);
+        expect(result).toBe(root);
     });
 
-    it('should retrieve all contracts', function () {
+    it('should retrieve all contracts', () => {
         const contract = 'syntax = "proto3";\nmessage TestMessage {}';
         ProtoRegistry.getInstance().contracts.set('TestProto', contract);
 
         const result = ProtoRegistry.retrieveAll();
-        assert.deepStrictEqual(result, { TestProto: contract });
+        expect(result).toEqual({ TestProto: contract });
     });
 });

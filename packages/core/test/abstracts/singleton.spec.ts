@@ -1,42 +1,42 @@
-import { strict as assert } from 'assert';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { Singleton } from '../../abstracts/singleton.abstract.js';
 
-describe('Singleton', function () {
+describe('Singleton', () => {
     let MySingleton;
 
-    before(async function () {
+    beforeEach(() => {
         MySingleton = class extends Singleton {};
     });
 
-    it('should return the same instance when getInstance is called twice', function () {
+    it('should return the same instance when getInstance is called twice', () => {
         const instance1 = MySingleton.getInstance();
         const instance2 = MySingleton.getInstance();
 
-        assert.strictEqual(instance1, instance2);
-        assert(instance1 instanceof MySingleton);
+        expect(instance1).toBe(instance2);
+        expect(instance1).toBeInstanceOf(MySingleton);
     });
 
-    it('should create a new instance after clearInstance is called', function () {
+    it('should create a new instance after clearInstance is called', () => {
         const instance1 = MySingleton.getInstance();
         MySingleton.clearInstance();
         const instance2 = MySingleton.getInstance();
 
-        assert.notStrictEqual(instance1, instance2);
-        assert(instance2 instanceof MySingleton);
+        expect(instance1).not.toBe(instance2);
+        expect(instance2).toBeInstanceOf(MySingleton);
     });
 
-    it('should maintain instance per subclass', function () {
+    it('should maintain instance per subclass', () => {
         const AnotherSingleton = class extends Singleton {};
 
         const instance1 = MySingleton.getInstance();
         const instance2 = AnotherSingleton.getInstance();
 
-        assert.notStrictEqual(instance1, instance2);
-        assert(instance1 instanceof MySingleton);
-        assert(instance2 instanceof AnotherSingleton);
+        expect(instance1).not.toBe(instance2);
+        expect(instance1).toBeInstanceOf(Singleton);
+        expect(instance2).toBeInstanceOf(AnotherSingleton);
     });
 
-    it('should throw an error if instantiation fails', function () {
+    it('should throw an error if instantiation fails', () => {
         const ErrorSingleton = class extends Singleton {
             constructor() {
                 super();
@@ -44,12 +44,14 @@ describe('Singleton', function () {
             }
         };
 
-        assert.throws(() => {
+        expect(() => {
             ErrorSingleton.getInstance();
-        }, /Failed to create an instance of ErrorSingleton: Error: Failed to initialize/);
+        }).toThrow(
+            'Failed to create an instance of ErrorSingleton: Error: Failed to initialize',
+        );
     });
 
-    it('should handle multiple instances of different classes independently', function () {
+    it('should handle multiple instances of different classes independently', () => {
         const AnotherSingleton = class extends Singleton {};
 
         const instance1 = MySingleton.getInstance();
@@ -57,24 +59,24 @@ describe('Singleton', function () {
         const instance3 = MySingleton.getInstance();
         const instance4 = AnotherSingleton.getInstance();
 
-        assert.strictEqual(instance1, instance3);
-        assert.strictEqual(instance2, instance4);
-        assert.notStrictEqual(instance1, instance2);
+        expect(instance1).toBe(instance3);
+        expect(instance2).toBe(instance4);
+        expect(instance1).not.toBe(instance2);
     });
 
-    it('should properly clear instance and create a new one', function () {
+    it('should properly clear instance and create a new one', () => {
         const instance1 = MySingleton.getInstance();
         MySingleton.clearInstance();
         const instance2 = MySingleton.getInstance();
 
-        assert.notStrictEqual(instance1, instance2);
-        assert(instance2 instanceof MySingleton);
+        expect(instance1).not.toBe(instance2);
+        expect(instance2).toBeInstanceOf(MySingleton);
     });
 
-    it('should not fail when clearing a non-existent instance', function () {
+    it('should not fail when clearing a non-existent instance', () => {
         const AnotherSingleton = class extends Singleton {};
         AnotherSingleton.clearInstance(); // No instance exists, but shouldn't throw
         const instance = AnotherSingleton.getInstance();
-        assert(instance instanceof AnotherSingleton);
+        expect(instance).toBeInstanceOf(AnotherSingleton);
     });
 });

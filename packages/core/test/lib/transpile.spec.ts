@@ -1,4 +1,4 @@
-import { strict as assert } from 'assert';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { Transpile, ITranspile } from '../../lib/transpile';
 
 class MockTranspiler1 implements ITranspile {
@@ -19,43 +19,40 @@ class FailingTranspiler implements ITranspile {
     }
 }
 
-describe('Transpile', function () {
+describe('Transpile', () => {
     let transpileInstance: Transpile;
 
-    beforeEach(function () {
+    beforeEach(() => {
         transpileInstance = new Transpile();
     });
 
-    it('should add a transpiler to the list', function () {
+    it('should add a transpiler to the list', () => {
         transpileInstance.add(MockTranspiler1);
 
-        assert.strictEqual((transpileInstance as any).transpilers.length, 1);
-        assert.strictEqual(
-            (transpileInstance as any).transpilers[0],
-            MockTranspiler1,
-        );
+        expect((transpileInstance as any).transpilers.length).toBe(1);
+        expect((transpileInstance as any).transpilers[0]).toBe(MockTranspiler1);
     });
 
-    it('should execute all transpilers successfully', async function () {
+    it('should execute all transpilers successfully', async () => {
         transpileInstance.add(MockTranspiler1);
         transpileInstance.add(MockTranspiler2);
 
         const results = await transpileInstance.transpile();
 
-        assert.strictEqual(results.length, 2);
-        assert.strictEqual(results[0], 'Transpiler1 executed');
-        assert.strictEqual(results[1], 'Transpiler2 executed');
+        expect(results.length).toBe(2);
+        expect(results[0]).toBe('Transpiler1 executed');
+        expect(results[1]).toBe('Transpiler2 executed');
     });
 
-    it('should throw an error if a transpiler fails', async function () {
+    it('should throw an error if a transpiler fails', async () => {
         transpileInstance.add(MockTranspiler1);
         transpileInstance.add(FailingTranspiler);
 
         try {
             await transpileInstance.transpile();
-            assert.fail('Expected an error to be thrown');
-        } catch (error) {
-            assert.strictEqual(error.message, 'Transpiler failed');
+            expect.fail('Expected an error to be thrown');
+        } catch (error: any) {
+            expect(error.message).toBe('Transpiler failed');
         }
     });
 });
