@@ -27,7 +27,7 @@ aliases:
   - &run-unit-tests
     run:
       name: Run unit tests
-      command: pnpm exec ts-node --transpile-only ./node_modules/.bin/vitest run
+      command: pnpm run test
 
 jobs:
   build:
