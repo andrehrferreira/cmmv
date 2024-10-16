@@ -1,6 +1,5 @@
 {
-	"name": "@cmmv/core",
-	"version": "0.2.29",
+	"name": "cmmv",
 	"description": "Contract-Model-Model-View (CMMV) - Minimalistic Node.js Server Framework",
 	"scripts": {
 		"prebuild": "rimraf dist && pnpm run clean",
@@ -42,9 +41,6 @@
 		"url": "https://github.com/andrehrferreira/cmmv/issues"
 	},
 	"homepage": "https://cmmv.io",
-	"publishConfig": {
-		"access": "public"
-	},
 	"engines": {
 		"node": ">= 18.2.0"
 	},
@@ -74,7 +70,6 @@
 		"@keyv/compress-gzip": "^2.0.2",
 		"@keyv/redis": "^3.0.1",
 		"@tirke/node-cache-manager-ioredis": "^3.6.0",
-		"@types/browser-sync": "^2.29.0",
 		"@types/bytes": "^3.1.4",
 		"@types/cache-manager": "^4.0.6",
 		"@types/chai": "^4.3.19",
