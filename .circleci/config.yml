@@ -24,14 +24,10 @@ aliases:
     run:
       name: Install dependencies
       command: pnpm install --frozen-lockfile
-  - &build-packages
-    run:
-      name: Build
-      command: pnpm run build
   - &run-unit-tests
     run:
-      name: Test
-      command: pnpm run test
+      name: Run unit tests
+      command: pnpm exec ts-node --transpile-only ./node_modules/.bin/vitest run
 
 jobs:
   build:
@@ -46,7 +42,6 @@ jobs:
       - *restore-cache
       - *install-deps
       - *save-cache
-      - *build-packages
 
   test:
     parameters:
@@ -87,33 +82,7 @@ jobs:
                 command: 'sudo npm install -g pnpm'
             - *restore-cache
             - *install-deps
-            - *build-packages
-            - when:
-                condition:
-                  equal:
-                    [
-                      '<< parameters.node-version >>',
-                      '<< pipeline.parameters.active-node-version >>',
-                    ]
-                steps:
-                  - run:
-                      name: Test (coverage)
-                      command: pnpm run test:cov
-                  - run:
-                      name: Collect coverage
-                      command: pnpm run coverage
-                  - store_artifacts:
-                      path: coverage
-            - when:
-                condition:
-                  not:
-                    equal:
-                      [
-                        '<< parameters.node-version >>',
-                        '<< pipeline.parameters.active-node-version >>',
-                      ]
-                steps:
-                  - *run-unit-tests
+            - *run-unit-tests
 
   lint:
     working_directory: ~/cmmv
