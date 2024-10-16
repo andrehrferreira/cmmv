@@ -16,8 +16,6 @@
 		"clean": "pnpm run clean:tsfiles && pnpm run clean:packages > /dev/null 2>&1",
 		"format": "prettier \"**/*.ts\" \"packages/**/*.json\" --ignore-path ./.prettierignore --write && git status",
 		"test": "vitest",
-		"test:dev": "mocha -w --watch-files \"packages\" packages/**/*.spec.js",
-		"test:cov": "nyc mocha packages/**/*.spec.ts --reporter spec",
 		"lint": "concurrently 'pnpm run lint:packages' 'pnpm run lint:spec'",
 		"lint:fix": "concurrently 'pnpm run lint:packages -- --fix' 'pnpm run lint:spec -- --fix'",
 		"lint:packages": "eslint 'packages/**/**.ts' --no-ignore",
