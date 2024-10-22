@@ -146,16 +146,20 @@ export class ${serviceName} extends AbstractService {
         const controllerTemplate = `// Generated automatically by CMMV
 
 import { Telemetry } from "@cmmv/core";
-import { Controller, Get, Post, Put, Delete, Queries, Param, Body, Request } from '@cmmv/http';
-import { ${serviceName} } from '../services/${contract.controllerName.toLowerCase()}.service';
-import { ${contract.controllerName} } from '../models/${contract.controllerName.toLowerCase()}.model';
 ${hasCache ? `import { Cache, CacheService } from "@cmmv/cache";` : ''}
+import { 
+    Controller, Get, Post, Put, Delete, 
+    Queries, Param, Body, Request 
+} from '@cmmv/http';
+
+import { ${serviceName} } from '../services/${contract.controllerName.toLowerCase()}.service';
+import { ${contract.controllerName}, ${contract.controllerName}Schema } from '../models/${contract.controllerName.toLowerCase()}.model';
 
 @Controller('${contract.controllerName.toLowerCase()}')
 export class ${controllerName} {
     constructor(private readonly ${serviceName.toLowerCase()}: ${serviceName}) {}
 
-    @Get()${hasCache ? `\n    @Cache("${cacheKeyPrefix}getAll", { ttl: ${cacheTtl}, compress: ${cacheCompress} })` : ''}
+    @Get()${hasCache ? `\n    @Cache("${cacheKeyPrefix}getAll", { ttl: ${cacheTtl}, compress: ${cacheCompress}, schema: ${contract.controllerName}Schema })` : ''}
     async getAll(@Queries() queries: any, @Request() req): Promise<${contract.controllerName}[]> {
         Telemetry.start('${controllerName}::GetAll', req.requestId);
         let result = await this.${serviceName.toLowerCase()}.getAll(queries, req);
@@ -163,7 +167,7 @@ export class ${controllerName} {
         return result;
     }
 
-    @Get(':id')${hasCache ? `\n    @Cache("${cacheKeyPrefix}{id}", { ttl: ${cacheTtl}, compress: ${cacheCompress} })` : ''}
+    @Get(':id')${hasCache ? `\n    @Cache("${cacheKeyPrefix}{id}", { ttl: ${cacheTtl}, compress: ${cacheCompress}, schema: ${contract.controllerName}Schema })` : ''}
     async getById(@Param('id') id: string, @Request() req): Promise<${contract.controllerName}> {
         Telemetry.start('${controllerName}::GetById', req.requestId);
         let result = await this.${serviceName.toLowerCase()}.getById(id, req);
@@ -175,7 +179,7 @@ export class ${controllerName} {
     async add(@Body() item: ${contract.controllerName}, @Request() req): Promise<${contract.controllerName}> {
         Telemetry.start('${controllerName}::Add', req.requestId);
         let result = await this.${serviceName.toLowerCase()}.add(item, req);
-        ${hasCache ? `CacheService.set(\`${cacheKeyPrefix}\${result.id}\`, JSON.stringify(result), ${cacheTtl});` : ''}
+        ${hasCache ? `CacheService.set(\`${cacheKeyPrefix}\${result.id}\`, ${contract.controllerName}Schema(result), ${cacheTtl});` : ''}
         ${hasCache ? `CacheService.del("${cacheKeyPrefix}getAll");` : ''}
         Telemetry.end('${controllerName}::Add', req.requestId);
         return result;
@@ -185,7 +189,7 @@ export class ${controllerName} {
     async update(@Param('id') id: string, @Body() item: ${contract.controllerName}, @Request() req): Promise<${contract.controllerName}> {
         Telemetry.start('${controllerName}::Update', req.requestId);
         let result = await this.${serviceName.toLowerCase()}.update(id, item, req);
-        ${hasCache ? `CacheService.set(\`${cacheKeyPrefix}\${result.id}\`, JSON.stringify(result), ${cacheTtl});` : ''}
+        ${hasCache ? `CacheService.set(\`${cacheKeyPrefix}\${result.id}\`, ${contract.controllerName}Schema(result), ${cacheTtl});` : ''}
         ${hasCache ? `CacheService.del("${cacheKeyPrefix}getAll");` : ''}
         Telemetry.end('${controllerName}::Update', req.requestId);
         return result;

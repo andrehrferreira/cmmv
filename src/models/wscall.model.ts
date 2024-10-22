@@ -1,5 +1,7 @@
 // Generated automatically by CMMV
 
+import * as fastJson from 'fast-json-stringify';
+
 export interface IWsCall {
     id?: any;
     contract: number;
@@ -20,3 +22,15 @@ export class WsCall implements IWsCall {
         Object.assign(this, partial);
     }
 }
+
+// Schema for fast-json-stringify
+export const WsCallSchema = fastJson({
+    title: 'WsCall Schema',
+    type: 'object',
+    properties: {
+        contract: { type: 'integer' },
+        message: { type: 'integer' },
+        data: { type: 'string' },
+    },
+    required: [],
+});

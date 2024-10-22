@@ -36,6 +36,19 @@ ${contract.fields?.map((field: any) => this.generateClassField(field)).join('\n\
         Object.assign(this, partial);
     }
 }
+
+// Schema for fast-json-stringify
+export const ${modelName}Schema = fastJson({
+    title: '${modelName} Schema',
+    type: 'object',
+    properties: {
+${contract.fields?.map((field: any) => `        ${field.propertyKey}: ${this.generateJsonSchemaField(field)}`).join(',\n')}
+    },
+    required: [${contract.fields
+        .filter((field: any) => field.required)
+        .map((field: any) => `"${field.propertyKey}"`)
+        .join(', ')}]
+});
 `;
 
         const dirname = path.resolve(outputDir, '../models');
@@ -47,7 +60,9 @@ ${contract.fields?.map((field: any) => this.generateClassField(field)).join('\n\
     }
 
     private generateClassImports(contract: any): string {
-        const importStatements: string[] = [];
+        const importStatements: string[] = [
+            `import * as fastJson from 'fast-json-stringify';`,
+        ];
 
         const hasExclude = contract.fields?.some(
             (field: any) => field.exclude || field.toClassOnly,
@@ -192,6 +207,55 @@ ${contract.fields?.map((field: any) => this.generateClassField(field)).join('\n\
             fixed64: 'number',
             sfixed32: 'number',
             sfixed64: 'number',
+            any: 'any',
+        };
+
+        return typeMapping[protoType] || 'any';
+    }
+
+    private generateJsonSchemaField(field: any): string {
+        const parts = [`type: "${this.mapToJsonSchemaType(field.protoType)}"`];
+
+        if (field.defaultValue !== undefined) {
+            parts.push(`default: ${JSON.stringify(field.defaultValue)}`);
+        }
+
+        if (field.description) {
+            parts.push(`description: "${field.description}"`);
+        }
+
+        return `{ ${parts.join(', ')} }`;
+    }
+
+    private mapToJsonSchemaType(protoType: string): string {
+        const typeMapping: { [key: string]: string } = {
+            string: 'string',
+            boolean: 'boolean',
+            bool: 'boolean',
+            int: 'integer',
+            int32: 'integer',
+            int64: 'integer',
+            float: 'number',
+            double: 'number',
+            bytes: 'string',
+            date: 'string',
+            timestamp: 'string',
+            text: 'string',
+            json: 'object',
+            jsonb: 'object',
+            uuid: 'string',
+            time: 'string',
+            simpleArray: 'array',
+            simpleJson: 'object',
+            bigint: 'integer',
+            uint32: 'integer',
+            uint64: 'integer',
+            sint32: 'integer',
+            sint64: 'integer',
+            fixed32: 'integer',
+            fixed64: 'integer',
+            sfixed32: 'integer',
+            sfixed64: 'integer',
             any: 'any',
         };
 

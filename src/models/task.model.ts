@@ -1,5 +1,6 @@
 // Generated automatically by CMMV
 
+import * as fastJson from 'fast-json-stringify';
 import { IsString, IsNotEmpty, IsBoolean } from 'class-validator';
 import * as crypto from 'crypto';
 
@@ -27,3 +28,15 @@ export class Task implements ITask {
         Object.assign(this, partial);
     }
 }
+
+// Schema for fast-json-stringify
+export const TaskSchema = fastJson({
+    title: 'Task Schema',
+    type: 'object',
+    properties: {
+        label: { type: 'string' },
+        checked: { type: 'boolean', default: false },
+        removed: { type: 'boolean', default: false },
+    },
+    required: [],
+});

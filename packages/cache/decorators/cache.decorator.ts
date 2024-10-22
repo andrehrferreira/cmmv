@@ -3,6 +3,7 @@ import { CacheRegistry } from '../registries/cache.registry';
 export interface CacheOptions {
     ttl?: number;
     compress?: boolean;
+    schema?: any;
 }
 
 function createHandlerDecorator(

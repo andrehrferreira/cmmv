@@ -1,5 +1,6 @@
 // Generated automatically by CMMV
 
+import * as fastJson from 'fast-json-stringify';
 import { Transform } from 'class-transformer';
 import { IsString, MinLength, MaxLength } from 'class-validator';
 import * as crypto from 'crypto';
@@ -38,3 +39,16 @@ export class User implements IUser {
         Object.assign(this, partial);
     }
 }
+
+// Schema for fast-json-stringify
+export const UserSchema = fastJson({
+    title: 'User Schema',
+    type: 'object',
+    properties: {
+        username: { type: 'string' },
+        password: { type: 'string' },
+        googleId: { type: 'string' },
+        groups: { type: 'string', default: '[]' },
+    },
+    required: [],
+});

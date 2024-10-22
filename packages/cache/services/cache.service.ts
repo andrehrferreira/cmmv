@@ -81,6 +81,8 @@ export class CacheService extends Singleton {
                             contextCached,
                         );
 
+                        const stringify = metadata.schema || JSON.stringify;
+
                         if (context.content && metadata && metadata?.key) {
                             const cacheKey = metadata?.key.replace(
                                 '{id}',
@@ -91,12 +93,12 @@ export class CacheService extends Singleton {
                             const result = await CacheService.set(
                                 cacheKey,
                                 typeof context.content === 'object'
-                                    ? JSON.stringify(context.content)
+                                    ? stringify(context.content)
                                     : context.content,
                                 ttl,
                             );
 
-                            console.log(cacheKey, result, ttl);
+                            //console.log(cacheKey, result, ttl);
                         }
                     }
                 } catch (e) {
