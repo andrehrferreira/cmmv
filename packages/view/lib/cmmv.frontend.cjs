@@ -291,7 +291,7 @@
                 }
             },
 
-            processExpressions() {
+            async processExpressions() {
                 this.telemetry.start('Process Expressions');
      
                 this.telemetry.start('CreateApp');
@@ -303,34 +303,58 @@
                     styleSettings: this.styleSettings
                 });
 
-                this.contextApp = this.reactive({
-                    $template: "#app",  
-                    components: this.components,                  
-                    ...this,
-                    rpc: this.rpc,
-                    $rpc: this.rpc,
-                    styles: styles,
-                    $style: styles,
-                    ...this.context,
-                    loaded: true,
-                    mounted: this.mounted,
-                    created: this.created
-                });
+                if(window.Vue){
+                    const data = Object.assign({}, this.context);
 
-                this.contextApp.styles.load();
+                    const app = Vue.createApp({
+                        rpc: this.rpc,
+                        $rpc: this.rpc,
+                        data() { 
+                            return { 
+                                ...data
+                            } 
+                        },
+                        components: this.components,
+                        styles: styles,
+                        $style: styles,
+                        mounted: this.mounted,
+                        created: this.created,
+                        methods: { ...this.rpc },
+                        ...this.context
+                    });
 
-                const app = this.createApp(this.contextApp);
-                this.telemetry.end('CreateApp');
-
-                if (typeof this.contextApp?.created === "function") {
-                    this.telemetry.start('Created Hook');
-                    this.contextApp?.created();
-                    this.telemetry.end('Created Hook');
+                    app.mount('#app')
                 }
+                else{
+                    this.contextApp = this.reactive({
+                        $template: "#app",  
+                        components: this.components,                  
+                        ...this,
+                        rpc: this.rpc,
+                        $rpc: this.rpc,
+                        styles: styles,
+                        $style: styles,
+                        ...this.context,
+                        loaded: true,
+                        mounted: this.mounted,
+                        created: this.created
+                    });
 
-                this.telemetry.start('Mount App');
-                this.app = app.mount();
-                this.telemetry.end('Mount App');
+                    this.contextApp.styles.load();
+    
+                    const app = this.createApp(this.contextApp);
+                    this.telemetry.end('CreateApp');
+    
+                    if (typeof this.contextApp?.created === "function") {
+                        this.telemetry.start('Created Hook');
+                        this.contextApp?.created();
+                        this.telemetry.end('Created Hook');
+                    }
+    
+                    this.telemetry.start('Mount App');
+                    this.app = app.mount("#app");
+                    this.telemetry.end('Mount App');
+                }
 
                 if (typeof this.contextApp?.mounted === "function") {
                     this.telemetry.start('Mounted Hook');
@@ -412,7 +436,12 @@
             }
         };
 
-        if (global.cmmvSetup) {            
+        if (global.cmmvSetup) { 
+            if(!global.cmmv && window.Vue)
+                global.cmmv = window.Vue;
+            if(!global.cmmv)
+                global.cmmv = {};
+            
             let methods = {};
 
             if (typeof global.cmmvSetup.__methods === "object") {

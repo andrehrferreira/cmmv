@@ -52,6 +52,7 @@ Config.assign({
     view: {
         extractInlineScript: false,
         minifyHTML: true,
+        vue3: true,
     },
 
     repository: {
