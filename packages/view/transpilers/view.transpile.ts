@@ -8,7 +8,7 @@ export class ViewTranspile implements ITranspile {
     private logger: Logger = new Logger('ViewTranspile');
 
     run(): void {
-        let useVue3 = Config.get<boolean>('view.vue3', false);
+        const useVue3 = Config.get<boolean>('view.vue3', false);
 
         if (useVue3) {
             const outputFileReactivity = path.resolve(
