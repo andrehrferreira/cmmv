@@ -1,26 +1,33 @@
 // Generated automatically by CMMV
 
 import * as fastJson from 'fast-json-stringify';
+import { Expose, Transform } from 'class-transformer';
 import { IsString, IsNotEmpty, IsBoolean } from 'class-validator';
 import * as crypto from 'crypto';
 
 export interface ITask {
-    id?: any;
+    _id?: any;
     label: string;
     checked: boolean;
     removed: boolean;
 }
 
 export class Task implements ITask {
-    id?: any;
+    @Transform(({ value }) => (value !== undefined ? value : null), {
+        toClassOnly: true,
+    })
+    _id?: any;
 
+    @Expose()
     @IsString({ message: 'Invalid label' })
     @IsNotEmpty({ message: 'Invalid label' })
     label: string;
 
+    @Expose()
     @IsBoolean({ message: 'Invalid checked type' })
     checked: boolean = false;
 
+    @Expose()
     @IsBoolean({ message: 'Invalid removed type' })
     removed: boolean = false;
 

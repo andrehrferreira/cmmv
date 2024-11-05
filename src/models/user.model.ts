@@ -1,12 +1,13 @@
 // Generated automatically by CMMV
 
 import * as fastJson from 'fast-json-stringify';
+import { Expose, Transform } from 'class-transformer';
 import { Transform } from 'class-transformer';
 import { IsString, MinLength, MaxLength } from 'class-validator';
 import * as crypto from 'crypto';
 
 export interface IUser {
-    id?: any;
+    _id?: any;
     username: string;
     password: string;
     googleId: string;
@@ -14,8 +15,12 @@ export interface IUser {
 }
 
 export class User implements IUser {
-    id?: any;
+    @Transform(({ value }) => (value !== undefined ? value : null), {
+        toClassOnly: true,
+    })
+    _id?: any;
 
+    @Expose()
     @Transform(({ value }) =>
         crypto.createHash('sha1').update(value).digest('hex'),
     )
@@ -24,14 +29,17 @@ export class User implements IUser {
     @MaxLength(40, { message: 'Invalid username' })
     username: string;
 
+    @Expose()
     @Transform(({ value }) =>
         crypto.createHash('sha256').update(value).digest('hex'),
     )
     @IsString({ message: 'Invalid password' })
     password: string;
 
+    @Expose()
     googleId: string;
 
+    @Expose()
     @Transform(({ value }) => JSON.stringify(value))
     groups: string = '[]';
 

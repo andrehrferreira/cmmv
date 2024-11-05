@@ -1,21 +1,28 @@
 // Generated automatically by CMMV
 
 import * as fastJson from 'fast-json-stringify';
+import { Expose, Transform } from 'class-transformer';
 
 export interface IWsError {
-    id?: any;
+    _id?: any;
     message: string;
     code: number;
     context: string;
 }
 
 export class WsError implements IWsError {
-    id?: any;
+    @Transform(({ value }) => (value !== undefined ? value : null), {
+        toClassOnly: true,
+    })
+    _id?: any;
 
+    @Expose()
     message: string;
 
+    @Expose()
     code: number;
 
+    @Expose()
     context: string;
 
     constructor(partial: Partial<WsError>) {

@@ -375,11 +375,11 @@
                     cmmv.send(buffer);
                 },
                 update: (contract, messageType, data) => {
-                    let buffer = cmmv.pack.call(cmmv, contract, messageType, { id: data.id, item: data });
+                    let buffer = cmmv.pack.call(cmmv, contract, messageType, { id: data._id ? data._id : data.id, item: data });
                     cmmv.send(buffer);
                 },
                 delete: (contract, messageType, data) => {
-                    let buffer = cmmv.pack.call(cmmv, contract, messageType, { id: data.id });
+                    let buffer = cmmv.pack.call(cmmv, contract, messageType, { id: data._id ? data._id : data.id });
                     cmmv.send(buffer);
                 },
                 on: (contract, messageType, cb) => {

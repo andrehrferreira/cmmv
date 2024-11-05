@@ -1,0 +1,19 @@
+<div id="app">
+    <span>{{ test }}</span>
+</div>
+
+<script s-setup>
+export default {
+    layout: "default",
+
+    data(){
+        return {
+            test: 123
+        }
+    },
+
+    mounted(){
+        console.log(this.test);
+    }
+}
+</script>

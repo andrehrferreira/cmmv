@@ -317,7 +317,8 @@ export class Application {
             const outputPath = path.resolve('src', `app.module.ts`);
 
             const moduleTemplate = `// Generated automatically by CMMV
-    
+            
+import 'reflect-metadata';
 import { Module, ApplicationTranspile } from '@cmmv/core';
 ${Application.appModule.controllers.map(controller => `import { ${controller.name} } from '${controller.path}';`).join('\n')}
 ${Application.appModule.providers.map(provider => `import { ${provider.name} } from '${provider.path}';`).join('\n')}

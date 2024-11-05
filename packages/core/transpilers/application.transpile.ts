@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { ITranspile, Logger, Scope } from '../lib';
+import { Config, ITranspile, Logger, Scope } from '../lib';
 
 export class ApplicationTranspile implements ITranspile {
     private logger: Logger = new Logger('ExpressTranspile');
@@ -23,12 +23,13 @@ export class ApplicationTranspile implements ITranspile {
 ${this.generateClassImports(contract)}
         
 export interface ${modelInterfaceName} {
-    id?: any;
+    ${Config.get('repository.type') === 'mongodb' ? '_id?: any' : 'id?: any'};
 ${contract.fields?.map((field: any) => `    ${field.propertyKey}: ${this.mapToTsType(field.protoType)};`).join('\n')}
 }
 
 export class ${modelName} implements ${modelInterfaceName} {
-    id?: any;
+    @Transform(({ value }) => value !== undefined ? value : null, { toClassOnly: true })
+    ${Config.get('repository.type') === 'mongodb' ? '_id?: any' : 'id?: any'};
 
 ${contract.fields?.map((field: any) => this.generateClassField(field)).join('\n\n')}
 
@@ -62,6 +63,7 @@ ${contract.fields?.map((field: any) => `        ${field.propertyKey}: ${this.gen
     private generateClassImports(contract: any): string {
         const importStatements: string[] = [
             `import * as fastJson from 'fast-json-stringify';`,
+            `import { Expose, Transform } from 'class-transformer';`,
         ];
 
         const hasExclude = contract.fields?.some(
@@ -116,6 +118,8 @@ ${contract.fields?.map((field: any) => `        ${field.propertyKey}: ${this.gen
             decorators.push(
                 `    @Exclude(${field.toClassOnly ? `{ toClassOnly: true }` : ''})`,
             );
+        } else {
+            decorators.push(`    @Expose()`);
         }
 
         if (field.transform) {

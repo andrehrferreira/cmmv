@@ -1,5 +1,6 @@
 // Generated automatically by CMMV
 
+import { ObjectId } from 'mongodb';
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import { Telemetry, AbstractService, Service } from '@cmmv/core';
@@ -15,6 +16,7 @@ export class TaskService extends AbstractService {
         try {
             Telemetry.start('TaskService::GetAll', req?.requestId);
             let result = await Repository.findAll(TaskEntity);
+            result = this.fixId(result);
             Telemetry.end('TaskService::GetAll', req?.requestId);
             return result;
         } catch (e) {
@@ -25,7 +27,10 @@ export class TaskService extends AbstractService {
     async getById(id: string, req?: any): Promise<TaskEntity | null> {
         try {
             Telemetry.start('TaskService::GetById', req?.requestId);
-            const item = await Repository.findBy(TaskEntity, { id });
+            let item = await Repository.findBy(TaskEntity, {
+                _id: new ObjectId(id),
+            });
+            item = this.fixId(item);
             Telemetry.end('TaskService::GetById', req?.requestId);
 
             if (!item) throw new Error('Item not found');
@@ -41,23 +46,29 @@ export class TaskService extends AbstractService {
             try {
                 Telemetry.start('TaskService::Add', req?.requestId);
 
-                const newItem = plainToClass(Task, item, {
-                    exposeUnsetFields: true,
+                let newItem: any = plainToClass(Task, item, {
+                    exposeUnsetFields: false,
                     enableImplicitConversion: true,
                 });
 
+                newItem = this.removeUndefined(newItem);
+                delete newItem._id;
+
                 const errors = await validate(newItem, {
+                    forbidUnknownValues: false,
                     skipMissingProperties: true,
+                    stopAtFirstError: true,
                 });
 
                 if (errors.length > 0) {
                     Telemetry.end('TaskService::Add', req?.requestId);
                     reject(errors);
                 } else {
-                    const result = await Repository.insert<TaskEntity>(
+                    let result: any = await Repository.insert<TaskEntity>(
                         TaskEntity,
                         newItem,
                     );
+                    result = this.fixId(result);
                     Telemetry.end('TaskService::Add', req?.requestId);
                     resolve(result);
                 }
@@ -74,13 +85,18 @@ export class TaskService extends AbstractService {
             try {
                 Telemetry.start('TaskService::Update', req?.requestId);
 
-                const newItem = plainToClass(Task, item, {
-                    exposeUnsetFields: true,
+                let updateItem: any = plainToClass(Task, item, {
+                    exposeUnsetFields: false,
                     enableImplicitConversion: true,
                 });
 
-                const errors = await validate(newItem, {
+                updateItem = this.removeUndefined(updateItem);
+                delete updateItem._id;
+
+                const errors = await validate(updateItem, {
+                    forbidUnknownValues: false,
                     skipMissingProperties: true,
+                    stopAtFirstError: true,
                 });
 
                 if (errors.length > 0) {
@@ -89,8 +105,8 @@ export class TaskService extends AbstractService {
                 } else {
                     const result = await Repository.update(
                         TaskEntity,
-                        id,
-                        item,
+                        new ObjectId(id),
+                        updateItem,
                     );
                     Telemetry.end('TaskService::Add', req?.requestId);
                     resolve(result);
@@ -109,7 +125,10 @@ export class TaskService extends AbstractService {
     ): Promise<{ success: boolean; affected: number }> {
         try {
             Telemetry.start('TaskService::Delete', req?.requestId);
-            const result = await Repository.delete(TaskEntity, id);
+            const result = await Repository.delete(
+                TaskEntity,
+                new ObjectId(id),
+            );
             Telemetry.end('TaskService::Delete', req?.requestId);
             return { success: result.affected > 0, affected: result.affected };
         } catch (e) {

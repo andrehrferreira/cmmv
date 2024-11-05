@@ -52,12 +52,14 @@ Config.assign({
     view: {
         extractInlineScript: false,
         minifyHTML: true,
-        vue3: true,
+        vue3: false,
     },
 
     repository: {
-        type: 'sqlite',
-        database: './database.sqlite',
+        type: 'mongodb',
+        host: 'localhost',
+        port: 27017,
+        database: 'cmmv',
         synchronize: true,
         logging: false,
     },

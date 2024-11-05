@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { ITranspile, Logger, Scope } from '@cmmv/core';
+
+import { Config, ITranspile, Logger, Scope } from '@cmmv/core';
 
 export class RepositoryTranspile implements ITranspile {
     private logger: Logger = new Logger('RepositoryTranspile');
@@ -25,7 +26,7 @@ export class RepositoryTranspile implements ITranspile {
         
 import { 
     Entity, PrimaryGeneratedColumn, 
-    Column, Index 
+    Column, Index, ObjectIdColumn, ObjectID
 } from 'typeorm';
 
 import { ${entityName} } from '../models/${modelName.toLowerCase()}';
@@ -33,8 +34,8 @@ import { ${entityName} } from '../models/${modelName.toLowerCase()}';
 @Entity('${entityName.toLowerCase()}')
 ${this.generateIndexes(entityName, contract.fields)}
 export class ${entityName}Entity implements ${entityName} {
-    @PrimaryGeneratedColumn('uuid')
-    id: string;
+    ${Config.get('repository.type') === 'mongodb' ? '@ObjectIdColumn()' : "@PrimaryGeneratedColumn('uuid')"}
+    ${Config.get('repository.type') === 'mongodb' ? '_id: ObjectID' : 'id: string'};
 
 ${contract.fields.map((field: any) => this.generateField(field)).join('\n\n')}
 }
@@ -63,7 +64,7 @@ ${contract.fields.map((field: any) => this.generateField(field)).join('\n\n')}
         const serviceFileName = `${contract.controllerName.toLowerCase()}.service.ts`;
 
         const serviceTemplate = `// Generated automatically by CMMV
-    
+${Config.get('repository.type') === 'mongodb' ? "\nimport { ObjectId } from 'mongodb';" : ''}
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import { Telemetry, AbstractService, Service } from "@cmmv/core";
@@ -79,6 +80,7 @@ export class ${serviceName} extends AbstractService {
         try{
             Telemetry.start('${serviceName}::GetAll', req?.requestId);
             let result = await Repository.findAll(${entityName});
+            ${Config.get('repository.type') === 'mongodb' ? 'result = this.fixId(result)' : ''}
             Telemetry.end('${serviceName}::GetAll', req?.requestId);
             return result;
         }
@@ -90,7 +92,8 @@ export class ${serviceName} extends AbstractService {
     async getById(id: string, req?: any): Promise<${entityName} | null> {
         try{
             Telemetry.start('${serviceName}::GetById', req?.requestId);
-            const item = await Repository.findBy(${entityName}, { id });
+            let item = await Repository.findBy(${entityName}, { ${Config.get('repository.type') === 'mongodb' ? '_id: new ObjectId(id)' : 'id'} });
+            ${Config.get('repository.type') === 'mongodb' ? 'item = this.fixId(item)' : ''}
             Telemetry.end('${serviceName}::GetById', req?.requestId);
 
             if (!item) 
@@ -108,19 +111,27 @@ export class ${serviceName} extends AbstractService {
             try{
                 Telemetry.start('${serviceName}::Add', req?.requestId);
                         
-                const newItem = plainToClass(${modelName}, item, { 
-                    exposeUnsetFields: true,
+                let newItem: any = plainToClass(${modelName}, item, { 
+                    exposeUnsetFields: false,
                     enableImplicitConversion: true
-                }); 
-    
-                const errors = await validate(newItem, { skipMissingProperties: true });
-                
+                });
+
+                newItem = this.removeUndefined(newItem);
+                delete newItem._id;
+
+                const errors = await validate(newItem, { 
+                    forbidUnknownValues: false,
+                    skipMissingProperties: true,
+                    stopAtFirstError: true, 
+                });
+
                 if (errors.length > 0) {
                     Telemetry.end('TaskService::Add', req?.requestId);
                     reject(errors);
                 } 
                 else {                   
-                    const result = await Repository.insert<${entityName}>(${entityName}, newItem);
+                    let result: any = await Repository.insert<${entityName}>(${entityName}, newItem);
+                    ${Config.get('repository.type') === 'mongodb' ? 'result = this.fixId(result)' : ''}
                     Telemetry.end('TaskService::Add', req?.requestId);
                     resolve(result);                    
                 }
@@ -138,19 +149,26 @@ export class ${serviceName} extends AbstractService {
             try{
                 Telemetry.start('${serviceName}::Update', req?.requestId);
 
-                const newItem = plainToClass(${modelName}, item, { 
-                    exposeUnsetFields: true,
+                let updateItem: any = plainToClass(${modelName}, item, { 
+                    exposeUnsetFields: false,
                     enableImplicitConversion: true
                 });
 
-                const errors = await validate(newItem, { skipMissingProperties: true });
-                
+                updateItem = this.removeUndefined(updateItem);
+                delete updateItem._id;
+
+                const errors = await validate(updateItem, { 
+                    forbidUnknownValues: false,
+                    skipMissingProperties: true,
+                    stopAtFirstError: true
+                });
+           
                 if (errors.length > 0) {
                     Telemetry.end('TaskService::Add', req?.requestId);
                     reject(errors);
                 } 
                 else {  
-                    const result = await Repository.update(${entityName}, id, item);
+                    const result = await Repository.update(${entityName}, ${Config.get('repository.type') === 'mongodb' ? 'new ObjectId(id)' : 'id'}, updateItem);                    
                     Telemetry.end('TaskService::Add', req?.requestId);
                     resolve(result);        
                 }                
@@ -166,7 +184,7 @@ export class ${serviceName} extends AbstractService {
     async delete(id: string, req?: any): Promise<{ success: boolean, affected: number }> {
         try{
             Telemetry.start('${serviceName}::Delete', req?.requestId);
-            const result = await Repository.delete(${entityName}, id);
+            const result = await Repository.delete(${entityName}, ${Config.get('repository.type') === 'mongodb' ? 'new ObjectId(id)' : 'id'});
             Telemetry.end('${serviceName}::Delete', req?.requestId);
             return { success: result.affected > 0, affected: result.affected };
         }

@@ -1,5 +1,6 @@
 // Generated automatically by CMMV
 
+import 'reflect-metadata';
 import { Module, ApplicationTranspile } from '@cmmv/core';
 import { TaskController } from './controllers/task.controller';
 import { AuthController } from './controllers/auth.controller';
