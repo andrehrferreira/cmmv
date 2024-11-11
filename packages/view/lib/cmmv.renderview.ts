@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 
+import { Config } from '@cmmv/core';
 import { Template } from './cmmv.template';
 
 import {
@@ -82,17 +83,30 @@ export class CMMVRenderer {
     public compile(template: string, opts: any) {
         const templ = new Template(template, opts);
 
-        templ.use([
-            ssrLoadData,
-            extractSetupScript,
-            sServerData,
-            ssrDirectives,
-            sData,
-            sAttr,
-            i18n,
-        ]); //Extact Setup first
+        if (Config.get<boolean>('view.vue3', false)) {
+            templ.use([
+                ssrLoadData,
+                extractSetupScript,
+                sServerData,
+                sData,
+                sAttr,
+                i18n,
+            ]); //Extact Setup first
 
-        return templ.compile();
+            return templ.compile();
+        } else {
+            templ.use([
+                ssrLoadData,
+                extractSetupScript,
+                sServerData,
+                ssrDirectives,
+                sData,
+                sAttr,
+                i18n,
+            ]); //Extact Setup first
+
+            return templ.compile();
+        }
     }
 
     public async render(template: string, d: any, o?: any) {

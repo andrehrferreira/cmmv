@@ -1,7 +1,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import * as os from 'os';
 import * as fg from 'fast-glob';
 import * as Terser from 'terser';
+import { build } from 'esbuild';
 
 import { IHTTPSettings } from '../interfaces';
 
@@ -120,6 +122,7 @@ export class Application {
                 if (appModel) this.loadModules([...this.modules, appModel]);
 
                 this.createScriptBundle();
+                this.createCSSBundle();
             } else {
                 const tsconfig: any = new Function(
                     `return(${fs.readFileSync(path.resolve('./tsconfig.json'), 'utf-8')})`,
@@ -195,7 +198,30 @@ export class Application {
             lines.push('');
         });
 
-        const bundleContent = lines.join('\n');
+        let bundleContent = lines.join('\n');
+
+        /*const tempFilePath = path.join(os.tmpdir(), 'temp-bundle.js');
+        fs.writeFileSync(tempFilePath, bundleContent, 'utf8');
+    
+        await build({
+            entryPoints: [tempFilePath],
+            outfile: finalbundle,
+            bundle: true,
+            minify: false,
+            platform: 'browser',
+            format: 'esm',
+            sourcemap: true,
+            target: ['esnext'],
+            external: ['vue', 'axios', 'moment'],
+            define: {
+                'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production'),
+            },
+            logLevel: 'silent',
+            keepNames: true,
+            ignoreAnnotations: true,
+        });
+
+        fs.unlinkSync(tempFilePath);*/
 
         const result = await Terser.minify(bundleContent, {
             compress: {
@@ -210,6 +236,30 @@ export class Application {
         });
 
         fs.writeFileSync(finalbundle, result.code, { encoding: 'utf-8' });
+    }
+
+    private async createCSSBundle() {
+        const dirBuild = path.resolve('./public/assets');
+
+        if (!fs.existsSync(dirBuild))
+            fs.mkdirSync(dirBuild, { recursive: true });
+
+        const finalbundle = path.resolve('./public/assets/bundle.min.css');
+
+        const files = await fg(path.resolve('./public/core/*.min.css'), {
+            ignore: ['node_modules/**'],
+        });
+
+        const lines: string[] = [];
+        lines.push('/* Generated automatically by CMMV */');
+
+        files.forEach(file => {
+            lines.push(fs.readFileSync(file, 'utf-8'));
+            lines.push('');
+        });
+
+        const bundleContent = lines.join('\n');
+        fs.writeFileSync(finalbundle, bundleContent, { encoding: 'utf-8' });
     }
 
     private loadModules(modules: Array<Module>): void {
@@ -317,7 +367,7 @@ export class Application {
             const outputPath = path.resolve('src', `app.module.ts`);
 
             const moduleTemplate = `// Generated automatically by CMMV
-            
+
 import 'reflect-metadata';
 import { Module, ApplicationTranspile } from '@cmmv/core';
 ${Application.appModule.controllers.map(controller => `import { ${controller.name} } from '${controller.path}';`).join('\n')}

@@ -69,9 +69,12 @@
             theme: "default",
             styleSettings: {},
             components: {},
+            vuePlugins: [],
+            methods: {},
 
-            initialize(context, styles, components) {
+            initialize(context, styles, components, vuePlugins, methods) {
                 this.telemetry.start('Initialize Frontend');
+                this.methods = methods;
 
                 try {
                     if (context.config && context.config.rpc && context.config.rpc.enabled) {
@@ -132,7 +135,10 @@
                         this.components[componentName].$style.load();
                     }
                 }
-                
+
+                if(vuePlugins && Array.isArray(vuePlugins)) 
+                    this.vuePlugins = vuePlugins;
+                                
                 document.addEventListener('DOMContentLoaded', () => {
                     this.processExpressions();
                     this.telemetry.log();
@@ -148,7 +154,6 @@
 
                 this.socket.addEventListener("message", this.parseMessage.bind(this));
                 this.socket.addEventListener("open", () => {
-                    //console.log("WebSocket connected");
                     this.telemetry.end('WebSocket Initialization');
                 });
 
@@ -283,7 +288,7 @@
                 });
             },
 
-            send(buffer){
+            send(buffer) {
                 if (this.socket && this.socket.readyState === WebSocket.OPEN) {
                     this.socket.send(buffer);
                 } else {
@@ -298,30 +303,55 @@
 
                 this.styles.load();
 
-                const styles = this.reactive({
+                const styles = {
                     ...this.styles.refresh(),
                     styleSettings: this.styleSettings
-                });
+                };
 
                 if(window.Vue){
+                    const { createApp } = Vue;
+                    //const { createApp } = await import('/node_modules/vue/dist/vue.esm-bundler.js');
                     const data = Object.assign({}, this.context);
+                    
+                    let methods = {};
 
-                    const app = Vue.createApp({
+                    if (typeof global.cmmvSetup.__methods === "object") {
+                        for (let key in global.cmmvSetup.__methods)
+                            methods[key] = new Function(`return (${global.cmmvSetup.__methods[key]})`)()
+                    }
+
+                    for(let key in this) {
+                        if(key.indexOf("Request") > -1 || key.indexOf("Response") > -1 && typeof this[key] === "function")
+                            methods[key] = this[key]
+                    }
+
+                    const app = createApp({
                         rpc: this.rpc,
                         $rpc: this.rpc,
-                        data() { 
-                            return { 
-                                ...data
-                            } 
-                        },
+                        data() {  return { ...data } },
                         components: this.components,
                         styles: styles,
                         $style: styles,
                         mounted: this.mounted,
                         created: this.created,
-                        methods: { ...this.rpc },
+                        methods: { ...this.rpc, ...methods },
                         ...this.context
                     });
+
+                    if(this.vuePlugins.length > 0){
+                        for(let key in this.vuePlugins) {
+                            const { plugin, config } = this.vuePlugins[key];
+                            const pluginInstance = await import(plugin.startsWith("@") ? `/node_modules/${plugin}` : plugin);
+
+                            if(config){
+                                const configInstance = await import(config);
+                                app.use(pluginInstance.default, configInstance.default);
+                            }
+                            else {
+                                app.use(pluginInstance);
+                            }
+                        }
+                    }
 
                     app.mount('#app')
                 }
@@ -366,26 +396,32 @@
             },
 
             rpc: {
-                get: (contract, messageType) => {
-                    let buffer = cmmv.pack.call(cmmv, contract, messageType);
-                    cmmv.send(buffer);
+                get(contract, messageType) {
+                    const context = this?.pack ? this : cmmv;
+                    let buffer = context.pack.call(context, contract, messageType);
+                    context.send(buffer);
                 },
-                add: (contract, messageType, data) => {
-                    let buffer = cmmv.pack.call(cmmv, contract, messageType, { item: data });
-                    cmmv.send(buffer);
+                add(contract, messageType, data) {
+                    console.log(this);
+                    const context = this?.pack ? this : cmmv;
+                    let buffer = context.pack.call(context, contract, messageType, { item: data });
+                    context.send(buffer);
                 },
-                update: (contract, messageType, data) => {
-                    let buffer = cmmv.pack.call(cmmv, contract, messageType, { id: data._id ? data._id : data.id, item: data });
-                    cmmv.send(buffer);
+                update(contract, messageType, data) {
+                    const context = this?.pack ? this : cmmv;
+                    let buffer = context.pack.call(context, contract, messageType, { id: data._id || data.id, item: data });
+                    context.send(buffer);
                 },
-                delete: (contract, messageType, data) => {
-                    let buffer = cmmv.pack.call(cmmv, contract, messageType, { id: data._id ? data._id : data.id });
-                    cmmv.send(buffer);
+                delete(contract, messageType, data) {
+                    const context = this?.pack ? this : cmmv;
+                    let buffer = context.pack.call(context, contract, messageType, { id: data._id || data.id });
+                    context.send(buffer);
                 },
-                on: (contract, messageType, cb) => {
-                    if (!cmmv.binds[contract]) cmmv.binds[contract] = {};
-                    if (!cmmv.binds[contract][messageType]) cmmv.binds[contract][messageType] = [];
-                    cmmv.binds[contract][messageType].push(cb);
+                on(contract, messageType, cb) {
+                    const context = this?.binds ? this : cmmv;
+                    if (!context.binds[contract]) context.binds[contract] = {};
+                    if (!context.binds[contract][messageType]) context.binds[contract][messageType] = [];
+                    context.binds[contract][messageType].push(cb);
                 }
             },
 
@@ -455,11 +491,13 @@
             global.cmmv.initialize(
                 global.cmmvSetup.__data || {}, 
                 global.cmmvSetup.__styles || {}, 
-                global.cmmvSetup.__components || {}
+                global.cmmvSetup.__components || {},
+                global.cmmvSetup.__vuePlugins || {},
+                global.cmmvSetup.methods || {}
             );
         } else {
             global.cmmv = Object.assign({}, cmmvMiddleware);
-            global.cmmv.initialize({}, {}, {});
+            global.cmmv.initialize({}, {}, {}, {});
         }
     } catch (e) {
         console.error(e);

@@ -21,6 +21,7 @@ import {
     Telemetry,
     Config,
     ServiceRegistry,
+    Module,
 } from '@cmmv/core';
 
 import { CMMVRenderer } from '@cmmv/view';
@@ -32,6 +33,7 @@ export class DefaultAdapter extends AbstractHttpAdapter<
     private logger: Logger = new Logger('DefaultAdapter');
     protected readonly openConnections = new Set<Duplex>();
     protected render: CMMVRenderer = new CMMVRenderer();
+    protected vite: any;
 
     constructor(protected instance?: any) {
         super(instance || cmmv());
@@ -49,11 +51,18 @@ export class DefaultAdapter extends AbstractHttpAdapter<
         if (Config.get<boolean>('server.compress.enabled', true))
             this.instance.use(compression({ level: 6 }));
 
+        await this.setVite();
+
         this.instance.use(
             serverStatic(publicDir, {
                 setHeaders: (res, path) => {
                     if (path.endsWith('.html')) {
                         res.setHeader('Cache-Control', 'no-cache');
+                    } else if (
+                        path.endsWith('.vue') ||
+                        path.endsWith('.cmmv')
+                    ) {
+                        res.setHeader('Content-Type', 'text/javascript');
                     } else {
                         res.setHeader(
                             'Cache-Control',
@@ -224,6 +233,66 @@ export class DefaultAdapter extends AbstractHttpAdapter<
 
             next();
         });
+    }
+
+    private async setVite() {
+        const useVite = Config.get<boolean>('server.vite', false);
+        const hasViteModule = Module.hasModule('vite');
+
+        if (useVite && hasViteModule) {
+            const { createServer } = await require('vite');
+            const configFilePath = path.join(process.cwd(), 'vite.config.js');
+
+            this.vite = await createServer({
+                configFile: configFilePath,
+                root: process.cwd(),
+                clearScreen: false,
+                appType: 'custom',
+                server: {
+                    middlewareMode: true,
+                },
+                watch: {
+                    usePolling: true,
+                    interval: 100,
+                },
+                resolve: {
+                    alias: {
+                        '/public': path.join(process.cwd(), 'public'),
+                        '/assets': path.join(process.cwd(), 'public/assets'),
+                    },
+                },
+            });
+
+            this.instance.addHook('onRequest', (req, res, next) => {
+                if (
+                    req.url?.startsWith('/src/') ||
+                    req.url?.startsWith('/node_modules/') ||
+                    req.url?.startsWith('/public/') ||
+                    req.url?.startsWith('/assets/') ||
+                    req.url?.endsWith('.vue') ||
+                    req.url?.endsWith('.cmmv')
+                ) {
+                    const originalSetHeader = res.res.setHeader;
+                    res.res.setHeader = (name: string, value: string) => {
+                        if (name.toLowerCase() === 'content-type' && !value)
+                            value = 'text/javascript';
+
+                        if (res.res)
+                            originalSetHeader.call(res.res, name, value);
+                    };
+
+                    this.vite.middlewares(req.req, res.res, (err: any) => {
+                        if (err) {
+                            this.logger.error(err);
+                            res.statusCode = 500;
+                            res.end(err.message);
+                        }
+                    });
+                } else {
+                    next();
+                }
+            });
+        }
     }
 
     private registerControllers() {
@@ -466,13 +535,15 @@ export class DefaultAdapter extends AbstractHttpAdapter<
 
         if (!this.httpServer) return undefined;
 
-        return new Promise((resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
             if (this.connected()) {
                 try {
                     this.httpServer.close(err => {
                         if (err) reject(err);
                         else resolve('');
                     });
+
+                    if (this.vite) await this.vite.close();
                 } catch (err) {
                     reject(err);
                 }

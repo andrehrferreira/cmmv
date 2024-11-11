@@ -1,7 +1,7 @@
 {
-    "name": "@cmmv/view",
+    "name": "@cmmv/vite",
     "version": "0.5.0",
-    "description": "CMMV (@viewengine)",
+    "description": "CMMV (@vite)",
     "publishConfig": {
         "access": "public"
     },
@@ -15,13 +15,10 @@
         "url": "https://github.com/andrehrferreira/cmmv/issues"
     },
     "homepage": "https://cmmv.io",
-    "dependencies": {
-        "@cmmv/reactivity": "^0.4.6",
-        "fast-glob": "^3.3.2",
-        "html-minifier-terser": "^7.2.0",
-        "tailwind": "^4.0.0",
-        "uglify-js": "^3.19.2",
-        "vue": "3"
-    },
-    "gitHead": "3dc8ad71128f3616fc226bb64bce37b1cafcf33d"
+    "devDependencies": {
+        "@cmmv/plugin-vite": "^0.0.2",
+        "@vitejs/plugin-vue": "^5.1.4",
+        "vite": "^5.4.10",
+        "vue": "^3.5.12"
+    }
 }
