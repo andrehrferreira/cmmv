@@ -1,6 +1,6 @@
 {
     "name": "@cmmv/core",
-    "version": "0.5.2",
+    "version": "0.5.3",
     "description": "CMMV (@core)",
     "publishConfig": {
         "access": "public"
@@ -30,5 +30,5 @@
         "@types/jest": "^29.5.12",
         "jest": "^29.7.0"
     },
-    "gitHead": "5c77ecdf875900ff6dffdab7951ef0ad48646bd0"
+    "gitHead": "de1311792780e8bc5a3ac19373459fdc87afdd93"
 }
