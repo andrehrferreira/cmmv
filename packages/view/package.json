@@ -1,6 +1,6 @@
 {
     "name": "@cmmv/view",
-    "version": "0.5.3",
+    "version": "0.5.4",
     "description": "CMMV (@viewengine)",
     "publishConfig": {
         "access": "public"
@@ -16,7 +16,7 @@
     },
     "homepage": "https://cmmv.io",
     "dependencies": {
-        "@cmmv/protobuf": "0.5.3",
+        "@cmmv/protobuf": "0.5.4",
         "@cmmv/reactivity": "^0.4.6",
         "fast-glob": "^3.3.2",
         "html-minifier-terser": "^7.2.0",
@@ -24,5 +24,5 @@
         "uglify-js": "^3.19.2",
         "vue": "3"
     },
-    "gitHead": "de1311792780e8bc5a3ac19373459fdc87afdd93"
+    "gitHead": "9b28f002268080dc8d283263da48e07aa754581f"
 }
