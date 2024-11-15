@@ -1,6 +1,6 @@
 {
     "name": "@cmmv/view",
-    "version": "0.5.0",
+    "version": "0.5.1",
     "description": "CMMV (@viewengine)",
     "publishConfig": {
         "access": "public"
@@ -16,6 +16,7 @@
     },
     "homepage": "https://cmmv.io",
     "dependencies": {
+        "@cmmv/protobuf": "0.5.1",
         "@cmmv/reactivity": "^0.4.6",
         "fast-glob": "^3.3.2",
         "html-minifier-terser": "^7.2.0",
