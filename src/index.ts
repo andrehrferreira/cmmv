@@ -2,7 +2,7 @@ import { Application } from '@cmmv/core';
 import { DefaultAdapter, DefaultHTTPModule } from '@cmmv/http';
 import { ProtobufModule } from '@cmmv/protobuf';
 import { WSModule, WSAdapter } from '@cmmv/ws';
-import { ViewModule } from '@cmmv/view';
+import { ViewModule, VueTranspile } from '@cmmv/view';
 import { RepositoryModule, Repository } from '@cmmv/repository';
 import { CacheModule, CacheService } from '@cmmv/cache';
 import { SchedulingModule, SchedulingService } from '@cmmv/scheduling';
@@ -29,5 +29,6 @@ Application.create({
         IndexModule,
     ],
     services: [Repository, CacheService, SchedulingService],
+    transpilers: [VueTranspile],
     contracts: [TasksContract],
 });

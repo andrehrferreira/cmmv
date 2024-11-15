@@ -12,23 +12,7 @@ export class ViewTranspile implements ITranspile {
         const useVue3 = Config.get<boolean>('view.vue3', false);
         const useTailwind = Config.get<boolean>('view.tailwind', false);
 
-        if (useVue3) {
-            /*const outputFileReactivity = path.resolve('public/core/0-reactivity.min.js');
-            const outputFileVue3 = path.resolve('public/core/0-vue3.min.js');
-  
-            if (fs.existsSync(outputFileReactivity)) fs.unlinkSync(outputFileReactivity);
-
-            const rootDir = process.cwd();
-            const vueFile = path.resolve(rootDir, './node_modules/vue/dist/vue.global.prod.js');
-
-            if (!fs.existsSync(path.resolve('public/core'))) 
-                fs.mkdirSync(path.resolve('public/core'), { recursive: true });
-            
-            if (fs.existsSync(vueFile)) {
-                const vueContent = fs.readFileSync(vueFile, 'utf-8');
-                fs.writeFileSync(outputFileVue3, vueContent, 'utf8');
-            }*/
-        } else {
+        if (!useVue3) {
             const outputFileVue3 = path.resolve('public/core/0-vue3.min.js');
 
             if (fs.existsSync(outputFileVue3)) fs.unlinkSync(outputFileVue3);

@@ -44,6 +44,11 @@ export class Module implements IModule {
         return Module.modules.has(name) ? Module.modules.get(name) : null;
     }
 
+    public static loadTranspile<T>(transpileRaw: new () => ITranspile) {
+        const transpile = new transpileRaw();
+        return transpile as T;
+    }
+
     public getControllers(): Array<any> {
         return this.controllers;
     }

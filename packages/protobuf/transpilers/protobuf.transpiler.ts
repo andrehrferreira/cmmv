@@ -81,10 +81,10 @@ export class ProtobufTranspile implements ITranspile {
             const tsContent = this.generateTypes(contract);
             fs.writeFileSync(outputPathTs, tsContent, 'utf8');
 
-            /*const contractJSON = root.toJSON();
+            const contractJSON = root.toJSON();
             contractsJson[contract.controllerName] = contractJSON;
 
-            fs.writeFileSync(
+            /*fs.writeFileSync(
                 outputPathJson,
                 JSON.stringify(contractJSON, null, 4),
                 'utf8',
@@ -264,9 +264,12 @@ export class ProtobufTranspile implements ITranspile {
         return lines.join('\n');
     }
 
-    private async generateContractsJs(contractsJson: {
-        [key: string]: any;
-    }): Promise<void> {
+    private async generateContractsJs(
+        contractsJson: {
+            [key: string]: any;
+        },
+        returnResult: boolean = false,
+    ): Promise<void | string> {
         const outputDirectory = path.resolve('public/core');
 
         if (!fs.existsSync(outputDirectory))
@@ -309,19 +312,59 @@ export class ProtobufTranspile implements ITranspile {
             contracts: contractsJSON,
         };
 
-        let jsContent = '// Generated automatically by CMMV\n';
-        jsContent += '(function(global) {\n';
-        jsContent += '  try {\n';
-        jsContent +=
-            '    global.cmmv.addContracts(' + JSON.stringify(data) + ');\n';
-        jsContent += '  } catch (e) {\n';
-        jsContent += '    console.error("Error loading contracts:", e);\n';
-        jsContent += '  }\n';
-        jsContent += '})(typeof window !== "undefined" ? window : global);\n';
+        if (returnResult) {
+            return JSON.stringify(data);
+        } else {
+            let jsContent = '// Generated automatically by CMMV\n';
+            jsContent += '(function(global) {\n';
+            jsContent += '  try {\n';
+            jsContent +=
+                '    global.cmmv.addContracts(' + JSON.stringify(data) + ');\n';
+            jsContent += '  } catch (e) {\n';
+            jsContent += '    console.error("Error loading contracts:", e);\n';
+            jsContent += '  }\n';
+            jsContent +=
+                '})(typeof window !== "undefined" ? window : global);\n';
 
-        const minifiedJsContent = UglifyJS.minify(jsContent).code;
+            const minifiedJsContent = UglifyJS.minify(jsContent).code;
 
-        fs.writeFileSync(outputFile, minifiedJsContent, 'utf8');
+            fs.writeFileSync(outputFile, minifiedJsContent, 'utf8');
+        }
+    }
+
+    public async returnContractJs(): Promise<string> {
+        const contracts = Scope.getArray<any>('__contracts');
+        const contractsJson: { [key: string]: any } = {};
+
+        contracts?.forEach((contract: any) => {
+            let root = new protobufjs.Root();
+            const protoNamespace = root.define(contract.controllerName);
+
+            const itemMessage = new protobufjs.Type(
+                contract.controllerName,
+            ).add(new protobufjs.Field('id', 1, 'int32'));
+
+            contract.fields.forEach((field: any, index: number) => {
+                const protoType = this.mapToProtoType(field.protoType);
+                itemMessage.add(
+                    new protobufjs.Field(
+                        field.propertyKey,
+                        index + 2,
+                        protoType,
+                    ),
+                );
+            });
+
+            protoNamespace.add(itemMessage);
+            const contractJSON = root.toJSON();
+            contractsJson[contract.controllerName] = contractJSON;
+        });
+
+        const parseContract = await this.generateContractsJs(
+            contractsJson,
+            true,
+        );
+        return typeof parseContract == 'string' ? parseContract : '';
     }
 
     private mapToProtoType(type: string): string {

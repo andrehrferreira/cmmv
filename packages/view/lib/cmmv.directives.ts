@@ -177,6 +177,36 @@ async function resolveImport(filename): Promise<string> {
             }
 
             return scriptContent;
+        } else if (
+            filename.endsWith('.vue') &&
+            fs.existsSync(resolvedFilename)
+        ) {
+            const src = fs.readFileSync(resolvedFilename, 'utf-8');
+
+            const templateMatch = src.match(/<template>([\s\S]*?)<\/template>/);
+            const scriptMatch = src.match(/<script.*?>([\s\S]*?)<\/script>/);
+            const styleMatch = src.match(/<style.*?>([\s\S]*?)<\/style>/);
+
+            const template = templateMatch ? templateMatch[1].trim() : '';
+            const style = styleMatch ? styleMatch[1].trim() : '';
+            let scriptContent = scriptMatch ? scriptMatch[1].trim() : '';
+
+            if (scriptContent.includes('export default')) {
+                scriptContent = scriptContent.replace(
+                    /export default\s*{([\s\S]*?)}/,
+                    (_, body) => {
+                        return `
+                            {
+                                template: \`${template}\`,
+                                styles: \`${style}\`,
+                                ${body.trim()}
+                            }
+                        `;
+                    },
+                );
+            }
+
+            return scriptContent;
         } else {
             const content = await import(filename);
             return content;
@@ -241,7 +271,7 @@ export const extractSetupScript = async (
             )
                 return scriptObject.default;
         } catch (e) {
-            //console.error(e);
+            console.error(e);
         }
     }
 

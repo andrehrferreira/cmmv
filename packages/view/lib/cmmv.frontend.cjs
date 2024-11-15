@@ -77,7 +77,7 @@
                 this.methods = methods;
 
                 try {
-                    if (context.config && context.config.rpc && context.config.rpc.enabled) {
+                    if (context.config && context.config.rpc && context.config.rpc.enabled && !window.Vue) {
                         this.telemetry.start('WebSocket Initialization');
                         this.connectWebSocket();
                         this.telemetry.end('WebSocket Initialization');
@@ -309,8 +309,8 @@
                 };
 
                 if(window.Vue){
-                    const { createApp } = Vue;
-                    //const { createApp } = await import('/node_modules/vue/dist/vue.esm-bundler.js');
+                    const { createApp } = (Vue) ? Vue : await import('/node_modules/vue/dist/vue.esm-bundler.js');
+                    const { default: CMMVMixin } = await import('/assets/rpc-mixins.js');
                     const data = Object.assign({}, this.context);
                     
                     let methods = {};
@@ -320,23 +320,32 @@
                             methods[key] = new Function(`return (${global.cmmvSetup.__methods[key]})`)()
                     }
 
-                    for(let key in this) {
-                        if(key.indexOf("Request") > -1 || key.indexOf("Response") > -1 && typeof this[key] === "function")
-                            methods[key] = this[key]
-                    }
-
-                    const app = createApp({
-                        rpc: this.rpc,
-                        $rpc: this.rpc,
-                        data() {  return { ...data } },
+                    const appConfig = {
+                        data() {
+                            return { 
+                                ...data,
+                                ...CMMVMixin.data?.(),
+                            };
+                        },
                         components: this.components,
                         styles: styles,
                         $style: styles,
-                        mounted: this.mounted,
-                        created: this.created,
-                        methods: { ...this.rpc, ...methods },
-                        ...this.context
-                    });
+                        mounted() {
+                            if (typeof this.mounted === 'function') this.mounted();
+                            if (typeof CMMVMixin.mounted === 'function') CMMVMixin.mounted.call(this);
+                        },
+                        created() {
+                            if (typeof this.created === 'function') this.created();
+                            if (typeof CMMVMixin.created === 'function') CMMVMixin.created.call(this);
+                        },
+                        methods: {
+                            ...methods,
+                            ...CMMVMixin.methods,
+                        },
+                        ...this.context,
+                    };
+
+                    const app = createApp(appConfig);
 
                     if(this.vuePlugins.length > 0){
                         for(let key in this.vuePlugins) {
@@ -402,7 +411,6 @@
                     context.send(buffer);
                 },
                 add(contract, messageType, data) {
-                    console.log(this);
                     const context = this?.pack ? this : cmmv;
                     let buffer = context.pack.call(context, contract, messageType, { item: data });
                     context.send(buffer);

@@ -20,7 +20,7 @@
             <button 
                 class="todo-btn-remove"
                 s-i18n="remove" 
-                @click="DeleteTaskRequest(item.id)"
+                @click="DeleteTaskRequest(item)"
             ></button>
         </div> 
         
@@ -79,10 +79,8 @@ export default {
 
         DeleteTaskResponse(data){
             if (data.success) {
-                console.log(this);
                 const index = this.todolist.findIndex(item => item.id === data.id);
                 if (index !== -1) this.todolist.splice(index, 1);
-                this.$forceUpdate();
             }
         },
 
@@ -94,7 +92,7 @@ export default {
             if (index !== -1) 
                 this.todolist[index] = { ...data.item, id: data.id };
             else 
-                his.todolist.push({ ...data.item, id: data.id });
+                this.todolist.push({ ...data.item, id: data.id });
         } 
     }
 }
