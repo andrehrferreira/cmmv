@@ -157,7 +157,7 @@ export class AuthService extends AbstractService {
         }
 
         const token = jwt.sign({ 
-            id: user.id,
+            id: ${Config.get('repository.type') === 'mongodb' ? `user._id` : `user.id`},
             username: payload.username 
         }, jwtToken, { expiresIn });
 
@@ -177,7 +177,7 @@ export class AuthService extends AbstractService {
             session.save();
         }
 
-        ${hasCache ? `CacheService.set(\`user:\${user.id}\`, JSON.stringify(user), expiresIn);\n` : ''}        
+        ${hasCache ? `CacheService.set(\`user:\${${Config.get('repository.type') === 'mongodb' ? `user._id` : `user.id`}}\`, JSON.stringify(user), expiresIn);\n` : ''}        
         Telemetry.end('AuthService::login', req?.requestId);        
         return { result: { success: true, token, message: "Login successful" }, user };
     }

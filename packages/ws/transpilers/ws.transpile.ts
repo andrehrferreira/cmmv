@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { Application, ITranspile, Scope } from '@cmmv/core';
+import { Application, Config, ITranspile, Scope } from '@cmmv/core';
 
 export class WSTranspile implements ITranspile {
     run(): void {
@@ -65,8 +65,8 @@ export class ${gatewayName} {
         try{
             const entity = plainToClass(${contract.controllerName}Entity, data.item);
             const result = await this.${serviceName.toLowerCase()}.add(entity);
-            const response = await RpcUtils.pack("${contract.controllerName.toLowerCase()}", "Add${contract.controllerName}Response", { item: result, id: result.id });
-            ${hasCache ? `CacheService.set(\`${cacheKeyPrefix}\${result.id}\`, JSON.stringify(result), ${cacheTtl});` : ''}
+            const response = await RpcUtils.pack("${contract.controllerName.toLowerCase()}", "Add${contract.controllerName}Response", { item: result, id: ${Config.get('repository.type') === 'mongodb' ? `result._id` : `result.id`} });
+            ${hasCache ? `CacheService.set(\`${cacheKeyPrefix}\${${Config.get('repository.type') === 'mongodb' ? `result._id` : `result.id`}}\`, JSON.stringify(result), ${cacheTtl});` : ''}
             ${hasCache ? `CacheService.del("${cacheKeyPrefix}getAll");` : ''}
 
             if(response)
@@ -80,8 +80,8 @@ export class ${gatewayName} {
         try{
             const entity = plainToClass(${contract.controllerName}Entity, data.item);
             const result = await this.${serviceName.toLowerCase()}.update(data.id, entity);
-            const response = await RpcUtils.pack("${contract.controllerName.toLowerCase()}", "Update${contract.controllerName}Response", { item: result, id: result.id });
-            ${hasCache ? `CacheService.set(\`${cacheKeyPrefix}\${result.id}\`, JSON.stringify(result), ${cacheTtl});` : ''}
+            const response = await RpcUtils.pack("${contract.controllerName.toLowerCase()}", "Update${contract.controllerName}Response", { item: result, id: ${Config.get('repository.type') === 'mongodb' ? `result._id` : `result.id`} });
+            ${hasCache ? `CacheService.set(\`${cacheKeyPrefix}\${${Config.get('repository.type') === 'mongodb' ? `result._id` : `result.id`}}\`, JSON.stringify(result), ${cacheTtl});` : ''}
             ${hasCache ? `CacheService.del("${cacheKeyPrefix}getAll");` : ''}
 
             if(response)

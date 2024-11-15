@@ -39,9 +39,9 @@ export class TaskGateway {
             const result = await this.taskservice.add(entity);
             const response = await RpcUtils.pack('task', 'AddTaskResponse', {
                 item: result,
-                id: result.id,
+                id: result._id,
             });
-            CacheService.set(`task:${result.id}`, JSON.stringify(result), 300);
+            CacheService.set(`task:${result._id}`, JSON.stringify(result), 300);
             CacheService.del('task:getAll');
 
             if (response) socket.send(response);
@@ -55,9 +55,9 @@ export class TaskGateway {
             const result = await this.taskservice.update(data.id, entity);
             const response = await RpcUtils.pack('task', 'UpdateTaskResponse', {
                 item: result,
-                id: result.id,
+                id: result._id,
             });
-            CacheService.set(`task:${result.id}`, JSON.stringify(result), 300);
+            CacheService.set(`task:${result._id}`, JSON.stringify(result), 300);
             CacheService.del('task:getAll');
 
             if (response) socket.send(response);

@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { Application, ITranspile, Logger, Scope } from '@cmmv/core';
+import { Application, Config, ITranspile, Logger, Scope } from '@cmmv/core';
 
 export class ExpressTranspile implements ITranspile {
     private logger: Logger = new Logger('ExpressTranspile');
@@ -179,7 +179,7 @@ export class ${controllerName} {
     async add(@Body() item: ${contract.controllerName}, @Request() req): Promise<${contract.controllerName}> {
         Telemetry.start('${controllerName}::Add', req.requestId);
         let result = await this.${serviceName.toLowerCase()}.add(item, req);
-        ${hasCache ? `CacheService.set(\`${cacheKeyPrefix}\${result.id}\`, ${contract.controllerName}Schema(result), ${cacheTtl});` : ''}
+        ${hasCache ? `CacheService.set(\`${cacheKeyPrefix}\${${Config.get('repository.type') === 'mongodb' ? `result._id` : `result.id`}}\`, ${contract.controllerName}Schema(result), ${cacheTtl});` : ''}
         ${hasCache ? `CacheService.del("${cacheKeyPrefix}getAll");` : ''}
         Telemetry.end('${controllerName}::Add', req.requestId);
         return result;
@@ -189,7 +189,7 @@ export class ${controllerName} {
     async update(@Param('id') id: string, @Body() item: ${contract.controllerName}, @Request() req): Promise<${contract.controllerName}> {
         Telemetry.start('${controllerName}::Update', req.requestId);
         let result = await this.${serviceName.toLowerCase()}.update(id, item, req);
-        ${hasCache ? `CacheService.set(\`${cacheKeyPrefix}\${result.id}\`, ${contract.controllerName}Schema(result), ${cacheTtl});` : ''}
+        ${hasCache ? `CacheService.set(\`${cacheKeyPrefix}\${${Config.get('repository.type') === 'mongodb' ? `result._id` : `result.id`}}\`, ${contract.controllerName}Schema(result), ${cacheTtl});` : ''}
         ${hasCache ? `CacheService.del("${cacheKeyPrefix}getAll");` : ''}
         Telemetry.end('${controllerName}::Update', req.requestId);
         return result;

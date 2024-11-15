@@ -43,7 +43,7 @@ export class TaskController {
     async add(@Body() item: Task, @Request() req): Promise<Task> {
         Telemetry.start('TaskController::Add', req.requestId);
         let result = await this.taskservice.add(item, req);
-        CacheService.set(`task:${result.id}`, TaskSchema(result), 300);
+        CacheService.set(`task:${result._id}`, TaskSchema(result), 300);
         CacheService.del('task:getAll');
         Telemetry.end('TaskController::Add', req.requestId);
         return result;
@@ -57,7 +57,7 @@ export class TaskController {
     ): Promise<Task> {
         Telemetry.start('TaskController::Update', req.requestId);
         let result = await this.taskservice.update(id, item, req);
-        CacheService.set(`task:${result.id}`, TaskSchema(result), 300);
+        CacheService.set(`task:${result._id}`, TaskSchema(result), 300);
         CacheService.del('task:getAll');
         Telemetry.end('TaskController::Update', req.requestId);
         return result;

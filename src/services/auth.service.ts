@@ -68,7 +68,7 @@ export class AuthService extends AbstractService {
 
         const token = jwt.sign(
             {
-                id: user.id,
+                id: user._id,
                 username: payload.username,
             },
             jwtToken,
@@ -91,7 +91,7 @@ export class AuthService extends AbstractService {
             session.save();
         }
 
-        CacheService.set(`user:${user.id}`, JSON.stringify(user), expiresIn);
+        CacheService.set(`user:${user._id}`, JSON.stringify(user), expiresIn);
 
         Telemetry.end('AuthService::login', req?.requestId);
         return {
