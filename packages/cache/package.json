@@ -1,6 +1,6 @@
 {
     "name": "@cmmv/cache",
-    "version": "0.5.1",
+    "version": "0.5.2",
     "description": "CMMV (@cache)",
     "publishConfig": {
         "access": "public"
@@ -22,5 +22,5 @@
     "devDependencies": {
         "@types/cache-manager": "^4.0.6"
     },
-    "gitHead": "3dc8ad71128f3616fc226bb64bce37b1cafcf33d"
+    "gitHead": "5c77ecdf875900ff6dffdab7951ef0ad48646bd0"
 }

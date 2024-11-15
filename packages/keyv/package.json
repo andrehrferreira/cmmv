@@ -1,6 +1,6 @@
 {
     "name": "@cmmv/keyv",
-    "version": "0.5.1",
+    "version": "0.5.2",
     "description": "CMMV (@keyv)",
     "publishConfig": {
         "access": "public"
@@ -22,5 +22,6 @@
     },
     "devDependencies": {
         "@types/keyv": "^4.2.0"
-    }
+    },
+    "gitHead": "5c77ecdf875900ff6dffdab7951ef0ad48646bd0"
 }

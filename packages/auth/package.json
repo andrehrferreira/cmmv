@@ -1,6 +1,6 @@
 {
     "name": "@cmmv/auth",
-    "version": "0.5.1",
+    "version": "0.5.2",
     "description": "CMMV (@auth)",
     "publishConfig": {
         "access": "public"
@@ -18,5 +18,5 @@
     "dependencies": {
         "jsonwebtoken": "^9.0.2"
     },
-    "gitHead": "3dc8ad71128f3616fc226bb64bce37b1cafcf33d"
+    "gitHead": "5c77ecdf875900ff6dffdab7951ef0ad48646bd0"
 }
