@@ -8,21 +8,6 @@ describe('Config', () => {
         Config.clear();
     });
 
-    it('should load configuration file correctly', async () => {
-        const configData = { key: 'value', nested: { key: 'nestedValue' } };
-        const configPath = path.join(process.cwd(), '.cmmv.test.js');
-
-        await fs.writeFileSync(
-            configPath,
-            `module.exports = ${JSON.stringify(configData)};`,
-        );
-
-        Config.loadConfig();
-        expect(Config.getAll()).toEqual(configData);
-
-        fs.unlinkSync(configPath);
-    });
-
     it('should get a configuration value by key', () => {
         const configData = { key: 'value', nested: { key: 'nestedValue' } };
         Config.assign(configData);

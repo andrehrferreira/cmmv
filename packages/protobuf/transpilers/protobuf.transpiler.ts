@@ -337,7 +337,7 @@ export class ProtobufTranspile implements ITranspile {
         const contractsJson: { [key: string]: any } = {};
 
         contracts?.forEach((contract: any) => {
-            let root = new protobufjs.Root();
+            const root = new protobufjs.Root();
             const protoNamespace = root.define(contract.controllerName);
 
             const itemMessage = new protobufjs.Type(

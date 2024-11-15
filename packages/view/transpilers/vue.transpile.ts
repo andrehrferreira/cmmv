@@ -3,13 +3,12 @@ import * as path from 'path';
 import * as UglifyJS from 'uglify-js';
 
 import { Config, ITranspile, Logger, Scope, Module } from '@cmmv/core';
-
 import { ProtobufTranspile } from '@cmmv/protobuf';
 
 export class VueTranspile implements ITranspile {
     private logger: Logger = new Logger('VueTranspile');
 
-    run(): void {
+    async run(): Promise<void> {
         const useVue3 = Config.get<boolean>('view.vue3', false);
         const hasProtobuf = Module.hasModule('protobuf');
 

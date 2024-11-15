@@ -198,7 +198,7 @@ export class Application {
             lines.push('');
         });
 
-        let bundleContent = lines.join('\n');
+        const bundleContent = lines.join('\n');
 
         /*const tempFilePath = path.join(os.tmpdir(), 'temp-bundle.js');
         fs.writeFileSync(tempFilePath, bundleContent, 'utf8');
