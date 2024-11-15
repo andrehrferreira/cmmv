@@ -1,32 +1,15 @@
 <div class="todo-box" id="app">
-
     <h1 s-i18n="todo"></h1>
 
-    <div 
-        v-show="todolist?.length > 0" 
-        s:todolist="services.task.getAll(null, { requestId })"
-    >
-        <!-- /*include("login")*/ -->
-
-        <s-if exp="todolist?.length > 0">
-            <div>Total Record Loaded SSR: {{ todolist.length }}</div>
-            <s-else>
-                <div>No records were loaded via SSR</div>
-            </s-else>
-        </s-if>  
-
-        <br/>
-
-        <s-for 
-            c-show="todolist"
-            c-for="(item, key) in todolist"
+    <div s:todolist="services.task.getAll(null, { requestId })">
+        <div 
+            v-for="(item, key) in todolist"
             class="todo-item"
-            render-tag="div"
         >
             <div class="todo-item-content">
                 <input 
                     type="checkbox" 
-                    c-model="item.checked" 
+                    v-model="item.checked" 
                     @change="UpdateTaskRequest(item)"
                     aria-label="finish task"
                 ></input>
@@ -37,15 +20,15 @@
             <button 
                 class="todo-btn-remove"
                 s-i18n="remove" 
-                @click="DeleteTaskRequest(item.id)"
+                @click="DeleteTaskRequest(item)"
             ></button>
-        </s-for> 
+        </div> 
         
         <hr/>
     
         <div class="todo-input-box">
             <input 
-                c-model="label" 
+                v-model="label" 
                 class="todo-input"
                 placeholder="New Task"
                 aria-label="new task"
@@ -63,12 +46,8 @@
 </div>
 
 <script s-setup>
-import SwitchTheme from "@components/switchTheme.cmmv";
-
 export default {
     layout: "default",
-
-    components: { SwitchTheme },
 
     head: {
         meta: [
@@ -85,11 +64,6 @@ export default {
         return {
             todolist: [],
             label: "",
-            test: 12,
-            login: {
-                username: '', 
-                password: ''
-            }
         }
     },
 
@@ -106,9 +80,7 @@ export default {
         DeleteTaskResponse(data){
             if (data.success) {
                 const index = this.todolist.findIndex(item => item.id === data.id);
-
-                if (index !== -1) 
-                    this.todolist.splice(index, 1);
+                if (index !== -1) this.todolist.splice(index, 1);
             }
         },
 
@@ -116,7 +88,7 @@ export default {
 
         UpdateTaskResponse(data) {
             const index = this.todolist.findIndex(item => item.id === data.id);
-            
+
             if (index !== -1) 
                 this.todolist[index] = { ...data.item, id: data.id };
             else 
@@ -125,5 +97,3 @@ export default {
     }
 }
 </script>
-
-        

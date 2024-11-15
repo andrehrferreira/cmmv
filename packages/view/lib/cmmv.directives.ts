@@ -113,68 +113,107 @@ export const i18n: Directive = (
 };
 
 //Layout
-function resolveImport(filename): string {
-    const resolvedFilename = path.resolve(process.cwd(), 'public', filename);
-
-    if (filename.endsWith('.cmmv') && fs.existsSync(resolvedFilename)) {
-        const src = fs.readFileSync(resolvedFilename, 'utf-8');
-
-        const templateMatch = src.match(/<template>([\s\S]*?)<\/template>/);
-        const scriptMatch = src.match(/<script.*?>([\s\S]*?)<\/script>/);
-        const styleMatch = src.match(/<style.*?>([\s\S]*?)<\/style>/);
-        const importRegex = /import\s+([^;]+?)\s+from\s+['"]([^'"]+)['"];/g;
-        const importMatch = src.match(
-            /import\s+([^;]+?)\s+from\s+['"]([^'"]+)['"];/g,
+async function resolveImport(filename): Promise<string> {
+    try {
+        const resolvedFilename = path.resolve(
+            process.cwd(),
+            'public',
+            filename,
         );
 
-        const template = templateMatch ? templateMatch[1].trim() : '';
-        const style = styleMatch ? styleMatch[1].trim() : '';
-        let scriptContent = scriptMatch ? scriptMatch[1].trim() : '';
-        const imports = {};
+        if (filename.endsWith('.cmmv') && fs.existsSync(resolvedFilename)) {
+            const src = fs.readFileSync(resolvedFilename, 'utf-8');
 
-        scriptContent.replace(importRegex, (_, imported, from) => {
-            const filename = from
-                .replace('./', './view')
-                .replace('@/', './components/')
-                .replace('@components/', './components/');
+            const templateMatch = src.match(/<template>([\s\S]*?)<\/template>/);
+            const scriptMatch = src.match(/<script.*?>([\s\S]*?)<\/script>/);
+            const styleMatch = src.match(/<style.*?>([\s\S]*?)<\/style>/);
+            const importRegex = /import\s+([^;]+?)\s+from\s+['"]([^'"]+)['"];/g;
+            const importMatch = src.match(
+                /import\s+([^;]+?)\s+from\s+['"]([^'"]+)['"];/g,
+            );
 
-            imported.split(',').forEach(part => {
-                const cleanedImport = part.trim();
+            const template = templateMatch ? templateMatch[1].trim() : '';
+            const style = styleMatch ? styleMatch[1].trim() : '';
+            let scriptContent = scriptMatch ? scriptMatch[1].trim() : '';
+            const imports = {};
 
-                if (cleanedImport.startsWith('{')) {
-                    const destructured = cleanedImport
-                        .replace(/[{}]/g, '')
-                        .split(',')
-                        .map(name => `${name.trim()}: ${name.trim()}`)
-                        .join(', ');
+            scriptContent.replace(importRegex, (_, imported, from) => {
+                const filename = from
+                    .replace('./', './view')
+                    .replace('@/', './components/')
+                    .replace('@components/', './components/');
 
-                    imports[destructured] = resolveImport(filename);
-                } else {
-                    imports[cleanedImport] = resolveImport(filename);
-                }
+                imported.split(',').forEach(async part => {
+                    const cleanedImport = part.trim();
+
+                    if (cleanedImport.startsWith('{')) {
+                        const destructured = cleanedImport
+                            .replace(/[{}]/g, '')
+                            .split(',')
+                            .map(name => `${name.trim()}: ${name.trim()}`)
+                            .join(', ');
+
+                        imports[destructured] = await resolveImport(filename);
+                    } else {
+                        imports[cleanedImport] = await resolveImport(filename);
+                    }
+                });
+
+                return '';
             });
 
-            return '';
-        });
+            const componentObjectString = Object.keys(imports)
+                .map(key => `${key}: ${imports[key]}`)
+                .join(', ');
 
-        const componentObjectString = Object.keys(imports)
-            .map(key => `${key}: ${imports[key]}`)
-            .join(', ');
+            if (scriptContent.includes('export default')) {
+                scriptContent = scriptContent
+                    .replace(importRegex, '')
+                    .replace(
+                        /export default\s*{([\s\S]*?)}/,
+                        `{ template: \`${template}\`, components: { ${componentObjectString} },  styles: \`${style}\`, $1 }`,
+                    );
+                //
+            }
 
-        if (scriptContent.includes('export default')) {
-            scriptContent = scriptContent
-                .replace(importRegex, '')
-                .replace(
+            return scriptContent;
+        } else if (
+            filename.endsWith('.vue') &&
+            fs.existsSync(resolvedFilename)
+        ) {
+            const src = fs.readFileSync(resolvedFilename, 'utf-8');
+
+            const templateMatch = src.match(/<template>([\s\S]*?)<\/template>/);
+            const scriptMatch = src.match(/<script.*?>([\s\S]*?)<\/script>/);
+            const styleMatch = src.match(/<style.*?>([\s\S]*?)<\/style>/);
+
+            const template = templateMatch ? templateMatch[1].trim() : '';
+            const style = styleMatch ? styleMatch[1].trim() : '';
+            let scriptContent = scriptMatch ? scriptMatch[1].trim() : '';
+
+            if (scriptContent.includes('export default')) {
+                scriptContent = scriptContent.replace(
                     /export default\s*{([\s\S]*?)}/,
-                    `{ template: \`${template}\`, components: { ${componentObjectString} },  styles: \`${style}\`, $1 }`,
+                    (_, body) => {
+                        return `
+                            {
+                                template: \`${template}\`,
+                                styles: \`${style}\`,
+                                ${body.trim()}
+                            }
+                        `;
+                    },
                 );
-            //
+            }
+
+            return scriptContent;
+        } else {
+            const content = await import(filename);
+            return content;
         }
-
-        return scriptContent;
+    } catch {
+        return 'null';
     }
-
-    return 'null';
 }
 
 export const extractSetupScript = async (
@@ -196,7 +235,7 @@ export const extractSetupScript = async (
                     .replace('@/', './components/')
                     .replace('@components/', './components/');
 
-                imported.split(',').forEach(part => {
+                imported.split(',').forEach(async part => {
                     const cleanedImport = part.trim();
 
                     if (cleanedImport.startsWith('{')) {
@@ -206,9 +245,9 @@ export const extractSetupScript = async (
                             .map(name => `${name.trim()}: ${name.trim()}`)
                             .join(', ');
 
-                        imports += `const { ${destructured} } = ${resolveImport(filename)};\n`;
+                        imports += `const { ${destructured} } = ${await resolveImport(filename)};\n`;
                     } else {
-                        imports += `const ${cleanedImport} = ${resolveImport(filename)};\n`;
+                        imports += `const ${cleanedImport} = ${await resolveImport(filename)};\n`;
                     }
                 });
 
@@ -249,7 +288,7 @@ export const extractSetupScript = async (
 //SSR
 async function forSSR(templateText: string, template: Template) {
     const forDirectiveRegex =
-        /<(\w[-\w]*)([^>]*)\s+(c-for|v-for)\s*=\s*["'](.*?)["']([^>]*)>(.*?)<\/\1>/gs;
+        /<(\w[-\w]*)([^>]*)\s+(c-for)\s*=\s*["'](.*?)["']([^>]*)>(.*?)<\/\1>/gs;
     const attrDirectiveRegex =
         /\s+(c-text|c-html|:ref)\s*=\s*["']([^"']+)["']/g;
     const placeholder = 'c-ssr-for';

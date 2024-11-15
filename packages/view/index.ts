@@ -6,7 +6,7 @@ export * from './lib/cmmv.directives';
 export * from './lib/cmmv.eval';
 export * from './lib/cmmv.utils';
 
-export * from './transpilers/view.transpile';
+export * from './transpilers';
 export * from './registries/view.registry';
 export * from './modules/view.module';
 

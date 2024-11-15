@@ -1,6 +1,6 @@
 {
     "name": "@cmmv/scheduling",
-    "version": "0.5.0",
+    "version": "0.5.5",
     "description": "CMMV (@scheduling)",
     "publishConfig": {
         "access": "public"
@@ -18,5 +18,5 @@
     "dependencies": {
         "cron": "^3.1.7"
     },
-    "gitHead": "3dc8ad71128f3616fc226bb64bce37b1cafcf33d"
+    "gitHead": "9b28f002268080dc8d283263da48e07aa754581f"
 }

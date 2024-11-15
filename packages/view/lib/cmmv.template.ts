@@ -304,6 +304,9 @@ export class Template {
                 }
             }
 
+            const vuePlugins =
+                Config.get<Array<Object | string>>('view.plugins');
+
             let jsContent = `// Generated automatically by CMMV\n`;
             jsContent += `(function(global) {
                 try {          
@@ -316,6 +319,7 @@ export class Template {
                     global.cmmvSetup.__mounted = ${mountedAsString ? JSON.stringify(mountedAsString) : 'null'};
                     global.cmmvSetup.__created = ${createdAsString ? JSON.stringify(createdAsString) : 'null'};
                     global.cmmvSetup.__styles = ${JSON.stringify(ViewRegistry.retrieveAll())}
+                    global.cmmvSetup.__vuePlugins = ${vuePlugins ? JSON.stringify(vuePlugins) : '{}'};
                 } catch (e) {
                     console.error("Error loading contracts or initializing app data:", e);
                 }
@@ -385,6 +389,7 @@ export class Template {
             ${headers}\n
             <script nonce="${this.nonce}">
                 var process = { env: { NODE_ENV: '${process.env.NODE_ENV}' } };
+                ${Config.get<boolean>('view.vue3', false) ? 'window.Vue = {}' : ''}
             </script>
         `;
 
@@ -438,8 +443,11 @@ export class Template {
             scripts.forEach((script: Record<string, string>) => {
                 let scriptString = '<script ';
 
-                for (const [key, value] of Object.entries(script))
-                    scriptString += `${key}="${value}" `;
+                for (const [key, value] of Object.entries(script)) {
+                    if (key === 'src' && value.startsWith('@'))
+                        scriptString += `${key}="node_modules/${value}" `;
+                    else scriptString += `${key}="${value}" `;
+                }
 
                 if (this.nonce) scriptString += `nonce="${this.nonce}" `;
 
