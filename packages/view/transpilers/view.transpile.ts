@@ -70,12 +70,26 @@ export class ViewTranspile implements ITranspile {
             const outputCSSTailwind = path.resolve(
                 'public/core/0-tailwind.min.css',
             );
-            const inputCSSFile = path.resolve('src/tailwind.css');
-            execSync(
-                `npx tailwindcss -i ${inputCSSFile} -o ${outputCSSTailwind} --minify`,
-                { stdio: 'ignore' },
-            );
-            this.logger.log('Tailwind CSS compiled successfully');
+            const inputCSSFile = path.resolve('public/tailwind.css');
+            const inputCSSFileSrc = path.resolve('src/tailwind.css');
+
+            if (fs.existsSync(inputCSSFile)) {
+                execSync(
+                    `npx tailwindcss -i ${inputCSSFile} -o ${outputCSSTailwind} --minify`,
+                    { stdio: 'ignore' },
+                );
+                this.logger.log('Tailwind CSS compiled successfully');
+            } else if (fs.existsSync(inputCSSFileSrc)) {
+                execSync(
+                    `npx tailwindcss -i ${inputCSSFileSrc} -o ${outputCSSTailwind} --minify`,
+                    { stdio: 'ignore' },
+                );
+                this.logger.log('Tailwind CSS compiled successfully');
+            } else {
+                this.logger.warning(
+                    'Unable to generate Tailwind file because input not found in /public/tailwind.css',
+                );
+            }
         }
     }
 }
