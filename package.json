@@ -63,6 +63,7 @@
 	},
 	"devDependencies": {
 		"@cmmv/plugin-vite": "^0.0.2",
+		"@cmmv/protobuf": "^0.5.5",
 		"@codechecks/client": "^0.0.50",
 		"@commitlint/cli": "^19.5.0",
 		"@commitlint/config-angular": "^19.5.0",

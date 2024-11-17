@@ -378,6 +378,8 @@ describe('ContractField Decorator Additional Tests', () => {
             class OverriddenViewPage {}
 
             const options = {
+                controllerName: 'contracttest',
+                protoPath: '',
                 viewForm: OverriddenViewForm,
                 viewPage: OverriddenViewPage,
             };

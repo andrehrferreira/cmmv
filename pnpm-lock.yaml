@@ -130,6 +130,9 @@ importers:
       '@cmmv/plugin-vite':
         specifier: ^0.0.2
         version: 0.0.2(vite@5.4.11(@types/node@22.9.0)(sass@1.81.0)(terser@5.36.0))
+      '@cmmv/protobuf':
+        specifier: ^0.5.5
+        version: 0.5.5
       '@codechecks/client':
         specifier: ^0.0.50
         version: 0.0.50(request@2.88.2)(typescript@5.6.3)
@@ -590,6 +593,9 @@ packages:
     engines: {node: ^18.0.0 || >=20.0.0}
     peerDependencies:
       vite: ^5.0.0
+
+  '@cmmv/protobuf@0.5.5':
+    resolution: {integrity: sha512-egtGsKcIryCiilwvvBZw9xnnnPJUMavhQCbo+DpKxBlxgNN3lqtbG59fWH070rXv6rYQnNSxA890yHCC4vxPWg==}
 
   '@cmmv/reactivity@0.4.6':
     resolution: {integrity: sha512-9h/+MoC4lnmsg5dlcDxhzZYTSiQOrwOW1uoVSduvaCdbNYA1tpA11S5AHLE00HS+mPsyciXEhMyDEBh7uPkAqQ==}
@@ -8082,6 +8088,12 @@ snapshots:
   '@cmmv/plugin-vite@0.0.2(vite@5.4.11(@types/node@22.9.0)(sass@1.81.0)(terser@5.36.0))':
     dependencies:
       vite: 5.4.11(@types/node@22.9.0)(sass@1.81.0)(terser@5.36.0)
+
+  '@cmmv/protobuf@0.5.5':
+    dependencies:
+      fast-glob: 3.3.2
+      protobufjs: 7.4.0
+      uglify-js: 3.19.3
 
   '@cmmv/reactivity@0.4.6':
     dependencies:

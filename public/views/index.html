@@ -84,15 +84,17 @@ export default {
             }
         },
 
-        AddTaskResponse(data) { this.UpdateTaskResponse(data); },
+        AddTaskResponse(data) { 
+            this.todolist.push({ ...data.item, id: data._id ? data._id : data.id });
+        },
 
         UpdateTaskResponse(data) {
-            const index = this.todolist.findIndex(item => item.id === data.id);
+            const index = data._id ? 
+                this.todolist.findIndex(item => item._id === data._id):
+                this.todolist.findIndex(item => item.id === data.id);
 
             if (index !== -1) 
-                this.todolist[index] = { ...data.item, id: data.id };
-            else 
-                this.todolist.push({ ...data.item, id: data.id });
+                this.todolist[index] = { ...data.item, id: data._id ? data._id : data.id };
         } 
     }
 }
