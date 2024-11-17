@@ -28,6 +28,8 @@ import {
     CONTROLLER_IMPORTS,
     CONTROLLER_CACHE,
     GENERATE_ENTITIES_METADATA,
+    CONTROLLER_VIEWFORM,
+    CONTROLLER_VIEWPAGE,
 } from '../decorators';
 
 import { ApplicationTranspile } from '../transpilers';
@@ -325,6 +327,14 @@ export class Application {
                 CONTROLLER_CACHE,
                 contract.constructor,
             );
+            const viewForm = Reflect.getMetadata(
+                CONTROLLER_VIEWFORM,
+                contract.constructor,
+            );
+            const viewPage = Reflect.getMetadata(
+                CONTROLLER_VIEWPAGE,
+                contract.constructor,
+            );
 
             const contractStructure = {
                 controllerName,
@@ -340,6 +350,8 @@ export class Application {
                 cache,
                 customProto: contract.customProto,
                 customTypes: contract.customTypes,
+                viewForm,
+                viewPage,
             };
 
             Scope.addToArray('__contracts', contractStructure);

@@ -50,13 +50,7 @@ module.exports = {
         extractInlineScript: false,
         minifyHTML: true,
         vue3: true,
-        tailwind: true,
-        plugins: [
-            /*{ 
-                plugin: "@vueform/vueform",
-                config: "/assets/vueform.config.js"
-            }*/
-        ]
+        tailwind: true
     },
 
     repository: {

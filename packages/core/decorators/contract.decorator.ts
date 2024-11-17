@@ -37,6 +37,8 @@ export interface ContractOptions {
     auth?: boolean;
     imports?: Array<string>;
     cache?: CacheOptions;
+    viewForm?: new () => any;
+    viewPage?: new () => any;
 }
 
 export const CONTRACT_WATERMARK = Symbol('contract_watermark');
@@ -56,8 +58,22 @@ export const CONTROLLER_CUSTOM_PATH_METADATA = Symbol(
 );
 export const CONTROLLER_IMPORTS = Symbol('contract_imports');
 export const CONTROLLER_CACHE = Symbol('contract_cache');
+export const CONTROLLER_VIEWFORM = Symbol('contract_viewform');
+export const CONTROLLER_VIEWPAGE = Symbol('contract_viewpage');
 
 export function Contract(options?: ContractOptions): ClassDecorator {
+    const isValidClass = (value: any) => {
+        return typeof value === 'function' && value.prototype;
+    };
+
+    if (options?.viewForm && !isValidClass(options.viewForm)) {
+        throw new Error(`Invalid viewForm provided: ${options.viewForm}`);
+    }
+
+    if (options?.viewPage && !isValidClass(options.viewPage)) {
+        throw new Error(`Invalid viewPage provided: ${options.viewPage}`);
+    }
+
     const defaultControllerName = 'DefaultContract';
     const defaultProtoPath = 'contract.proto';
     const defaultProtoPackage = '';
@@ -68,6 +84,8 @@ export function Contract(options?: ContractOptions): ClassDecorator {
     const defaultControllerCustomPath = '';
     const defaultImports = [];
     const defaultCache = null;
+    const defaultViewForm = null;
+    const defaultViewPage = null;
 
     const [
         controllerName,
@@ -80,6 +98,8 @@ export function Contract(options?: ContractOptions): ClassDecorator {
         controllerCustomPath,
         imports,
         cache,
+        viewForm,
+        viewPage,
     ] = !options
         ? [
               defaultControllerName,
@@ -92,6 +112,8 @@ export function Contract(options?: ContractOptions): ClassDecorator {
               defaultControllerCustomPath,
               defaultImports,
               defaultCache,
+              defaultViewForm,
+              defaultViewPage,
           ]
         : [
               options.controllerName || defaultControllerName,
@@ -104,6 +126,8 @@ export function Contract(options?: ContractOptions): ClassDecorator {
               options.controllerCustomPath || defaultControllerCustomPath,
               options.imports || defaultImports,
               options.cache || defaultCache,
+              options.viewForm || defaultViewForm,
+              options.viewPage || defaultViewPage,
           ];
 
     return (target: object) => {
@@ -134,6 +158,8 @@ export function Contract(options?: ContractOptions): ClassDecorator {
         );
         Reflect.defineMetadata(CONTROLLER_IMPORTS, imports, target);
         Reflect.defineMetadata(CONTROLLER_CACHE, cache, target);
+        Reflect.defineMetadata(CONTROLLER_VIEWFORM, viewForm, target);
+        Reflect.defineMetadata(CONTROLLER_VIEWPAGE, viewPage, target);
     };
 }
 

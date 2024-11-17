@@ -12,6 +12,8 @@ import {
     CONTROLLER_IMPORTS,
     AUTH_METADATA,
     CONTROLLER_CACHE,
+    CONTROLLER_VIEWFORM,
+    CONTROLLER_VIEWPAGE,
 } from '../../decorators/contract.decorator';
 
 describe('Contract Decorator', () => {
@@ -252,5 +254,163 @@ describe('ContractField Decorator Additional Tests', () => {
 
         expect(fieldMetadata.protoType).toBe('string');
         expect(fieldMetadata.toClassOnly).toBe(true);
+    });
+
+    describe('Contract Decorator with ViewForm and ViewPage', () => {
+        it('should apply viewForm and viewPage metadata when provided', () => {
+            class MockViewForm {}
+            class MockViewPage {}
+
+            const options = {
+                controllerName: 'ViewContract',
+                protoPath: 'view.proto',
+                viewForm: MockViewForm,
+                viewPage: MockViewPage,
+            };
+
+            @Contract(options)
+            class ViewClass {}
+
+            expect(
+                Reflect.getMetadata(CONTROLLER_NAME_METADATA, ViewClass),
+            ).toBe('ViewContract');
+            expect(Reflect.getMetadata(PROTO_PATH_METADATA, ViewClass)).toBe(
+                'view.proto',
+            );
+            expect(Reflect.getMetadata(CONTROLLER_VIEWFORM, ViewClass)).toBe(
+                MockViewForm,
+            );
+            expect(Reflect.getMetadata(CONTROLLER_VIEWPAGE, ViewClass)).toBe(
+                MockViewPage,
+            );
+        });
+
+        it('should apply default metadata when viewForm and viewPage are not provided', () => {
+            @Contract()
+            class DefaultViewClass {}
+
+            expect(
+                Reflect.getMetadata(CONTROLLER_VIEWFORM, DefaultViewClass),
+            ).toBe(null);
+            expect(
+                Reflect.getMetadata(CONTROLLER_VIEWPAGE, DefaultViewClass),
+            ).toBe(null);
+        });
+    });
+
+    describe('Contract Decorator Extended Tests for ViewForm and ViewPage', () => {
+        it('should allow dynamic assignment of viewForm and viewPage', () => {
+            class DynamicViewForm {}
+            class DynamicViewPage {}
+
+            const options = {
+                controllerName: 'DynamicViewContract',
+                protoPath: 'dynamic.proto',
+                viewForm: DynamicViewForm,
+                viewPage: DynamicViewPage,
+            };
+
+            @Contract(options)
+            class DynamicViewClass {}
+
+            expect(
+                Reflect.getMetadata(CONTROLLER_VIEWFORM, DynamicViewClass),
+            ).toBe(DynamicViewForm);
+            expect(
+                Reflect.getMetadata(CONTROLLER_VIEWPAGE, DynamicViewClass),
+            ).toBe(DynamicViewPage);
+        });
+
+        it('should handle null values for viewForm and viewPage', () => {
+            const options = {
+                controllerName: 'NullViewContract',
+                protoPath: 'nullview.proto',
+                viewForm: null,
+                viewPage: null,
+            };
+
+            @Contract(options)
+            class NullViewClass {}
+
+            expect(
+                Reflect.getMetadata(CONTROLLER_VIEWFORM, NullViewClass),
+            ).toBe(null);
+            expect(
+                Reflect.getMetadata(CONTROLLER_VIEWPAGE, NullViewClass),
+            ).toBe(null);
+        });
+
+        it('should work with custom metadata alongside viewForm and viewPage', () => {
+            class CustomViewForm {}
+            class CustomViewPage {}
+
+            const options = {
+                controllerName: 'CustomViewContract',
+                protoPath: 'customview.proto',
+                viewForm: CustomViewForm,
+                viewPage: CustomViewPage,
+                imports: ['import1', 'import2'],
+                cache: { key: 'customCache', ttl: 600 },
+            };
+
+            @Contract(options)
+            class CustomViewClass {}
+
+            expect(
+                Reflect.getMetadata(CONTROLLER_NAME_METADATA, CustomViewClass),
+            ).toBe('CustomViewContract');
+            expect(
+                Reflect.getMetadata(CONTROLLER_VIEWFORM, CustomViewClass),
+            ).toBe(CustomViewForm);
+            expect(
+                Reflect.getMetadata(CONTROLLER_VIEWPAGE, CustomViewClass),
+            ).toBe(CustomViewPage);
+            expect(
+                Reflect.getMetadata(CONTROLLER_IMPORTS, CustomViewClass),
+            ).toEqual(['import1', 'import2']);
+            expect(
+                Reflect.getMetadata(CONTROLLER_CACHE, CustomViewClass),
+            ).toEqual({ key: 'customCache', ttl: 600 });
+        });
+
+        it('should override default viewForm and viewPage with provided values', () => {
+            class OverriddenViewForm {}
+            class OverriddenViewPage {}
+
+            const options = {
+                viewForm: OverriddenViewForm,
+                viewPage: OverriddenViewPage,
+            };
+
+            @Contract(options)
+            class OverriddenViewClass {}
+
+            expect(
+                Reflect.getMetadata(CONTROLLER_VIEWFORM, OverriddenViewClass),
+            ).toBe(OverriddenViewForm);
+            expect(
+                Reflect.getMetadata(CONTROLLER_VIEWPAGE, OverriddenViewClass),
+            ).toBe(OverriddenViewPage);
+        });
+
+        it('should throw error if viewForm or viewPage are invalid types', () => {
+            const invalidOptions1 = {
+                viewForm: 'invalidViewForm', // Invalid type
+            };
+
+            const invalidOptions2 = {
+                viewPage: 123, // Invalid type
+            };
+
+            expect(() => {
+                @Contract(invalidOptions1 as any)
+                class InvalidViewFormClass {}
+            }).toThrowError();
+
+            expect(() => {
+                @Contract(invalidOptions2 as any)
+                class InvalidViewPageClass {}
+            }).toThrowError();
+        });
     });
 });
