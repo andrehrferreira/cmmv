@@ -1,6 +1,6 @@
 {
     "name": "@cmmv/protobuf",
-    "version": "0.5.9",
+    "version": "0.5.10",
     "description": "CMMV (@protobuf)",
     "publishConfig": {
         "access": "public"
