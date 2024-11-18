@@ -355,12 +355,8 @@
                                 components: this.components,
                                 styles: styles,
                                 $style: styles,
-                                mounted() {
-                                    if (typeof this.mounted === 'function') this.mounted();
-                                },
-                                created() {
-                                    if (typeof this.created === 'function') this.created();
-                                },
+                                mounted: this.mounted,
+                                created: this.created,
                                 methods: { ...methods },
                                 ...this.context,
                             };
