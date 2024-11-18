@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { CacheService } from '../services/cache.service';
 import * as cacheManager from 'cache-manager';
-import * as sinon from 'sinon';
 
 describe('CacheService', () => {
     let sandbox: any;

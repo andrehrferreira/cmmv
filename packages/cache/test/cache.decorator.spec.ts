@@ -1,5 +1,4 @@
 import { describe, it, expect } from 'vitest';
-import { CacheRegistry } from '../registries/cache.registry';
 import { Cache } from '../decorators/cache.decorator';
 import 'reflect-metadata';
 

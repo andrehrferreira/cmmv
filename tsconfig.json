@@ -27,7 +27,7 @@
         "useDefineForClassFields": true,
         "allowJs": false,
         "lib": ["esnext", "dom"],
-        "types": ["node", "mocha"],
+        "types": ["node"],
         "paths": {
             "*": ["node_modules/*", "packages/*"],
             "@cmmv/core": ["packages/core"],

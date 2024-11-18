@@ -230,9 +230,15 @@ export class DefaultAdapter extends AbstractHttpAdapter<
         const hasViteModule = Module.hasModule('vite');
 
         if (useVite && hasViteModule) {
-            const { createServer } = await require('vite');
-            const configFilePathJs = path.join(process.cwd(), 'vite.config.js');
-            const configFilePathTs = path.join(process.cwd(), 'vite.config.ts');
+            const { createServer } = await import('vite');
+            const configFilePathJs = path.join(
+                process.cwd(),
+                'vite.config.mjs',
+            );
+            const configFilePathTs = path.join(
+                process.cwd(),
+                'vite.config.mts',
+            );
 
             this.vite = await createServer({
                 configFile: fs.existsSync(configFilePathTs)
@@ -243,10 +249,6 @@ export class DefaultAdapter extends AbstractHttpAdapter<
                 appType: 'custom',
                 server: {
                     middlewareMode: true,
-                },
-                watch: {
-                    usePolling: true,
-                    interval: 100,
                 },
                 resolve: {
                     alias: {

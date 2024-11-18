@@ -29,12 +29,24 @@ CMMV aims to simplify the development process by leveraging TypeScript's powerfu
 - **Express Integration:** Seamless integration with Express for a familiar and robust HTTP server environment.
 - **Extensible:** Highly customizable and easy to extend with your own modules and components.
 
-## Installation
+## Setup with CLI
 
-CMMV is available as a collection of npm packages. To install the core package, use npm:
+CMMV now provides a CLI (Command Line Interface) to streamline the installation process and quickly set up your project with the desired configurations.
+
+To initialize a new project, you can use the following command:
 
 ```bash
-$ pnpm add @cmmv/core @cmmv/http @cmmv/protobuf @cmmv/ws @cmmv/view @cmmv/repository
+$ pnpm dlx @cmmv/cli@latest init <project-name>
+```
+
+This command will walk you through a guided setup process, asking about your preferred configurations, such as enabling Vite, RPC, caching, repository type, and view setup (e.g., Vue 3 or Reactivity). It will automatically create the necessary files and folders, set up dependencies, and configure the project.
+
+## Legacy Setup (Manual)
+
+If you prefer to set up the project manually, you can still install the necessary modules individually:
+
+```bash
+$ pnpm add @cmmv/core @cmmv/http @cmmv/view rxjs reflect-metadata class-validator class-transformer fast-json-stringify
 ```
 
 ## Quick Start

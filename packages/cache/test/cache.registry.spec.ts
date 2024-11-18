@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
 import 'reflect-metadata';
+import { describe, it, expect } from 'vitest';
 import { CacheRegistry } from '../registries/cache.registry';
 
 describe('CacheRegistry', () => {
