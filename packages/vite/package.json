@@ -1,6 +1,6 @@
 {
     "name": "@cmmv/vite",
-    "version": "0.5.8",
+    "version": "0.5.9",
     "description": "CMMV (@vite)",
     "publishConfig": {
         "access": "public"
