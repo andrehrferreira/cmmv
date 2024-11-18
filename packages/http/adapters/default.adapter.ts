@@ -208,19 +208,9 @@ export class DefaultAdapter extends AbstractHttpAdapter<
             for (const filePath of possiblePaths) {
                 if (fs.existsSync(filePath)) {
                     fileFound = true;
-                    const debugFilePath = path.resolve(
-                        require.resolve('@cmmv/view'),
-                        '../lib/debug.html',
-                    );
-                    const debugContent =
-                        process.env.NODE_ENV === 'dev' &&
-                        fs.existsSync(debugFilePath)
-                            ? fs.readFileSync(debugFilePath, 'utf-8')
-                            : '';
                     const config = Config.getAll();
 
                     return res.render(filePath, {
-                        debug: debugContent,
                         nonce: res.locals.nonce,
                         services: ServiceRegistry.getServicesArr(),
                         requestId: req.requestId,
@@ -241,10 +231,13 @@ export class DefaultAdapter extends AbstractHttpAdapter<
 
         if (useVite && hasViteModule) {
             const { createServer } = await require('vite');
-            const configFilePath = path.join(process.cwd(), 'vite.config.js');
+            const configFilePathJs = path.join(process.cwd(), 'vite.config.js');
+            const configFilePathTs = path.join(process.cwd(), 'vite.config.ts');
 
             this.vite = await createServer({
-                configFile: configFilePath,
+                configFile: fs.existsSync(configFilePathTs)
+                    ? configFilePathTs
+                    : configFilePathJs,
                 root: process.cwd(),
                 clearScreen: false,
                 appType: 'custom',

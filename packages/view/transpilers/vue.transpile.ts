@@ -18,6 +18,7 @@ export class VueTranspile implements ITranspile {
             if (hasProtobuf) {
                 const protobufTranspile =
                     Module.loadTranspile<ProtobufTranspile>(ProtobufTranspile);
+
                 protobufTranspile
                     .returnContractJs()
                     .then((contractsString: string) => {

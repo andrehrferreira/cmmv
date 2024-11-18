@@ -65,8 +65,9 @@ export class ViewTranspile implements ITranspile {
         const minifiedJsContent = UglifyJS.minify(content).code;
         fs.writeFileSync(outputFile, minifiedJsContent, 'utf8');
 
-        //Tailwind
+        // Tailwind
         if (useTailwind) {
+            const tailwindConfigPath = path.resolve('tailwind.config.ts');
             const outputCSSTailwind = path.resolve(
                 'public/core/0-tailwind.min.css',
             );
@@ -75,19 +76,19 @@ export class ViewTranspile implements ITranspile {
 
             if (fs.existsSync(inputCSSFile)) {
                 execSync(
-                    `npx tailwindcss -i ${inputCSSFile} -o ${outputCSSTailwind} --minify`,
+                    `npx tailwindcss -i ${inputCSSFile} -o ${outputCSSTailwind} --config ${tailwindConfigPath} --minify`,
                     { stdio: 'ignore' },
                 );
                 this.logger.log('Tailwind CSS compiled successfully');
             } else if (fs.existsSync(inputCSSFileSrc)) {
                 execSync(
-                    `npx tailwindcss -i ${inputCSSFileSrc} -o ${outputCSSTailwind} --minify`,
+                    `npx tailwindcss -i ${inputCSSFileSrc} -o ${outputCSSTailwind} --config ${tailwindConfigPath} --minify`,
                     { stdio: 'ignore' },
                 );
                 this.logger.log('Tailwind CSS compiled successfully');
             } else {
                 this.logger.warning(
-                    'Unable to generate Tailwind file because input not found in /public/tailwind.css',
+                    'Unable to generate Tailwind file because input not found in /public/tailwind.css or /src/tailwind.css',
                 );
             }
         }

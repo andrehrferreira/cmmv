@@ -233,19 +233,10 @@ export class ExpressAdapter extends AbstractHttpAdapter<
             for (const filePath of possiblePaths) {
                 if (fs.existsSync(filePath)) {
                     fileFound = true;
-                    const debugFilePath = path.resolve(
-                        require.resolve('@cmmv/view'),
-                        '../lib/debug.html',
-                    );
-                    const debugContent =
-                        process.env.NODE_ENV === 'dev' &&
-                        fs.existsSync(debugFilePath)
-                            ? fs.readFileSync(debugFilePath, 'utf-8')
-                            : '';
+
                     const config = Config.getAll();
 
                     return res.render(filePath, {
-                        debug: debugContent,
                         nonce: res.locals.nonce,
                         services: ServiceRegistry.getServicesArr(),
                         requestId: req.requestId,

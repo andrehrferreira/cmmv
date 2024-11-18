@@ -310,41 +310,80 @@
 
                 if(window.Vue){
                     const { createApp } = (Vue) ? Vue : await import('/node_modules/vue/dist/vue.esm-bundler.js');
-                    const { default: CMMVMixin } = await import('/assets/rpc-mixins.js');
                     const data = Object.assign({}, this.context);
-                    
+
                     let methods = {};
+                    let appConfig = {};
 
                     if (typeof global.cmmvSetup.__methods === "object") {
                         for (let key in global.cmmvSetup.__methods)
                             methods[key] = new Function(`return (${global.cmmvSetup.__methods[key]})`)()
                     }
 
-                    const appConfig = {
-                        data() {
-                            return { 
-                                ...data,
-                                ...CMMVMixin.data?.(),
+                    try {
+                        if(this.context.config.rpc.enabled){
+                            const { default: CMMVMixin } = await import('/assets/rpc-mixins.js');
+                        
+                            appConfig = {
+                                data() {
+                                    return { 
+                                        ...data,
+                                        ...CMMVMixin.data?.(),
+                                    };
+                                },
+                                components: this.components,
+                                styles: styles,
+                                $style: styles,
+                                mounted() {
+                                    if (typeof this.mounted === 'function') this.mounted();
+                                    if (typeof CMMVMixin.mounted === 'function') CMMVMixin.mounted.call(this);
+                                },
+                                created() {
+                                    if (typeof this.created === 'function') this.created();
+                                    if (typeof CMMVMixin.created === 'function') CMMVMixin.created.call(this);
+                                },
+                                methods: {
+                                    ...methods,
+                                    ...CMMVMixin.methods,
+                                },
+                                ...this.context,
                             };
-                        },
-                        components: this.components,
-                        styles: styles,
-                        $style: styles,
-                        mounted() {
-                            if (typeof this.mounted === 'function') this.mounted();
-                            if (typeof CMMVMixin.mounted === 'function') CMMVMixin.mounted.call(this);
-                        },
-                        created() {
-                            if (typeof this.created === 'function') this.created();
-                            if (typeof CMMVMixin.created === 'function') CMMVMixin.created.call(this);
-                        },
-                        methods: {
-                            ...methods,
-                            ...CMMVMixin.methods,
-                        },
-                        ...this.context,
-                    };
-
+                        }
+                        else{
+                            appConfig = {
+                                data() { return {  ...data }; },
+                                components: this.components,
+                                styles: styles,
+                                $style: styles,
+                                mounted() {
+                                    if (typeof this.mounted === 'function') this.mounted();
+                                },
+                                created() {
+                                    if (typeof this.created === 'function') this.created();
+                                },
+                                methods: { ...methods },
+                                ...this.context,
+                            };
+                        }
+                        
+                    }
+                    catch {
+                        appConfig = {
+                            data() { return {  ...data }; },
+                            components: this.components,
+                            styles: styles,
+                            $style: styles,
+                            mounted() {
+                                if (typeof this.mounted === 'function') this.mounted();
+                            },
+                            created() {
+                                if (typeof this.created === 'function') this.created();
+                            },
+                            methods: { ...methods },
+                            ...this.context,
+                        };
+                    }
+                    
                     const app = createApp(appConfig);
 
                     if(this.vuePlugins.length > 0){

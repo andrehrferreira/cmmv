@@ -147,20 +147,10 @@ export class FastifyAdapter extends AbstractHttpAdapter<FastifyInstance> {
 
                 for (const filePath of possiblePaths) {
                     if (fs.existsSync(filePath)) {
-                        const debugFilePath = path.resolve(
-                            require.resolve('@cmmv/view'),
-                            '../src/debug.html',
-                        );
-                        const debugContent =
-                            process.env.NODE_ENV === 'dev'
-                                ? fs.readFileSync(debugFilePath, 'utf-8')
-                                : '';
-
                         return reply.type('text/html').send(
                             await this.render.renderFile(
                                 filePath,
                                 {
-                                    debug: debugContent,
                                     nonce: request.nonce,
                                 },
                                 {},
