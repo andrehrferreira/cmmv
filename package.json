@@ -21,7 +21,7 @@
 		"lint:fix": "concurrently 'pnpm run lint:packages -- --fix' 'pnpm run lint:spec -- --fix'",
 		"lint:packages": "eslint 'packages/**/**.ts' --no-ignore",
 		"lint:spec": "eslint 'packages/**/**.spec.ts' --no-ignore",
-		"prerelease": "./tools/preRelease.sh && gulp copy-misc",
+		"prerelease": "./tools/preRelease.sh && pnpm install && gulp copy-misc",
 		"packages:move": "gulp move",
 		"changelog": "lerna-changelog",
 		"release:lerna": "./node_modules/.bin/lerna publish --force-publish --exact -m \"chore: chore(@cmmv) publish %s release\"",
