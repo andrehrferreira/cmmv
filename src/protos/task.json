@@ -18,6 +18,10 @@
                         "removed": {
                             "type": "bool",
                             "id": 3
+                        },
+                        "createAt": {
+                            "type": "string",
+                            "id": 4
                         }
                     }
                 },

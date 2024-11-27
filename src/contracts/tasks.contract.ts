@@ -51,4 +51,7 @@ export class TasksContract extends AbstractContract {
         ],
     })
     removed: boolean;
+
+    @ContractField({ protoType: 'date' })
+    createAt?: boolean;
 }

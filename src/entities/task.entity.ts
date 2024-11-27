@@ -25,4 +25,7 @@ export class TaskEntity implements Task {
 
     @Column({ type: 'boolean', default: false })
     removed: boolean;
+
+    @Column({ type: 'date' })
+    createAt: string;
 }

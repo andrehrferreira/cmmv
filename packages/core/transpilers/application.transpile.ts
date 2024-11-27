@@ -74,10 +74,15 @@ ${contract.fields?.map((field: any) => `        ${field.propertyKey}: ${this.gen
             (field: any) => field.transform,
         );
 
-        if (hasExclude || hasTransform) {
+        const hasType = contract.fields?.some(
+            (field: any) => field.protoType === 'date',
+        );
+
+        if (hasExclude || hasTransform || hasType) {
             const imports = [];
             if (hasExclude) imports.push('Exclude');
             if (hasTransform) imports.push('Transform');
+            if (hasType) imports.push('Type');
             importStatements.push(
                 `import { ${imports.join(', ')} } from 'class-transformer';`,
             );
@@ -130,6 +135,10 @@ ${contract.fields?.map((field: any) => `        ${field.propertyKey}: ${this.gen
             decorators.push(
                 `    @Transform(${cleanedTransform}${field.toClassOnly ? `, { toClassOnly: true }` : ''})`,
             );
+        }
+
+        if (field.protoType === 'date') {
+            decorators.push(`    @Type(() => Date)`);
         }
 
         if (field.validations) {

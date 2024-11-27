@@ -2,6 +2,7 @@
 
 import * as fastJson from 'fast-json-stringify';
 import { Expose, Transform } from 'class-transformer';
+import { Type } from 'class-transformer';
 import { IsString, IsNotEmpty, IsBoolean } from 'class-validator';
 import * as crypto from 'crypto';
 
@@ -10,6 +11,7 @@ export interface ITask {
     label: string;
     checked: boolean;
     removed: boolean;
+    createAt: string;
 }
 
 export class Task implements ITask {
@@ -31,6 +33,10 @@ export class Task implements ITask {
     @IsBoolean({ message: 'Invalid removed type' })
     removed: boolean = false;
 
+    @Expose()
+    @Type(() => Date)
+    createAt: string;
+
     constructor(partial: Partial<Task>) {
         Object.assign(this, partial);
     }
@@ -44,6 +50,7 @@ export const TaskSchema = fastJson({
         label: { type: 'string' },
         checked: { type: 'boolean', default: false },
         removed: { type: 'boolean', default: false },
+        createAt: { type: 'string' },
     },
     required: [],
 });

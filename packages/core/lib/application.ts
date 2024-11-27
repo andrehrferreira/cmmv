@@ -79,7 +79,9 @@ export class Application {
 
         const env = Config.get<string>('env');
         this.httpOptions = settings.httpOptions || {};
-        this.httpAdapter = new settings.httpAdapter();
+        this.httpAdapter = settings.httpAdapter
+            ? new settings.httpAdapter()
+            : null;
 
         if (this.httpAdapter) {
             settings?.httpMiddlewares?.forEach(middleware => {

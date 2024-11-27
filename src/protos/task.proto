@@ -7,6 +7,7 @@ message Task {
    string label = 1;
    bool checked = 2;
    bool removed = 3;
+   string createAt = 4;
 }
 
 message TaskList {
