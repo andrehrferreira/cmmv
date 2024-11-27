@@ -178,37 +178,5 @@
 		"tslib": "^2.8.1",
 		"uuid": "^10.0.0",
 		"vue": "^3.5.13"
-	},
-	"nyc": {
-		"include": [
-			"packages/**/*.ts"
-		],
-		"exclude": [
-			"**/*.js",
-			"**/*.d.ts",
-			"**/*.spec.ts",
-			"packages/**/adapters/*.ts",
-			"packages/**/tests/**/*.ts"
-		],
-		"extension": [
-			".ts"
-		],
-		"require": [
-			"ts-node/register"
-		],
-		"reporter": [
-			"text-summary",
-			"html"
-		],
-		"sourceMap": true,
-		"instrument": true
-	},
-	"peerDependencies": {
-		"eslint": "^8.57.0",
-		"eslint-plugin-import": "^2.30.0"
-	},
-	"resolutions": {
-		"eslint": "^8.57.0",
-		"eslint-plugin-import": "^2.30.0"
 	}
 }
