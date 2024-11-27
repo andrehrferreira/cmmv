@@ -97,6 +97,13 @@ export class Application {
                 settings.contracts?.map(contractClass => new contractClass()) ||
                 [];
             this.initialize(settings);
+        } else if (settings.contracts.length > 0) {
+            this.transpilers = settings.transpilers || [];
+            this.modules = settings.modules || [];
+            this.contracts =
+                settings.contracts?.map(contractClass => new contractClass()) ||
+                [];
+            this.initialize(settings);
         } else {
             throw new Error('Unable to start HTTP adapter');
         }
@@ -104,7 +111,7 @@ export class Application {
 
     private async initialize(settings: IApplicationSettings): Promise<void> {
         try {
-            const env = Config.get<string>('env');
+            const env = Config.get<string>('env', process.env.NODE_ENV);
             this.loadModules(this.modules);
             this.processContracts();
 
@@ -119,12 +126,14 @@ export class Application {
                     this.logger.log('No transpilers provided.');
                 }
 
-                const appModel = await Application.generateModule();
+                if (this.httpAdapter) {
+                    const appModel = await Application.generateModule();
 
-                if (appModel) this.loadModules([...this.modules, appModel]);
+                    if (appModel) this.loadModules([...this.modules, appModel]);
 
-                this.createScriptBundle();
-                this.createCSSBundle();
+                    this.createScriptBundle();
+                    this.createCSSBundle();
+                }
             } else {
                 const tsconfig: any = new Function(
                     `return(${fs.readFileSync(path.resolve('./tsconfig.json'), 'utf-8')})`,
@@ -151,27 +160,33 @@ export class Application {
             });
 
             await Promise.all(servicesLoad);
-            await this.httpAdapter.init(this, this.httpOptions);
 
-            Application.appModule.httpMiddlewares?.forEach(middleware => {
-                this.httpAdapter.use(middleware);
-            });
+            if (this.httpAdapter) {
+                await this.httpAdapter.init(this, this.httpOptions);
 
-            if (this.wsAdapter)
-                this.wsServer = this.wsAdapter.create(this.httpAdapter, this);
-
-            await this.httpAdapter
-                .listen(`${this.host}:${this.port}`)
-                .then(() => {
-                    this.logger.log(
-                        `Server HTTP successfully started on ${this.host}:${this.port}`,
-                    );
-                })
-                .catch(error => {
-                    this.logger.error(
-                        `Failed to start HTTP server on ${this.httpBind}: ${error.message || error}`,
-                    );
+                Application.appModule.httpMiddlewares?.forEach(middleware => {
+                    this.httpAdapter.use(middleware);
                 });
+
+                if (this.wsAdapter)
+                    this.wsServer = this.wsAdapter.create(
+                        this.httpAdapter,
+                        this,
+                    );
+
+                await this.httpAdapter
+                    .listen(`${this.host}:${this.port}`)
+                    .then(() => {
+                        this.logger.log(
+                            `Server HTTP successfully started on ${this.host}:${this.port}`,
+                        );
+                    })
+                    .catch(error => {
+                        this.logger.error(
+                            `Failed to start HTTP server on ${this.httpBind}: ${error.message || error}`,
+                        );
+                    });
+            }
         } catch (error) {
             console.log(error);
             this.logger.error(
