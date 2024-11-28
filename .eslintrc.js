@@ -30,7 +30,8 @@ module.exports = {
 				"@typescript-eslint/no-unused-vars": "off",
 				"@typescript-eslint/no-restricted-syntax": "off",
 				"@typescript-eslint/no-var-requires": "off",
-				"@typescript-eslint/no-this-alias": "off"
+				"@typescript-eslint/no-this-alias": "off",
+				"@typescript-eslint/ban-ts-comment": "off"
 			},
 		},
 		{

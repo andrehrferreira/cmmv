@@ -41,7 +41,7 @@ export class CacheService extends Singleton {
                             );
 
                             if (context.res) {
-                                let id = context.req.params?.id
+                                const id = context.req.params?.id
                                     ? context.req.params?.id
                                     : '';
 
@@ -60,7 +60,7 @@ export class CacheService extends Singleton {
 
                                 if (cacheValue) {
                                     if (isJSON(cacheValue)) {
-                                        let cacheJSON = {
+                                        const cacheJSON = {
                                             cache: fnv1a(cacheKey),
                                             ...JSON.parse(cacheValue),
                                         };
