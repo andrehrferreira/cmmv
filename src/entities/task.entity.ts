@@ -6,7 +6,7 @@ import {
     Column,
     Index,
     ObjectIdColumn,
-    ObjectID,
+    ObjectId,
 } from 'typeorm';
 
 import { Task } from '../models/task.model';
@@ -15,7 +15,7 @@ import { Task } from '../models/task.model';
 @Index('idx_task_label', ['label'], { unique: true })
 export class TaskEntity implements Task {
     @ObjectIdColumn()
-    _id: ObjectID;
+    _id: ObjectId;
 
     @Column({ type: 'varchar' })
     label: string;

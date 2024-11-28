@@ -1,21 +1,16 @@
 // Generated automatically by CMMV
 
 import * as fastJson from 'fast-json-stringify';
-import { Expose, Transform } from 'class-transformer';
+import { ObjectId } from 'mongodb';
+import { Expose } from 'class-transformer';
 
 export interface IWsError {
-    _id?: any;
     message: string;
     code: number;
     context: string;
 }
 
 export class WsError implements IWsError {
-    @Transform(({ value }) => (value !== undefined ? value : null), {
-        toClassOnly: true,
-    })
-    _id?: any;
-
     @Expose()
     message: string;
 

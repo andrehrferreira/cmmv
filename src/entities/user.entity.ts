@@ -6,7 +6,7 @@ import {
     Column,
     Index,
     ObjectIdColumn,
-    ObjectID,
+    ObjectId,
 } from 'typeorm';
 
 import { User } from '../models/user.model';
@@ -16,7 +16,7 @@ import { User } from '../models/user.model';
 @Index('idx_user_googleId', ['googleId'])
 export class UserEntity implements User {
     @ObjectIdColumn()
-    _id: ObjectID;
+    _id: ObjectId;
 
     @Column({ type: 'varchar' })
     username: string;

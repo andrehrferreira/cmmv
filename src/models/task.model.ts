@@ -1,13 +1,13 @@
 // Generated automatically by CMMV
 
 import * as fastJson from 'fast-json-stringify';
-import { Expose, Transform } from 'class-transformer';
-import { Type } from 'class-transformer';
+import { ObjectId } from 'mongodb';
+import { Expose, Type } from 'class-transformer';
 import { IsString, IsNotEmpty, IsBoolean } from 'class-validator';
 import * as crypto from 'crypto';
 
 export interface ITask {
-    _id?: any;
+    _id?: ObjectId;
     label: string;
     checked: boolean;
     removed: boolean;
@@ -15,10 +15,8 @@ export interface ITask {
 }
 
 export class Task implements ITask {
-    @Transform(({ value }) => (value !== undefined ? value : null), {
-        toClassOnly: true,
-    })
-    _id?: any;
+    @Expose()
+    _id?: ObjectId;
 
     @Expose()
     @IsString({ message: 'Invalid label' })

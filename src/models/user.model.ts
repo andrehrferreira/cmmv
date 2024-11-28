@@ -1,13 +1,13 @@
 // Generated automatically by CMMV
 
 import * as fastJson from 'fast-json-stringify';
+import { ObjectId } from 'mongodb';
 import { Expose, Transform } from 'class-transformer';
-import { Transform } from 'class-transformer';
 import { IsString, MinLength, MaxLength } from 'class-validator';
 import * as crypto from 'crypto';
 
 export interface IUser {
-    _id?: any;
+    _id?: ObjectId;
     username: string;
     password: string;
     googleId: string;
@@ -15,10 +15,8 @@ export interface IUser {
 }
 
 export class User implements IUser {
-    @Transform(({ value }) => (value !== undefined ? value : null), {
-        toClassOnly: true,
-    })
-    _id?: any;
+    @Expose()
+    _id?: ObjectId;
 
     @Expose()
     @Transform(({ value }) =>

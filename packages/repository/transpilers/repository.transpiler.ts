@@ -26,7 +26,7 @@ export class RepositoryTranspile implements ITranspile {
         
 import { 
     Entity, PrimaryGeneratedColumn, 
-    Column, Index, ObjectIdColumn, ObjectID
+    Column, Index, ObjectIdColumn, ObjectId
 } from 'typeorm';
 
 import { ${entityName} } from '../models/${modelName.toLowerCase()}';
@@ -35,7 +35,7 @@ import { ${entityName} } from '../models/${modelName.toLowerCase()}';
 ${this.generateIndexes(entityName, contract.fields)}
 export class ${entityName}Entity implements ${entityName} {
     ${Config.get('repository.type') === 'mongodb' ? '@ObjectIdColumn()' : "@PrimaryGeneratedColumn('uuid')"}
-    ${Config.get('repository.type') === 'mongodb' ? '_id: ObjectID' : 'id: string'};
+    ${Config.get('repository.type') === 'mongodb' ? '_id: ObjectId' : 'id: string'};
 
 ${contract.fields.map((field: any) => this.generateField(field)).join('\n\n')}
 }

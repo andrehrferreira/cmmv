@@ -17,21 +17,24 @@ export class ApplicationTranspile implements ITranspile {
         const modelName = `${contract.controllerName}`;
         const modelInterfaceName = `I${modelName}`;
         const modelFileName = `${modelName.toLowerCase()}.model.ts`;
+        let includeId = '';
+
+        if (
+            modelInterfaceName !== 'IWsCall' &&
+            modelInterfaceName !== 'IWsError'
+        )
+            includeId = `${Config.get('repository.type') === 'mongodb' ? '    _id?: ObjectId' : '    id?: any'};\n`;
 
         const modelTemplate = `// Generated automatically by CMMV
 
 ${this.generateClassImports(contract)}
         
 export interface ${modelInterfaceName} {
-    ${Config.get('repository.type') === 'mongodb' ? '_id?: any' : 'id?: any'};
-${contract.fields?.map((field: any) => `    ${field.propertyKey}: ${this.mapToTsType(field.protoType)};`).join('\n')}
+${includeId}${contract.fields?.map((field: any) => `    ${field.propertyKey}: ${this.mapToTsType(field.protoType)};`).join('\n')}
 }
 
 export class ${modelName} implements ${modelInterfaceName} {
-    @Transform(({ value }) => value !== undefined ? value : null, { toClassOnly: true })
-    ${Config.get('repository.type') === 'mongodb' ? '_id?: any' : 'id?: any'};
-
-${contract.fields?.map((field: any) => this.generateClassField(field)).join('\n\n')}
+${includeId ? '    @Expose()\n' + includeId + '\n' : ''}${contract.fields?.map((field: any) => this.generateClassField(field)).join('\n\n')}
 
     constructor(partial: Partial<${modelName}>) {
         Object.assign(this, partial);
@@ -63,8 +66,11 @@ ${contract.fields?.map((field: any) => `        ${field.propertyKey}: ${this.gen
     private generateClassImports(contract: any): string {
         const importStatements: string[] = [
             `import * as fastJson from 'fast-json-stringify';`,
-            `import { Expose, Transform } from 'class-transformer';`,
         ];
+
+        if (Config.get('repository.type') === 'mongodb') {
+            importStatements.push(`import { ObjectId } from 'mongodb';`);
+        }
 
         const hasExclude = contract.fields?.some(
             (field: any) => field.exclude || field.toClassOnly,
@@ -78,15 +84,17 @@ ${contract.fields?.map((field: any) => `        ${field.propertyKey}: ${this.gen
             (field: any) => field.protoType === 'date',
         );
 
+        const imports = ['Expose'];
+
         if (hasExclude || hasTransform || hasType) {
-            const imports = [];
             if (hasExclude) imports.push('Exclude');
             if (hasTransform) imports.push('Transform');
             if (hasType) imports.push('Type');
-            importStatements.push(
-                `import { ${imports.join(', ')} } from 'class-transformer';`,
-            );
         }
+
+        importStatements.push(
+            `import { ${imports.join(', ')} } from 'class-transformer';`,
+        );
 
         const validationImports = new Set<string>();
         contract.fields?.forEach((field: any) => {
