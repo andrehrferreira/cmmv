@@ -39,10 +39,18 @@ ${includeId ? '    @Expose()\n' + includeId + '\n' : ''}${contract.fields?.map((
     constructor(partial: Partial<${modelName}>) {
         Object.assign(this, partial);
     }
+
+    public serialize(){
+        return instanceToPlain(this);
+    }
+
+    public toString(){
+        return ${modelName}FastSchema(this);
+    }
 }
 
 // Schema for fast-json-stringify
-export const ${modelName}Schema = fastJson({
+export const ${modelName}FastSchema = fastJson({
     title: '${modelName} Schema',
     type: 'object',
     properties: {
@@ -84,7 +92,7 @@ ${contract.fields?.map((field: any) => `        ${field.propertyKey}: ${this.gen
             (field: any) => field.protoType === 'date',
         );
 
-        const imports = ['Expose'];
+        const imports = ['Expose', 'instanceToPlain'];
 
         if (hasExclude || hasTransform || hasType) {
             if (hasExclude) imports.push('Exclude');

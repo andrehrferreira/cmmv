@@ -2,7 +2,7 @@
 
 import * as fastJson from 'fast-json-stringify';
 import { ObjectId } from 'mongodb';
-import { Expose, Type } from 'class-transformer';
+import { Expose, instanceToPlain, Type } from 'class-transformer';
 import { IsString, IsNotEmpty, IsBoolean } from 'class-validator';
 import * as crypto from 'crypto';
 
@@ -38,10 +38,18 @@ export class Task implements ITask {
     constructor(partial: Partial<Task>) {
         Object.assign(this, partial);
     }
+
+    public serialize() {
+        return instanceToPlain(this);
+    }
+
+    public toString() {
+        return TaskFastSchema(this);
+    }
 }
 
 // Schema for fast-json-stringify
-export const TaskSchema = fastJson({
+export const TaskFastSchema = fastJson({
     title: 'Task Schema',
     type: 'object',
     properties: {

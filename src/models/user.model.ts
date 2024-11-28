@@ -2,7 +2,7 @@
 
 import * as fastJson from 'fast-json-stringify';
 import { ObjectId } from 'mongodb';
-import { Expose, Transform } from 'class-transformer';
+import { Expose, instanceToPlain, Transform } from 'class-transformer';
 import { IsString, MinLength, MaxLength } from 'class-validator';
 import * as crypto from 'crypto';
 
@@ -44,10 +44,18 @@ export class User implements IUser {
     constructor(partial: Partial<User>) {
         Object.assign(this, partial);
     }
+
+    public serialize() {
+        return instanceToPlain(this);
+    }
+
+    public toString() {
+        return UserFastSchema(this);
+    }
 }
 
 // Schema for fast-json-stringify
-export const UserSchema = fastJson({
+export const UserFastSchema = fastJson({
     title: 'User Schema',
     type: 'object',
     properties: {

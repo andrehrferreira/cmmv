@@ -8,6 +8,7 @@ import {
     FindOptionsWhere,
     DeepPartial,
     DeleteResult,
+    Like,
 } from 'typeorm';
 
 import { Config, Logger, Singleton } from '@cmmv/core';
@@ -77,10 +78,63 @@ export class Repository extends Singleton {
 
     public static async findAll<Entity>(
         entity: new () => Entity,
+        queries?: any,
     ): Promise<Entity[]> {
         try {
+            const isMongoDB = Config.get('repository.type') === 'mongodb';
             const repository = this.getRepository(entity);
-            return await repository.find();
+
+            const {
+                limit = 10,
+                offset = 0,
+                sortBy = 'id',
+                sort = 'asc',
+                search,
+                searchField,
+                ...filters
+            } = queries || {};
+
+            if (isMongoDB) {
+                const mongoQuery: any = {};
+
+                if (search && searchField)
+                    mongoQuery[searchField] = {
+                        $regex: new RegExp(search, 'i'),
+                    }; // Case-insensitive search
+
+                Object.assign(mongoQuery, filters);
+
+                const results = await repository.find({
+                    where: mongoQuery,
+                    skip: parseInt(offset),
+                    take: parseInt(limit), //@ts-ignore
+                    order: {
+                        [sortBy]: sort.toLowerCase() === 'desc' ? -1 : 1,
+                    },
+                });
+
+                return results;
+            } else {
+                const where: FindOptionsWhere<Entity> = {};
+
+                if (search && searchField)
+                    where[searchField] = Like(`%${search}%`);
+
+                for (const [key, value] of Object.entries(filters)) //@ts-ignore
+                    where[key as keyof Entity] = value;
+
+                const results = await repository.find({
+                    where,
+                    take: parseInt(limit),
+                    skip: parseInt(offset), //@ts-ignore
+                    order: {
+                        [sortBy]:
+                            sort.toUpperCase() === 'DESC' ? 'DESC' : 'ASC',
+                    },
+                });
+
+                return results;
+            }
         } catch (e) {
             if (process.env.NODE_ENV === 'dev')
                 Repository.logger.error(e.message);

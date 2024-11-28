@@ -15,15 +15,15 @@ import {
 } from '@cmmv/http';
 
 import { TaskService } from '../services/task.service';
-import { Task, TaskSchema } from '../models/task.model';
+import { Task, TaskFastSchema } from '../models/task.model';
 
 @Controller('task')
 export class TaskController {
     constructor(private readonly taskservice: TaskService) {}
 
     @Get()
-    @Cache('task:getAll', { ttl: 300, compress: true, schema: TaskSchema })
-    async getAll(@Queries() queries: any, @Request() req): Promise<Task[]> {
+    @Cache('task:getAll', { ttl: 300, compress: true, schema: TaskFastSchema })
+    async getAll(@Queries() queries: any, @Request() req) {
         Telemetry.start('TaskController::GetAll', req.requestId);
         let result = await this.taskservice.getAll(queries, req);
         Telemetry.end('TaskController::GetAll', req.requestId);
@@ -31,8 +31,8 @@ export class TaskController {
     }
 
     @Get(':id')
-    @Cache('task:{id}', { ttl: 300, compress: true, schema: TaskSchema })
-    async getById(@Param('id') id: string, @Request() req): Promise<Task> {
+    @Cache('task:{id}', { ttl: 300, compress: true, schema: TaskFastSchema })
+    async getById(@Param('id') id: string, @Request() req) {
         Telemetry.start('TaskController::GetById', req.requestId);
         let result = await this.taskservice.getById(id, req);
         Telemetry.end('TaskController::GetById', req.requestId);
@@ -40,24 +40,20 @@ export class TaskController {
     }
 
     @Post()
-    async add(@Body() item: Task, @Request() req): Promise<Task> {
+    async add(@Body() item: Task, @Request() req) {
         Telemetry.start('TaskController::Add', req.requestId);
         let result = await this.taskservice.add(item, req);
-        CacheService.set(`task:${result._id}`, TaskSchema(result), 300);
+        CacheService.set(`task:${result._id}`, TaskFastSchema(result), 300);
         CacheService.del('task:getAll');
         Telemetry.end('TaskController::Add', req.requestId);
         return result;
     }
 
     @Put(':id')
-    async update(
-        @Param('id') id: string,
-        @Body() item: Task,
-        @Request() req,
-    ): Promise<Task> {
+    async update(@Param('id') id: string, @Body() item: Task, @Request() req) {
         Telemetry.start('TaskController::Update', req.requestId);
         let result = await this.taskservice.update(id, item, req);
-        CacheService.set(`task:${result._id}`, TaskSchema(result), 300);
+        CacheService.set(`task:${result._id}`, TaskFastSchema(result), 300);
         CacheService.del('task:getAll');
         Telemetry.end('TaskController::Update', req.requestId);
         return result;

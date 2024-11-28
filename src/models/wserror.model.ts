@@ -2,7 +2,7 @@
 
 import * as fastJson from 'fast-json-stringify';
 import { ObjectId } from 'mongodb';
-import { Expose } from 'class-transformer';
+import { Expose, instanceToPlain } from 'class-transformer';
 
 export interface IWsError {
     message: string;
@@ -23,10 +23,18 @@ export class WsError implements IWsError {
     constructor(partial: Partial<WsError>) {
         Object.assign(this, partial);
     }
+
+    public serialize() {
+        return instanceToPlain(this);
+    }
+
+    public toString() {
+        return WsErrorFastSchema(this);
+    }
 }
 
 // Schema for fast-json-stringify
-export const WsErrorSchema = fastJson({
+export const WsErrorFastSchema = fastJson({
     title: 'WsError Schema',
     type: 'object',
     properties: {

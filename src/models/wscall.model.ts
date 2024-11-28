@@ -2,7 +2,7 @@
 
 import * as fastJson from 'fast-json-stringify';
 import { ObjectId } from 'mongodb';
-import { Expose } from 'class-transformer';
+import { Expose, instanceToPlain } from 'class-transformer';
 
 export interface IWsCall {
     contract: number;
@@ -23,10 +23,18 @@ export class WsCall implements IWsCall {
     constructor(partial: Partial<WsCall>) {
         Object.assign(this, partial);
     }
+
+    public serialize() {
+        return instanceToPlain(this);
+    }
+
+    public toString() {
+        return WsCallFastSchema(this);
+    }
 }
 
 // Schema for fast-json-stringify
-export const WsCallSchema = fastJson({
+export const WsCallFastSchema = fastJson({
     title: 'WsCall Schema',
     type: 'object',
     properties: {

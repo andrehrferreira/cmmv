@@ -15,7 +15,7 @@ export class TaskService extends AbstractService {
     async getAll(queries?: any, req?: any): Promise<TaskEntity[] | null> {
         try {
             Telemetry.start('TaskService::GetAll', req?.requestId);
-            let result = await Repository.findAll(TaskEntity);
+            let result = await Repository.findAll(TaskEntity, queries);
             result = this.fixId(result);
             Telemetry.end('TaskService::GetAll', req?.requestId);
             return result;

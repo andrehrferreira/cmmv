@@ -79,7 +79,7 @@ export class ${serviceName} extends AbstractService {
     async getAll(queries?: any, req?: any): Promise<${entityName}[] | null> {
         try{
             Telemetry.start('${serviceName}::GetAll', req?.requestId);
-            let result = await Repository.findAll(${entityName});
+            let result = await Repository.findAll(${entityName}, queries);
             ${Config.get('repository.type') === 'mongodb' ? 'result = this.fixId(result)' : ''}
             Telemetry.end('${serviceName}::GetAll', req?.requestId);
             return result;

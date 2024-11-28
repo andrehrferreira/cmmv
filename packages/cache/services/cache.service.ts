@@ -1,4 +1,5 @@
 import * as cacheManager from 'cache-manager';
+import { fnv1a } from '../utils/fnv1a';
 
 import {
     Application,
@@ -40,19 +41,32 @@ export class CacheService extends Singleton {
                             );
 
                             if (context.res) {
-                                const cacheKey = metadata?.key.replace(
+                                let id = context.req.params?.id
+                                    ? context.req.params?.id
+                                    : '';
+
+                                let cacheKey = metadata?.key.replace(
                                     '{id}',
-                                    context.req.params.id,
+                                    id,
                                 );
+
+                                if (context.req.search)
+                                    cacheKey +=
+                                        ':' +
+                                        context.req.search.replace('?', '');
+
                                 const cacheValue =
                                     await CacheService.get(cacheKey);
 
                                 if (cacheValue) {
-                                    if (isJSON(cacheValue))
-                                        context.res.json(
-                                            JSON.parse(cacheValue),
-                                        );
-                                    else
+                                    if (isJSON(cacheValue)) {
+                                        let cacheJSON = {
+                                            cache: fnv1a(cacheKey),
+                                            ...JSON.parse(cacheValue),
+                                        };
+                                        delete cacheJSON?.processingTime;
+                                        context.res.json(cacheJSON);
+                                    } else
                                         context.res
                                             .status(200)
                                             .send(cacheValue);
@@ -98,7 +112,7 @@ export class CacheService extends Singleton {
                                 ttl,
                             );
 
-                            //console.log(cacheKey, result, ttl);
+                            return result;
                         }
                     }
                 } catch (e) {
