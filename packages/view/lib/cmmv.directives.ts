@@ -1,10 +1,10 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
+import { Config } from '@cmmv/core';
 import { getValueFromKey } from './cmmv.utils';
 import { Directive, Template } from './cmmv.template';
 import { evaluate, evaluateAsync } from './cmmv.eval';
-import { Config } from '@cmmv/core';
 
 export const ssrLoadData: Directive = async (
     templateText: string,

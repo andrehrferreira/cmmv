@@ -1,5 +1,5 @@
-import * as fs from 'fs';
-import * as path from 'path';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import * as UglifyJS from 'uglify-js';
 
 import { Config, ITranspile, Logger, Scope, Module } from '@cmmv/core';
@@ -31,7 +31,7 @@ export class VueTranspile implements ITranspile {
 
     private generateMixins(contracts: any): void {
         const content = fs.readFileSync(
-            path.resolve(__dirname, '../lib/vue.frontend.cjs'),
+            path.resolve(__dirname, './lib/vue.frontend.cjs'),
             'utf-8',
         );
 

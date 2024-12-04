@@ -1,16 +1,16 @@
 'use strict';
 
-import * as fs from 'fs';
-import * as path from 'path';
-import { cwd } from 'process';
+import { Config, Telemetry } from '@cmmv/core';
+
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import { cwd } from 'node:process';
 import * as fg from 'fast-glob';
 import * as UglifyJS from 'uglify-js';
 import { minify } from 'html-minifier-terser';
 
-import { Config, Telemetry } from '@cmmv/core';
-
 import { hasOwnOnlyObject, createNullProtoObjWherePossible } from './utils.cjs';
-import { ViewRegistry } from '../registries/view.registry';
+import { ViewRegistry } from '../view.registry';
 
 export type Directive = (
     templateText: string,

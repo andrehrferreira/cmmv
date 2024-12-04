@@ -5,7 +5,7 @@ import * as fg from 'fast-glob';
 import * as Terser from 'terser';
 import { build } from 'esbuild';
 
-import { IHTTPSettings } from '../interfaces';
+import { IHTTPSettings, ConfigSchema } from '../interfaces';
 
 import { ITranspile, Logger, Scope, Transpile, Module, Config } from '.';
 
@@ -66,7 +66,8 @@ export class Application {
     private transpilers: Array<new () => ITranspile>;
     private controllers: Array<any> = [];
     private submodules: Array<Module> = [];
-    private contracts: Array<any>;
+    private contracts: Array<any> = [];
+    private configs: Array<ConfigSchema> = [];
     public providersMap = new Map<string, any>();
 
     private host: string;
@@ -115,6 +116,7 @@ export class Application {
         try {
             const env = Config.get<string>('env', process.env.NODE_ENV);
             this.loadModules(this.modules);
+            await Config.validateConfigs(this.configs);
             this.processContracts();
 
             this.transpilers.push(ApplicationTranspile);
@@ -287,6 +289,7 @@ export class Application {
             this.controllers.push(...module.getControllers());
             this.submodules.push(...module.getSubmodules());
             this.contracts.push(...module.getContracts());
+            this.configs.push(...module.getConfigsSchemas());
 
             module.getProviders().forEach(provider => {
                 const providerInstance = new provider();

@@ -1,7 +1,7 @@
-import * as fs from 'fs';
-import * as path from 'path';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import * as UglifyJS from 'uglify-js';
-import { execSync } from 'child_process';
+import { execSync } from 'node:child_process';
 
 import { Config, ITranspile, Logger } from '@cmmv/core';
 
@@ -58,7 +58,7 @@ export class ViewTranspile implements ITranspile {
 
         // Frontend Controller
         const content = fs.readFileSync(
-            path.resolve(__dirname, '../lib/cmmv.frontend.cjs'),
+            path.resolve(__dirname, './lib/cmmv.frontend.cjs'),
             'utf-8',
         );
         const outputFile = path.resolve('public/core/1-cmmv.min.js');

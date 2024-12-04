@@ -9,9 +9,9 @@ import {
 } from '@cmmv/core';
 
 import { ProtoRegistry } from '@cmmv/protobuf';
+import { RPCRegistry } from './rpc.registry';
 
 const { WebSocketServer } = require('ws');
-import { RPCRegistry } from '../registries/rpc.registry';
 
 export class WSCall {
     contract: number;

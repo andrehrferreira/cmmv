@@ -2,6 +2,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 import { Singleton } from '../abstracts';
+import { ConfigSchema } from '../interfaces';
 
 export class Config extends Singleton {
     private config: Record<string, any> = {};
@@ -90,4 +91,6 @@ export class Config extends Singleton {
     public static clear(): void {
         Config.getInstance().config = {};
     }
+
+    public static async validateConfigs(configs: Array<ConfigSchema>) {}
 }

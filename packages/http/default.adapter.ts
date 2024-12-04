@@ -25,7 +25,7 @@ import {
 } from '@cmmv/core';
 
 import { CMMVRenderer } from '@cmmv/view';
-import { ControllerRegistry } from './utils/controller-registry.utils';
+import { ControllerRegistry } from './controller.registry';
 
 export class DefaultAdapter extends AbstractHttpAdapter<
     http.Server | https.Server

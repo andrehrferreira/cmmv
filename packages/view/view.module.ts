@@ -1,6 +1,6 @@
 import { Module } from '@cmmv/core';
 
-import { ViewTranspile } from '../transpilers/view.transpile';
+import { ViewTranspile } from './view.transpile';
 
 export const ViewModule = new Module('view', {
     transpilers: [ViewTranspile],

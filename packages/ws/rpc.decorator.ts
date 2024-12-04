@@ -1,4 +1,4 @@
-import { RPCRegistry } from '../registries/rpc.registry';
+import { RPCRegistry } from './rpc.registry';
 
 export function Rpc(contract: string = ''): ClassDecorator {
     return (target: object) => {

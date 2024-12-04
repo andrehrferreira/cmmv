@@ -1,9 +1,10 @@
 //WS
-export * from './adapters/ws.adapter';
-export * from './contracts/ws.contract';
-export * from './modules/ws.module';
+export * from './ws.adapter';
+export * from './ws.contract';
+export * from './ws.module';
+export * from './ws.transpile';
 
 //RPC
-export * from './registries/rpc.registry';
-export * from './decorators/rpc.decorator';
-export * from './utils/rpc.utils';
+export * from './rpc.registry';
+export * from './rpc.decorator';
+export * from './rpc.utils';

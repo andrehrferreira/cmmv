@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as sinon from 'sinon';
 import { DataSource, Repository as TypeORMRepository } from 'typeorm';
-import { Repository } from '../services/respository.services';
+import { Repository } from './respository.services';
 
 describe('Repository', () => {
     let sandbox: sinon.SinonSandbox;

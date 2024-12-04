@@ -1,2 +1,2 @@
 export * from 'vite';
-export * from './modules/vite.module';
+export * from './vite.module';
