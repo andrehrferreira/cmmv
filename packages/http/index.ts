@@ -1,7 +1,8 @@
-export * from './decorators';
-export * from './services';
-export * from './utils';
+export * from './controller.decorator';
+export * from './controller.registry';
 
-export * from './adapters/default.adapter';
-export * from './transpilers/default.transpiler';
-export * from './modules/default.module';
+export * from './default.adapter';
+export * from './default.transpiler';
+export * from './default.module';
+
+export * from './http.service';

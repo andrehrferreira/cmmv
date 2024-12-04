@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { Cache } from '../decorators/cache.decorator';
 import 'reflect-metadata';
+import { describe, it, expect } from 'vitest';
+import { Cache } from './cache.decorator';
 
 describe('Cache Decorator', () => {
     it('should register a cache handler with the correct key and options', () => {

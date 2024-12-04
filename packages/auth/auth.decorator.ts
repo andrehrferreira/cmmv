@@ -8,6 +8,7 @@ export function Auth(roles?: string[]): MethodDecorator {
                 'server.session.options.sessionCookieName',
                 'token',
             );
+
             let token = req.cookies ? req.cookies[cookieName] : null;
 
             if (!token)

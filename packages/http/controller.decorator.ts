@@ -1,4 +1,4 @@
-import { ControllerRegistry } from '../utils/controller-registry.utils';
+import { ControllerRegistry } from './controller.registry';
 
 export function Controller(prefix: string = ''): ClassDecorator {
     return (target: object) => {

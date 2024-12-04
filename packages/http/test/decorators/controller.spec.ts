@@ -12,8 +12,8 @@ import {
     Header,
     Request,
     Response,
-} from '../../decorators/controller.decorator';
-import { ControllerRegistry } from '../../utils/controller-registry.utils';
+} from '../../controller.decorator';
+import { ControllerRegistry } from '../../controller.registry';
 
 describe('Controller Decorators', () => {
     beforeEach(() => {

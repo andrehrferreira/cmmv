@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { describe, it, expect } from 'vitest';
-import { CacheRegistry } from '../registries/cache.registry';
+import { CacheRegistry } from './cache.registry';
 
 describe('CacheRegistry', () => {
     it('should register cache handler metadata correctly', () => {

@@ -1,5 +1,5 @@
 import * as cacheManager from 'cache-manager';
-import { fnv1a } from '../utils/fnv1a';
+import { fnv1a } from './fnv1a';
 
 import {
     Application,

@@ -1,5 +1,6 @@
 import { AbstractContract } from '../abstracts';
 import { ITranspile } from './transpile';
+import { ConfigSchema } from '../interfaces/config-shema.interface';
 
 export interface IModuleOptions {
     controllers?: Array<any>;
@@ -7,6 +8,7 @@ export interface IModuleOptions {
     transpilers?: Array<new () => ITranspile>;
     submodules?: Array<Module>;
     contracts?: Array<new () => AbstractContract>;
+    configs?: Array<ConfigSchema>;
 }
 
 export interface IModule {
@@ -15,6 +17,7 @@ export interface IModule {
     getSubmodules(): Array<Module>;
     getContracts(): Array<AbstractContract>;
     getProviders(): Array<any>;
+    getConfigsSchemas(): Array<any>;
 }
 
 export class Module implements IModule {
@@ -25,14 +28,17 @@ export class Module implements IModule {
     private submodules: Array<Module>;
     private contracts: Array<any>;
     private providers: Array<any>;
+    private configs: Array<any>;
 
     constructor(name: string, options: IModuleOptions) {
         this.providers = options.providers || [];
         this.controllers = options.controllers || [];
         this.transpilers = options.transpilers || [];
         this.submodules = options.submodules || [];
+        this.configs = options.configs || [];
         this.contracts =
             options.contracts?.map(contractClass => new contractClass()) || [];
+
         Module.modules.set(name, this);
     }
 
@@ -67,5 +73,9 @@ export class Module implements IModule {
 
     public getProviders(): Array<any> {
         return this.providers;
+    }
+
+    public getConfigsSchemas(): Array<any> {
+        return this.configs;
     }
 }

@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { CacheService } from '../services/cache.service';
 import * as cacheManager from 'cache-manager';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { CacheService } from './cache.service';
 
 describe('CacheService', () => {
     let sandbox: any;
