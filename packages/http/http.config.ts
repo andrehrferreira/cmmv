@@ -28,12 +28,12 @@ export const HTTPConfig: ConfigSchema = {
             default: true,
         },
         compress: {
-            required: true,
+            required: false,
             type: 'object',
             default: {},
             properties: {
                 enabled: {
-                    required: true,
+                    required: false,
                     type: 'boolean',
                     default: true,
                 },
@@ -45,12 +45,12 @@ export const HTTPConfig: ConfigSchema = {
             },
         },
         helmet: {
-            required: true,
+            required: false,
             type: 'object',
             default: {},
             properties: {
                 enabled: {
-                    required: true,
+                    required: false,
                     type: 'boolean',
                     default: true,
                 },
@@ -62,12 +62,12 @@ export const HTTPConfig: ConfigSchema = {
             },
         },
         session: {
-            required: true,
+            required: false,
             type: 'object',
             default: {},
             properties: {
                 enabled: {
-                    required: true,
+                    required: false,
                     type: 'boolean',
                     default: true,
                 },
