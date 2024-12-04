@@ -29,11 +29,11 @@ import {
     Column, Index, ObjectIdColumn, ObjectId
 } from 'typeorm';
 
-import { ${entityName} } from '../models/${modelName.toLowerCase()}';
+import { I${entityName} } from '../models/${modelName.toLowerCase()}';
 
 @Entity('${entityName.toLowerCase()}')
 ${this.generateIndexes(entityName, contract.fields)}
-export class ${entityName}Entity implements ${entityName} {
+export class ${entityName}Entity implements I${entityName} {
     ${Config.get('repository.type') === 'mongodb' ? '@ObjectIdColumn()' : "@PrimaryGeneratedColumn('uuid')"}
     ${Config.get('repository.type') === 'mongodb' ? '_id: ObjectId' : 'id: string'};
 

@@ -9,12 +9,12 @@ import {
     ObjectId,
 } from 'typeorm';
 
-import { User } from '../models/user.model';
+import { IUser } from '../models/user.model';
 
 @Entity('user')
 @Index('idx_user_username', ['username'], { unique: true })
 @Index('idx_user_googleId', ['googleId'])
-export class UserEntity implements User {
+export class UserEntity implements IUser {
     @ObjectIdColumn()
     _id: ObjectId;
 

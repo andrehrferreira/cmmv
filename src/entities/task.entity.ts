@@ -9,11 +9,11 @@ import {
     ObjectId,
 } from 'typeorm';
 
-import { Task } from '../models/task.model';
+import { ITask } from '../models/task.model';
 
 @Entity('task')
 @Index('idx_task_label', ['label'], { unique: true })
-export class TaskEntity implements Task {
+export class TaskEntity implements ITask {
     @ObjectIdColumn()
     _id: ObjectId;
 
