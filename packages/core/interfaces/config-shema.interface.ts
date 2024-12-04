@@ -1,18 +1,5 @@
 export interface ConfigSchema {
-    [key: string]: {
-        [key: string]: {
-            required: boolean;
-            type:
-                | 'string'
-                | 'number'
-                | 'boolean'
-                | 'object'
-                | 'any'
-                | 'function';
-            default?: any;
-            properties?: ConfigSubPropsSchemas;
-        };
-    };
+    [key: string]: ConfigSubPropsSchemas;
 }
 
 export interface ConfigSubPropsSchemas {

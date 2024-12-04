@@ -2,7 +2,8 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 import { Singleton } from '../abstracts';
-import { ConfigSchema } from '../interfaces';
+
+import { ConfigSchema, ConfigSubPropsSchemas } from '../interfaces';
 
 export class Config extends Singleton {
     private config: Record<string, any> = {};
@@ -92,5 +93,80 @@ export class Config extends Singleton {
         Config.getInstance().config = {};
     }
 
-    public static async validateConfigs(configs: Array<ConfigSchema>) {}
+    public static async validateConfigs(
+        configs: Array<ConfigSchema>,
+    ): Promise<void> {
+        const configInstance = Config.getInstance();
+        const loadedConfig = configInstance.config;
+
+        const validateSchema = (
+            schema: ConfigSubPropsSchemas,
+            config: Record<string, any>,
+            path: string = '',
+        ) => {
+            for (const key in schema) {
+                const schemaDefinition = schema[key];
+                const currentPath = path ? `${path}.${key}` : key;
+                const configValue = config[key];
+
+                if (
+                    schemaDefinition.required &&
+                    (configValue === undefined || configValue === null)
+                ) {
+                    throw new Error(
+                        `Configuration "${currentPath}" is required but missing.`,
+                    );
+                }
+
+                if (configValue === undefined || configValue === null) continue;
+
+                if (
+                    schemaDefinition.type !== 'any' && // Allow 'any' to bypass type checking
+                    typeof configValue !== schemaDefinition.type &&
+                    !(
+                        schemaDefinition.type === 'object' &&
+                        typeof configValue === 'object'
+                    )
+                ) {
+                    throw new Error(
+                        `Configuration "${currentPath}" expects type "${schemaDefinition.type}" but received "${typeof configValue}".`,
+                    );
+                }
+
+                if (
+                    schemaDefinition.type === 'object' &&
+                    schemaDefinition.properties
+                ) {
+                    if (
+                        typeof configValue !== 'object' ||
+                        Array.isArray(configValue)
+                    ) {
+                        throw new Error(
+                            `Configuration "${currentPath}" expects an object but received "${typeof configValue}".`,
+                        );
+                    }
+
+                    validateSchema(
+                        schemaDefinition.properties,
+                        configValue,
+                        currentPath,
+                    );
+                }
+            }
+        };
+
+        for (const schema of configs) {
+            for (const moduleKey in schema) {
+                const moduleSchema = schema[moduleKey];
+                const moduleConfig = loadedConfig[moduleKey];
+
+                if (!moduleConfig)
+                    throw new Error(
+                        `Module "${moduleKey}" configuration is missing.`,
+                    );
+
+                validateSchema(moduleSchema, moduleConfig, moduleKey);
+            }
+        }
+    }
 }

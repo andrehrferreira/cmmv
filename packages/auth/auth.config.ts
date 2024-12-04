@@ -28,17 +28,17 @@ export const AuthConfig: ConfigSchema = {
             default: {},
             properties: {
                 clientID: {
-                    required: true,
+                    required: false,
                     type: 'string',
                     default: '',
                 },
                 clientSecret: {
-                    required: true,
+                    required: false,
                     type: 'string',
                     default: '',
                 },
                 callbackURL: {
-                    required: true,
+                    required: false,
                     type: 'string',
                     default: 'http://localhost:3000/auth/google/callback',
                 },
