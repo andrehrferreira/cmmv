@@ -1,6 +1,6 @@
 {
     "name": "@cmmv/http",
-    "version": "0.7.0",
+    "version": "0.7.1",
     "description": "CMMV (@http)",
     "publishConfig": {
         "access": "public"
@@ -25,7 +25,7 @@
         "@cmmv/reactivity": "^0.4.6",
         "@cmmv/server": "^0.5.2",
         "@cmmv/server-static": "^0.5.2",
-        "@cmmv/view": "0.7.0",
+        "@cmmv/view": "0.7.1",
         "axios": "^1.7.7",
         "fast-json-stringify": "^6.0.0"
     }

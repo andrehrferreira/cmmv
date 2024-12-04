@@ -1,6 +1,6 @@
 {
     "name": "@cmmv/scheduling",
-    "version": "0.7.0",
+    "version": "0.7.1",
     "description": "CMMV (@scheduling)",
     "publishConfig": {
         "access": "public"
