@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as protobuf from 'protobufjs';
-import { ProtoRegistry } from '../registries/protobuf.registry';
+import { ProtoRegistry } from './protobuf.registry';
 import * as sinon from 'sinon';
 
 describe('ProtoRegistry', () => {
