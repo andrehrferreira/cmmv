@@ -182,7 +182,9 @@ export class Config extends Singleton {
             for (const moduleKey in schema) {
                 const moduleSchema = schema[moduleKey];
                 const moduleConfig = loadedConfig[moduleKey];
-                validateSchema(moduleSchema, moduleConfig, moduleKey);
+
+                if (moduleConfig !== undefined && moduleConfig !== null)
+                    validateSchema(moduleSchema, moduleConfig, moduleKey);
             }
         }
     }

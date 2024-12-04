@@ -91,7 +91,7 @@ module.exports = {
         },
     },
 
-    head: {
+    /*head: {
         title: 'CMMV',
         htmlAttrs: {
             lang: 'pt-br',
@@ -111,7 +111,7 @@ module.exports = {
             { rel: 'icon', href: 'assets/favicon/favicon.ico' },
             { rel: 'stylesheet', href: '/assets/bundle.min.css' }
         ],
-    },
+    },*/
 
     scripts: [
         {
