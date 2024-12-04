@@ -120,19 +120,42 @@ export class Config extends Singleton {
 
                 if (configValue === undefined || configValue === null) continue;
 
-                if (
-                    schemaDefinition.type !== 'any' && // Allow 'any' to bypass type checking
-                    typeof configValue !== schemaDefinition.type &&
-                    !(
-                        schemaDefinition.type === 'object' &&
-                        typeof configValue === 'object'
-                    )
-                ) {
-                    throw new Error(
-                        `Configuration "${currentPath}" expects type "${schemaDefinition.type}" but received "${typeof configValue}".`,
-                    );
+                // Handle type validation
+                if (schemaDefinition.type !== 'any') {
+                    const isTypeValid =
+                        (schemaDefinition.type === 'array' &&
+                            Array.isArray(configValue)) ||
+                        schemaDefinition.type === typeof configValue;
+
+                    if (!isTypeValid) {
+                        throw new Error(
+                            `Configuration "${currentPath}" expects type "${schemaDefinition.type}" but received "${typeof configValue}".`,
+                        );
+                    }
                 }
 
+                // Handle array sub-properties validation
+                if (
+                    schemaDefinition.type === 'array' &&
+                    schemaDefinition.properties &&
+                    Array.isArray(configValue)
+                ) {
+                    configValue.forEach((item, index) => {
+                        if (typeof item !== 'object' || item === null) {
+                            throw new Error(
+                                `Configuration "${currentPath}[${index}]" expects an object but received "${typeof item}".`,
+                            );
+                        }
+
+                        validateSchema(
+                            schemaDefinition.properties,
+                            item,
+                            `${currentPath}[${index}]`,
+                        );
+                    });
+                }
+
+                // Handle object sub-properties validation
                 if (
                     schemaDefinition.type === 'object' &&
                     schemaDefinition.properties
@@ -160,10 +183,11 @@ export class Config extends Singleton {
                 const moduleSchema = schema[moduleKey];
                 const moduleConfig = loadedConfig[moduleKey];
 
-                if (!moduleConfig)
+                if (!moduleConfig) {
                     throw new Error(
                         `Module "${moduleKey}" configuration is missing.`,
                     );
+                }
 
                 validateSchema(moduleSchema, moduleConfig, moduleKey);
             }

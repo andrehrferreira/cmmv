@@ -6,6 +6,7 @@ export * from './lib/cmmv.directives';
 export * from './lib/cmmv.eval';
 export * from './lib/cmmv.utils';
 
+export * from './view.config';
 export * from './view.transpile';
 export * from './vue.transpile';
 export * from './view.registry';
