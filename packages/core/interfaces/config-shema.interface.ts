@@ -2,8 +2,14 @@ export interface ConfigSchema {
     [key: string]: {
         [key: string]: {
             required: boolean;
-            type: 'string' | 'number' | 'boolean' | 'object';
-            default: any;
+            type:
+                | 'string'
+                | 'number'
+                | 'boolean'
+                | 'object'
+                | 'any'
+                | 'function';
+            default?: any;
             properties?: ConfigSubPropsSchemas;
         };
     };
@@ -12,8 +18,8 @@ export interface ConfigSchema {
 export interface ConfigSubPropsSchemas {
     [key: string]: {
         required: boolean;
-        type: 'string' | 'number' | 'boolean' | 'object';
-        default: any;
+        type: 'string' | 'number' | 'boolean' | 'object' | 'any' | 'function';
+        default?: any;
         properties?: ConfigSubPropsSchemas;
     };
 }

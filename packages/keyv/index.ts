@@ -1,2 +1,3 @@
-export * from './modules/keyv.module';
-export * from './services/keyv.service';
+export * from './keyv.config';
+export * from './keyv.module';
+export * from './keyv.service';

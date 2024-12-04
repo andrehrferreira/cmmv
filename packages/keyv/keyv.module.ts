@@ -1,7 +1,8 @@
 import { Module } from '@cmmv/core';
-
-import { KeyvService } from '../services/keyv.service';
+import { KeyvConfig } from './keyv.config';
+import { KeyvService } from './keyv.service';
 
 export const KeyvModule = new Module('keyv', {
+    configs: [KeyvConfig],
     providers: [KeyvService],
 });
