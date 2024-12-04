@@ -21,7 +21,8 @@
                 "test",
                 "sample",
                 "input",
-                "update"
+                "update",
+                "release"
             ]
         ],
         "scope-enum": [
