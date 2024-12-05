@@ -34,8 +34,13 @@ export class VueTranspile implements ITranspile {
             path.resolve(__dirname, './lib/vue.frontend.cjs'),
             'utf-8',
         );
+        const composableContent = fs.readFileSync(
+            path.resolve(__dirname, './lib/vue.composable.frontend.cjs'),
+            'utf-8',
+        );
 
         const mixinsOutputFile = path.resolve('public/assets/rpc-mixins.js');
+        const composableOutputFile = path.resolve('public/assets/rpc-composable.js');
 
         const rpcFunctions = Object.keys(contracts.index)
             .map(contractName => {
@@ -87,14 +92,26 @@ export class VueTranspile implements ITranspile {
             .join('\n');
 
         const mixinTemplate = `
-// Generated automatically by CMMV
+        // Generated automatically by CMMV
 
-${content
-    .replace('//%CONTRATCTS%', JSON.stringify(contracts))
-    .replace('//%RPCFUNCTIONS%', rpcFunctions)}`;
+        ${content
+            .replace('//%CONTRATCTS%', JSON.stringify(contracts))
+            .replace('//%RPCFUNCTIONS%', rpcFunctions)}`;
 
         const minifiedMixinTemplate = UglifyJS.minify(mixinTemplate).code;
         fs.writeFileSync(mixinsOutputFile, minifiedMixinTemplate, 'utf8');
         //this.logger.log(`RPC mixins generated successfully at ${mixinsOutputFile}`);
+
+        const composableTemplate = `
+        // Generated automatically by CMMV
+        
+        ${composableContent
+            .replace('//%CONTRATCTS%', JSON.stringify(contracts))
+            .replace('//%RPCFUNCTIONS%', rpcFunctions)}`;
+        
+                const minifiedComposableTemplate = UglifyJS.minify(composableTemplate).code;
+                fs.writeFileSync(composableOutputFile, minifiedComposableTemplate, 'utf8');
     }
+    
 }
+
