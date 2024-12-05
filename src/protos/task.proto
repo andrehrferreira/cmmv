@@ -17,6 +17,7 @@ message TaskList {
 message AddTaskRequest {
     Task item = 1;
 }
+
 message AddTaskResponse {
     string id = 1;
     Task item = 2;
@@ -38,6 +39,7 @@ message DeleteTaskResponse {
     bool success = 1;
     int32 affected = 2;
     string id = 3;
+    
 }
 
 message GetAllTaskRequest {}
