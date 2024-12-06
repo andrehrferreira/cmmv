@@ -1,6 +1,6 @@
 {
     "name": "@cmmv/keyv",
-    "version": "0.7.3",
+    "version": "0.7.4",
     "description": "CMMV (@keyv)",
     "publishConfig": {
         "access": "public"
