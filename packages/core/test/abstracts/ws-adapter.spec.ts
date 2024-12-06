@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { Application } from '../../lib/application';
+import { Application } from '../../application';
 import { AbstractWSAdapter } from '../../abstracts/ws-adapter.abstract';
 import { AbstractHttpAdapter } from '../../abstracts/http-adapter.abstract';
 
