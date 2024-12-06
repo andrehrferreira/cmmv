@@ -1,4 +1,4 @@
-import { Application } from '../lib/application';
+import { Application } from '../application';
 
 import { IHTTPSettings, HttpServer, RequestHandler } from '../interfaces';
 

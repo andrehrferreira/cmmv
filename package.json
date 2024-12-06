@@ -5,7 +5,6 @@
 		"cmmv",
 		"framework",
 		"http",
-		"rpc",
 		"contract"
 	],
 	"scripts": {

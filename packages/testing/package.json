@@ -1,0 +1,21 @@
+{
+    "name": "@cmmv/testing",
+    "version": "0.7.3",
+    "description": "CMMV (@testing)",
+    "publishConfig": {
+        "access": "public"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/andrehrferreira/cmmv.git"
+    },
+    "author": "Andre Ferreira",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/andrehrferreira/cmmv/issues"
+    },
+    "homepage": "https://cmmv.io",
+    "dependencies": {
+        "@cmmv/core": "^0.7.3"
+    }
+}

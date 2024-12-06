@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 
+export * from './application';
 export * from './abstracts';
 export * from './decorators';
 export * from './interfaces';

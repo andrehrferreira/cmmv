@@ -49,7 +49,9 @@
             "@cmmv/scheduling": ["packages/scheduling"],
             "@cmmv/scheduling/*": ["packages/scheduling/*"],
             "@cmmv/auth": ["packages/auth"],
-            "@cmmv/auth/*": ["packages/auth/*"]
+            "@cmmv/auth/*": ["packages/auth/*"],
+            "@cmmv/testing": ["packages/testing"],
+            "@cmmv/testing/*": ["packages/testing/*"]
         }
     },
     "include": ["packages/**/*", "src/**/*.ts"],

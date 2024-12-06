@@ -1,11 +1,11 @@
-import * as fs from 'fs';
-import * as path from 'path';
-import * as os from 'os';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+//import * as os from 'os';
 import * as fg from 'fast-glob';
 import * as Terser from 'terser';
-import { build } from 'esbuild';
+//import { build } from 'esbuild';
 
-import { IHTTPSettings, ConfigSchema } from '../interfaces';
+import { IHTTPSettings, ConfigSchema } from './interfaces';
 
 import { ITranspile, Logger, Scope, Transpile, Module, Config } from '.';
 
@@ -13,7 +13,7 @@ import {
     AbstractContract,
     AbstractHttpAdapter,
     AbstractWSAdapter,
-} from '../abstracts';
+} from './abstracts';
 
 import {
     CONTROLLER_NAME_METADATA,
@@ -30,9 +30,9 @@ import {
     GENERATE_ENTITIES_METADATA,
     CONTROLLER_VIEWFORM,
     CONTROLLER_VIEWPAGE,
-} from '../decorators';
+} from './decorators';
 
-import { ApplicationTranspile } from '../transpilers';
+import { ApplicationTranspile } from './transpilers';
 
 export interface IApplicationSettings {
     wsAdapter?: new (appOrHttpServer: any) => AbstractWSAdapter;
@@ -46,7 +46,7 @@ export interface IApplicationSettings {
 }
 
 export class Application {
-    private logger: Logger = new Logger('Application');
+    protected logger: Logger = new Logger('Application');
 
     public static appModule = {
         controllers: [],
@@ -56,22 +56,22 @@ export class Application {
         httpAfterRender: [],
     };
 
-    private httpAdapter: AbstractHttpAdapter;
-    private httpBind: string;
-    private httpOptions: IHTTPSettings;
-    private wsAdapter: AbstractWSAdapter;
-    private wsServer: any;
+    protected httpAdapter: AbstractHttpAdapter;
+    protected httpBind: string;
+    protected httpOptions: IHTTPSettings;
+    protected wsAdapter: AbstractWSAdapter;
+    protected wsServer: any;
     public wSConnections: Map<string, any> = new Map<string, any>();
-    private modules: Array<Module>;
-    private transpilers: Array<new () => ITranspile>;
-    private controllers: Array<any> = [];
-    private submodules: Array<Module> = [];
-    private contracts: Array<any> = [];
-    private configs: Array<ConfigSchema> = [];
+    protected modules: Array<Module>;
+    protected transpilers: Array<new () => ITranspile>;
+    protected controllers: Array<any> = [];
+    protected submodules: Array<Module> = [];
+    protected contracts: Array<any> = [];
+    protected configs: Array<ConfigSchema> = [];
     public providersMap = new Map<string, any>();
 
-    private host: string;
-    private port: number;
+    protected host: string;
+    protected port: number;
 
     constructor(settings: IApplicationSettings) {
         this.logger.log('Initialize application');
@@ -79,10 +79,11 @@ export class Application {
         Config.loadConfig();
 
         const env = Config.get<string>('env');
-        this.httpOptions = settings.httpOptions || {};
-        this.httpAdapter = settings.httpAdapter
-            ? new settings.httpAdapter()
-            : null;
+        this.httpOptions = (settings && settings.httpOptions) || {};
+        this.httpAdapter =
+            settings && settings.httpAdapter
+                ? new settings.httpAdapter()
+                : null;
 
         if (this.httpAdapter) {
             settings?.httpMiddlewares?.forEach(middleware => {
@@ -100,19 +101,20 @@ export class Application {
                 settings.contracts?.map(contractClass => new contractClass()) ||
                 [];
             this.initialize(settings);
-        } else if (settings.contracts.length > 0) {
-            this.transpilers = settings.transpilers || [];
-            this.modules = settings.modules || [];
+        } else if (settings && settings.contracts?.length > 0) {
+            this.transpilers = (settings && settings.transpilers) || [];
+            this.modules = (settings && settings.modules) || [];
             this.contracts =
-                settings.contracts?.map(contractClass => new contractClass()) ||
+                (settings &&
+                    settings.contracts?.map(
+                        contractClass => new contractClass(),
+                    )) ||
                 [];
             this.initialize(settings);
-        } else {
-            throw new Error('Unable to start HTTP adapter');
         }
     }
 
-    private async initialize(settings: IApplicationSettings): Promise<void> {
+    protected async initialize(settings: IApplicationSettings): Promise<void> {
         try {
             const env = Config.get<string>('env', process.env.NODE_ENV);
             this.loadModules(this.modules);
@@ -199,7 +201,7 @@ export class Application {
         }
     }
 
-    private async createScriptBundle() {
+    protected async createScriptBundle() {
         const dirBuild = path.resolve('./public/assets');
 
         if (!fs.existsSync(dirBuild))
@@ -259,7 +261,7 @@ export class Application {
         fs.writeFileSync(finalbundle, result.code, { encoding: 'utf-8' });
     }
 
-    private async createCSSBundle() {
+    protected async createCSSBundle() {
         const dirBuild = path.resolve('./public/assets');
 
         if (!fs.existsSync(dirBuild))
@@ -283,7 +285,7 @@ export class Application {
         fs.writeFileSync(finalbundle, bundleContent, { encoding: 'utf-8' });
     }
 
-    private loadModules(modules: Array<Module>): void {
+    protected loadModules(modules: Array<Module>): void {
         modules.forEach(module => {
             this.transpilers.push(...module.getTranspilers());
             this.controllers.push(...module.getControllers());
@@ -301,7 +303,7 @@ export class Application {
         });
     }
 
-    private processContracts(): void {
+    protected processContracts(): void {
         this.contracts.forEach(contract => {
             const target = contract.constructor || contract;
             const prototype = target.prototype || contract.prototype;
@@ -390,11 +392,11 @@ export class Application {
         return this.wsServer as AbstractWSAdapter;
     }
 
-    public static create(settings: IApplicationSettings): Application {
+    public static create(settings?: IApplicationSettings): Application {
         return new Application(settings);
     }
 
-    private static async generateModule(): Promise<Module> {
+    protected static async generateModule(): Promise<Module> {
         try {
             const outputPath = path.resolve('src', `app.module.ts`);
 

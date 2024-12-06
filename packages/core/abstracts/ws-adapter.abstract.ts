@@ -1,4 +1,4 @@
-import { Application } from '../lib/application';
+import { Application } from '../application';
 import { AbstractHttpAdapter } from './http-adapter.abstract';
 
 export abstract class AbstractWSAdapter {
