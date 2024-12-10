@@ -1,6 +1,6 @@
 {
     "name": "@cmmv/auth",
-    "version": "0.7.4",
+    "version": "0.7.5",
     "description": "Authentication module for CMMV",
     "publishConfig": {
         "access": "public"

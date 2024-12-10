@@ -1,6 +1,6 @@
 {
     "name": "@cmmv/repository",
-    "version": "0.7.4",
+    "version": "0.7.5",
     "description": "Repository module using TypeORM for CMMV",
     "publishConfig": {
         "access": "public"
