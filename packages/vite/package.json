@@ -1,7 +1,7 @@
 {
     "name": "@cmmv/vite",
     "version": "0.7.4",
-    "description": "CMMV (@vite)",
+    "description": "Vite Integration Module for CMMV",
     "publishConfig": {
         "access": "public"
     },

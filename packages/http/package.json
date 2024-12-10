@@ -1,7 +1,7 @@
 {
     "name": "@cmmv/http",
     "version": "0.7.4",
-    "description": "CMMV (@http)",
+    "description": "HTTP module implementing controllers, using CMMV standard adapter",
     "publishConfig": {
         "access": "public"
     },

@@ -1,7 +1,7 @@
 {
     "name": "@cmmv/testing",
     "version": "0.7.4",
-    "description": "CMMV (@testing)",
+    "description": "Module testing module and application for CMMV",
     "publishConfig": {
         "access": "public"
     },

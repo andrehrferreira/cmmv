@@ -1,7 +1,7 @@
 {
     "name": "@cmmv/scheduling",
     "version": "0.7.4",
-    "description": "CMMV (@scheduling)",
+    "description": "Scheduling module for CMMV",
     "publishConfig": {
         "access": "public"
     },
