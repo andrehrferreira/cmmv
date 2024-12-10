@@ -29,7 +29,6 @@
         "lib": ["esnext", "dom"],
         "types": ["node"],
         "paths": {
-            "*": ["node_modules/*", "packages/*"],
             "@cmmv/core": ["packages/core"],
             "@cmmv/core/*": ["packages/core/*"],
             "@cmmv/http": ["packages/http"],
