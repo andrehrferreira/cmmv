@@ -29,4 +29,7 @@ export class UserEntity implements IUser {
 
     @Column({ type: 'varchar', default: '[]' })
     groups: string;
+
+    @Column({ type: 'boolean', default: false })
+    root: boolean;
 }

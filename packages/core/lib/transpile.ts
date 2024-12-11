@@ -19,12 +19,15 @@ export class Transpile {
     public async transpile(): Promise<any[]> {
         try {
             const transpilePromises = this.transpilers.map(TranspilerClass => {
-                const transpiler = new TranspilerClass();
-                return transpiler.run();
+                if (typeof TranspilerClass == 'function') {
+                    const transpiler = new TranspilerClass();
+                    return transpiler.run();
+                }
             });
 
             return Promise.all(transpilePromises);
         } catch (error) {
+            console.error(error);
             this.logger.error(error);
             throw error;
         }

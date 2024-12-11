@@ -110,6 +110,10 @@ export function Session(): ParameterDecorator {
     return createParamDecorator(`session`);
 }
 
+export function User(): ParameterDecorator {
+    return createParamDecorator(`user`);
+}
+
 export function Ip(): ParameterDecorator {
     return createParamDecorator(`ip`);
 }

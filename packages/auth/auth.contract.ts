@@ -62,6 +62,12 @@ export class AuthContract extends AbstractContract {
     })
     groups: string;
 
+    @ContractField({
+        protoType: 'bool',
+        defaultValue: false,
+    })
+    root: boolean;
+
     customProto(): string {
         return `
 message LoginRequest {

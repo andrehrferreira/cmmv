@@ -3,7 +3,16 @@
 import { Config } from '@cmmv/core';
 import { Auth } from '@cmmv/auth';
 
-import { Controller, Post, Body, Req, Res, Get, Session } from '@cmmv/http';
+import {
+    Controller,
+    Post,
+    Body,
+    Request,
+    Response,
+    Get,
+    User,
+    Session,
+} from '@cmmv/http';
 
 import { AuthService } from '../services/auth.service';
 
@@ -20,15 +29,15 @@ export class AuthController {
 
     @Get('user')
     @Auth()
-    async user(@Req() req) {
-        return req.user;
+    async user(@User() user) {
+        return user;
     }
 
     @Post('login')
     async login(
         @Body() payload: LoginRequest,
-        @Req() req,
-        @Res() res,
+        @Request() req,
+        @Response() res,
         @Session() session,
     ): Promise<LoginResponse> {
         const { result } = await this.authService.login(

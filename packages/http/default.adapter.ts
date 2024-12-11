@@ -448,8 +448,40 @@ export class DefaultAdapter extends AbstractHttpAdapter<
                     if (route.middlewares) {
                         this.instance[method](
                             fullPath,
-                            route.middlewares,
-                            handler,
+                            async (req, res, next) => {
+                                try {
+                                    if (
+                                        Array.isArray(route.middlewares) &&
+                                        route.middlewares.length > 0
+                                    ) {
+                                        for (const middleware of route.middlewares) {
+                                            await new Promise(
+                                                (resolve, reject) => {
+                                                    middleware(
+                                                        req,
+                                                        res,
+                                                        err => {
+                                                            if (err)
+                                                                return reject(
+                                                                    err,
+                                                                );
+                                                            resolve(null);
+                                                        },
+                                                    );
+                                                },
+                                            );
+                                        }
+                                    }
+
+                                    await handler(req, res, next);
+                                } catch (error) {
+                                    console.error(
+                                        'Error processing middlewares or handler:',
+                                        error,
+                                    );
+                                    next(error); // Pass error to the next middleware or error handler
+                                }
+                            },
                         );
                     } else {
                         this.instance[method](fullPath, handler);
@@ -494,6 +526,9 @@ export class DefaultAdapter extends AbstractHttpAdapter<
                     break;
                 case 'session':
                     args[param.index] = req.session;
+                    break;
+                case 'user':
+                    args[param.index] = req.user;
                     break;
                 case 'ip':
                     args[param.index] = req.ip;

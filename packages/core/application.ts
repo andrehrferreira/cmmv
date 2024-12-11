@@ -255,7 +255,12 @@ export class Application {
                 drop_console: process.env.NODE_ENV !== 'dev',
             },
             mangle: { toplevel: true },
-            output: { beautify: false },
+            output: {
+                beautify: false,
+            },
+            sourceMap: {
+                url: 'inline', // Gera o sourcemap diretamente embutido no arquivo
+            },
         });
 
         fs.writeFileSync(finalbundle, result.code, { encoding: 'utf-8' });

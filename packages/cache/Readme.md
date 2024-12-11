@@ -46,7 +46,7 @@ This command will walk you through a guided setup process, asking about your pre
 If you prefer to set up the project manually, you can still install the necessary modules individually:
 
 ```bash
-$ pnpm add @cmmv/core @cmmv/http @cmmv/view rxjs reflect-metadata class-validator class-transformer fast-json-stringify
+$ pnpm add @cmmv/core @cmmv/http @cmmv/view reflect-metadata class-validator class-transformer fast-json-stringify
 ```
 
 ## Quick Start
@@ -56,21 +56,15 @@ Below is a simple example of how to create a new CMMV application:
 ```typescript
 import { Application } from "@cmmv/core";
 import { DefaultAdapter, DefaultHTTPModule } from "@cmmv/http";
-import { ProtobufModule } from "@cmmv/protobuf";
-import { WSModule, WSAdapter } from "@cmmv/ws";
 import { ViewModule } from "@cmmv/view";
-import { RepositoryModule, Repository } from "@cmmv/repository";
 import { ApplicationModule } from "./app.module";
 
 Application.create({
     httpAdapter: DefaultAdapter,    
     wsAdapter: WSAdapter,
     modules: [
-        DefaultHTTPModule,
-        ProtobufModule,
-        WSModule,
-        ViewModule,
-        RepositoryModule,
+        DefaultHTTPModule,                
+        ViewModule,        
         ApplicationModule
     ],
     services: [Repository],

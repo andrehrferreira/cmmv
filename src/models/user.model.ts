@@ -12,6 +12,7 @@ export interface IUser {
     password: string;
     googleId: string;
     groups: string;
+    root: boolean;
 }
 
 export class User implements IUser {
@@ -41,6 +42,9 @@ export class User implements IUser {
     @Transform(({ value }) => JSON.stringify(value))
     groups: string = '[]';
 
+    @Expose()
+    root: boolean = false;
+
     constructor(partial: Partial<User>) {
         Object.assign(this, partial);
     }
@@ -63,6 +67,7 @@ export const UserFastSchema = fastJson({
         password: { type: 'string' },
         googleId: { type: 'string' },
         groups: { type: 'string', default: '[]' },
+        root: { type: 'boolean', default: false },
     },
     required: [],
 });

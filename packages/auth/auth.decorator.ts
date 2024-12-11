@@ -1,35 +1,57 @@
 import * as jwt from 'jsonwebtoken';
 import { Config } from '@cmmv/core';
+import { IAuthSettings } from './auth.interface';
 
-export function Auth(roles?: string[]): MethodDecorator {
+export function Auth(
+    rolesOrSettings?: string[] | IAuthSettings,
+): MethodDecorator {
     return (target, propertyKey: string | symbol, descriptor: any) => {
-        const middleware = (req: any, res: any, next?: any) => {
+        const middleware = (request: any, response: any, next?: any) => {
             const cookieName = Config.get(
                 'server.session.options.sessionCookieName',
                 'token',
             );
 
-            let token = req.cookies ? req.cookies[cookieName] : null;
+            let token = request.req.cookies
+                ? request.req.cookies[cookieName]
+                : null;
 
             if (!token)
-                token = req.headers.authorization?.split(' ')[1] || null;
+                token =
+                    request.req.headers.authorization?.split(' ')[1] || null;
 
-            if (!token) return res.status(401).send('Unauthorized');
+            if (!token) return response.code(401).end('Unauthorized');
 
             jwt.verify(
                 token,
                 Config.get('auth.jwtSecret'),
                 (err: any, decoded: any) => {
-                    if (err) return res.status(401).send('Unauthorized');
+                    if (err) return response.code(401).end('Unauthorized');
 
                     if (
-                        roles &&
+                        rolesOrSettings &&
+                        Array.isArray(rolesOrSettings) &&
                         (!decoded.roles ||
-                            !roles.some(role => decoded.roles.includes(role)))
-                    )
-                        return res.status(403).send('Forbidden');
+                            !rolesOrSettings.some(role =>
+                                decoded.roles.includes(role),
+                            ))
+                    ) {
+                        return response.code(401).end('Unauthorized');
+                    } else if (rolesOrSettings) {
+                        const settings = rolesOrSettings as IAuthSettings;
 
-                    req.user = decoded;
+                        if (settings.roles && Array.isArray(settings.roles)) {
+                            if (
+                                !decoded.roles ||
+                                !settings.roles.some(role =>
+                                    decoded.roles.includes(role),
+                                )
+                            )
+                                return response.code(401).end('Unauthorized');
+                        }
+                    }
+
+                    request.user = decoded;
                     next();
                 },
             );

@@ -8,6 +8,7 @@ message User {
    string password = 2;
    string googleId = 3;
    string groups = 4;
+   bool root = 5;
 }
 
 message LoginRequest {

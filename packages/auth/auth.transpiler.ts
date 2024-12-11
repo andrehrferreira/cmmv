@@ -28,8 +28,8 @@ import { Config } from "@cmmv/core";
 import { Auth } from "@cmmv/auth";
 
 import { 
-    Controller, Post, Body, Req, 
-    Res, Get, Session
+    Controller, Post, Body, Request, 
+    Response, Get, User, Session
 } from "@cmmv/http";
 
 import { AuthService } from '../services/auth.service';
@@ -45,8 +45,8 @@ export class AuthController {
 
     @Get("user")
     @Auth()
-    async user(@Req() req) {
-        return req.user;
+    async user(@User() user) {
+        return user;
     }
 
     ${
@@ -54,7 +54,7 @@ export class AuthController {
             ? `@Post("login")
     async login(
         @Body() payload: LoginRequest, 
-        @Req() req, @Res() res, @Session() session
+        @Request() req, @Response() res, @Session() session
     ): Promise<LoginResponse> {
         const { result } = await this.authService.login(payload, req, res, session);
         return result;
@@ -115,6 +115,8 @@ import {
 
 ${hasRepository ? "import { UserEntity } from '../entities/user.entity';" : ''}
 
+${Config.get('repository.type') === 'mongodb' ? "import { ObjectId } from 'mongodb';" : ''} 
+
 @Service("auth")
 export class AuthService extends AbstractService {
     public async login(
@@ -124,6 +126,7 @@ export class AuthService extends AbstractService {
     ): Promise<{ result: LoginResponse, user: any }> {
         Telemetry.start('AuthService::login', req?.requestId);
 
+        const env = Config.get<string>("env", process.env.NODE_ENV);
         const jwtToken = Config.get<string>("auth.jwtSecret");
         const expiresIn = Config.get<number>("auth.expiresIn", 60 * 60);
         const sessionEnabled = Config.get<boolean>("server.session.enabled", true);
@@ -147,7 +150,19 @@ export class AuthService extends AbstractService {
 
         ${
             hasRepository
-                ? `const user = await Repository.findBy(UserEntity, userValidation);;
+                ? `let user = await Repository.findBy(UserEntity, userValidation);
+
+        if(
+            !user && env === "dev" && 
+            payload.username === "root" && 
+            payload.password === "root"
+        ){
+            user = {
+                ${Config.get('repository.type') === 'mongodb' ? `_id: new ObjectId(9999)` : `id: 9999`},
+                username: payload.username,
+                root: true
+            } as UserEntity;
+        }
 
         if (!user) 
             return { result: { success: false, token: "", message: "Invalid credentials" }, user: null  };`
@@ -168,7 +183,7 @@ export class AuthService extends AbstractService {
             maxAge: cookieTTL
         });
 
-        if(sessionEnabled){
+        if(sessionEnabled && session){
             session.user = {
                 username: payload.username,
                 token: token,
