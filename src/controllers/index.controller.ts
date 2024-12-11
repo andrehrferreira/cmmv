@@ -1,11 +1,15 @@
-// Generated automatically by CMMV
+import { Controller, Request, Response, Get } from '@cmmv/http';
 
-import { Controller, Get, Request } from '@cmmv/http';
+import { ServiceRegistry } from '@cmmv/core';
 
 @Controller()
 export class IndexController {
     @Get()
-    async getAll(@Request() req, @Request() res) {
-        res.render('index');
+    async renderIndex(@Request() req, @Response() res) {
+        res.render('index', {
+            nonce: res.locals.nonce,
+            services: ServiceRegistry.getServicesArr(),
+            requestId: req.requestId,
+        });
     }
 }

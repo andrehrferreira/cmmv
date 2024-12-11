@@ -45,6 +45,10 @@ export interface IApplicationSettings {
     services?: Array<any>;
 }
 
+process.on('uncaughtException', err => {
+    console.error(err);
+});
+
 export class Application {
     protected logger: Logger = new Logger('Application');
 

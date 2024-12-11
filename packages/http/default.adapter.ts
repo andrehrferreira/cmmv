@@ -40,7 +40,7 @@ export class DefaultAdapter extends AbstractHttpAdapter<
     }
 
     public async init(application: Application, settings?: IHTTPSettings) {
-        const publicDir = path.join(process.cwd(), 'public');
+        const publicDir = path.join(process.cwd(), 'public/views');
         this.application = application;
 
         this.instance = this.instance || cmmv();
@@ -130,7 +130,7 @@ export class DefaultAdapter extends AbstractHttpAdapter<
     }
 
     private setMiddleware() {
-        this.instance.addHook('onRequest', (req, res, next) => {
+        this.instance.addHook('onRequest', async (req, res, payload, done) => {
             req.requestId = uuidv4();
             res.locals = {};
             res.locals.nonce = uuidv4().substring(0, 8);
@@ -193,14 +193,37 @@ export class DefaultAdapter extends AbstractHttpAdapter<
                 req.path === '/' ? 'index' : req.path.substring(1);
             const ext = path.extname(req.path);
 
-            if (req.path.indexOf('.html') === -1 && req.path !== '/')
-                return next();
+            if (
+                req.path.indexOf('.html') === -1 &&
+                req.path !== '/' &&
+                !this.instance.router.hasRoute(req.method, req.url)
+            )
+                return res.code(404).end();
+            else if (
+                (req.path.indexOf('.html') === -1 &&
+                    req.path !== '/' &&
+                    typeof done === 'function') ||
+                (req.path === '/' &&
+                    this.instance.router.hasRoute(req.method, req.url) &&
+                    typeof done === 'function')
+            ) {
+                return done();
+            } else if (
+                (req.path.indexOf('.html') === -1 &&
+                    req.path !== '/' &&
+                    typeof done !== 'function') ||
+                (req.path === '/' &&
+                    this.instance.router.hasRoute(req.method, req.url))
+            ) {
+                return null;
+            }
 
             const possiblePaths = [
                 path.join(publicDir, `${requestPath}.html`),
                 path.join(publicDir, requestPath, 'index.html'),
                 path.join(publicDir, `${requestPath}`),
                 path.join(publicDir, requestPath, 'index.html'),
+                path.join(publicDir, requestPath, 'views', 'index.html'),
             ];
 
             let fileFound = false;
@@ -221,7 +244,7 @@ export class DefaultAdapter extends AbstractHttpAdapter<
 
             if (!fileFound) res.code(404).send('Page not found');
 
-            next();
+            if (typeof done === 'function') done(req, res, payload);
         });
     }
 

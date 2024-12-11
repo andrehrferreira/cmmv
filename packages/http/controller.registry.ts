@@ -139,10 +139,7 @@ export class ControllerRegistry {
         middleware: Function,
     ) {
         const key = `${method}::/${target.constructor.name}/${path}`;
-        console.log(key);
-
         if (!this.middlewares.has(key)) this.middlewares.set(key, []);
-
         this.middlewares.get(key)!.push(middleware);
     }
 
