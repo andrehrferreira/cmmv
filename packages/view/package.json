@@ -1,6 +1,6 @@
 {
     "name": "@cmmv/view",
-    "version": "0.7.6",
+    "version": "0.8.0",
     "description": "SSR view module for CMMV",
     "publishConfig": {
         "access": "public"
@@ -16,7 +16,7 @@
     },
     "homepage": "https://cmmv.io",
     "dependencies": {
-        "@cmmv/protobuf": "0.7.6",
+        "@cmmv/protobuf": "0.8.0",
         "@cmmv/reactivity": "^0.4.6",
         "fast-glob": "^3.3.2",
         "html-minifier-terser": "^7.2.0",
