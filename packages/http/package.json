@@ -1,6 +1,6 @@
 {
     "name": "@cmmv/http",
-    "version": "0.8.1",
+    "version": "0.8.2",
     "description": "HTTP module implementing controllers, using CMMV standard adapter",
     "publishConfig": {
         "access": "public"
@@ -25,7 +25,7 @@
         "@cmmv/reactivity": "^0.4.6",
         "@cmmv/server": "^0.5.2",
         "@cmmv/server-static": "^0.5.2",
-        "@cmmv/view": "0.8.1",
+        "@cmmv/view": "0.8.2",
         "axios": "^1.7.7",
         "fast-json-stringify": "^6.0.0"
     }
