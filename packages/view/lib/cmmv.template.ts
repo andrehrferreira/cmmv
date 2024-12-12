@@ -448,6 +448,8 @@ export class Template {
                 let scriptString = '<script ';
 
                 for (const [key, value] of Object.entries(script)) {
+                    let parsedValue = value;
+
                     if (key === 'src' && value.startsWith('@')) {
                         scriptString += `${key}="node_modules/${value}" `;
                     } else {
@@ -456,13 +458,13 @@ export class Template {
                                 const stats = fs.statSync(
                                     path.join(cwd(), 'public', value),
                                 );
-                                value += `?t=${new Date(stats.mtime).getTime()}`;
+                                parsedValue += `?t=${new Date(stats.mtime).getTime()}`;
                             } catch {
-                                value += `?t=${new Date().getTime()}`;
+                                parsedValue += `?t=${new Date().getTime()}`;
                             }
                         }
 
-                        scriptString += `${key}="${value}" `;
+                        scriptString += `${key}="${parsedValue}" `;
                     }
                 }
 
