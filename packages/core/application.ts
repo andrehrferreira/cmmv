@@ -91,7 +91,7 @@ export class Application {
 
         if (this.httpAdapter) {
             settings?.httpMiddlewares?.forEach(middleware => {
-                this.httpAdapter.use(middleware);
+                this.httpAdapter?.getInstance().use(middleware);
             });
 
             if (settings.wsAdapter)
