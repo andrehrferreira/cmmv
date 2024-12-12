@@ -86,6 +86,9 @@ export class AuthService extends AbstractService {
             {
                 id: user._id,
                 username: payload.username,
+                root: user.root,
+                roles: user.roles || [],
+                groups: user.groups || [],
             },
             jwtToken,
             { expiresIn },

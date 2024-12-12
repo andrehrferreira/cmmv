@@ -127,6 +127,22 @@ export class ${serviceName} extends AbstractService {
         fs.writeFileSync(outputFilePath, serviceTemplate, 'utf8');
     }
 
+    private getControllerDecorators(
+        { authRouter, hasCache, contract },
+        medatada?: any,
+        authRole = 'get',
+    ) {
+        let decoracotrs = '';
+
+        if (authRouter)
+            decoracotrs += `\n    @Auth("${contract.controllerName.toLowerCase()}:${authRole}")`;
+
+        if (hasCache)
+            decoracotrs += `\n    @Cache("${medatada.cacheKeyPrefix}getAll", { ttl: ${medatada.cacheTtl}, compress: ${medatada.cacheCompress}, schema: ${contract.controllerName}FastSchema })`;
+
+        return decoracotrs;
+    }
+
     private generateController(contract: any): void {
         const outputPath = path.resolve(contract.protoPath);
         const outputDir = path.dirname(outputPath);
@@ -136,6 +152,7 @@ export class ${serviceName} extends AbstractService {
 
         const hasCache =
             contract.cache !== undefined && contract.cache !== null;
+        const authRouter = contract.auth === true;
         const cacheKeyPrefix = hasCache
             ? contract.cache.key || `${contract.controllerName.toLowerCase()}:`
             : '';
@@ -147,6 +164,7 @@ export class ${serviceName} extends AbstractService {
 
 import { Telemetry } from "@cmmv/core";
 ${hasCache ? `import { Cache, CacheService } from "@cmmv/cache";` : ''}
+${authRouter ? `import { Auth } from "@cmmv/auth";` : ''}
 import { 
     Controller, Get, Post, Put, Delete, 
     Queries, Param, Body, Request 
@@ -159,7 +177,7 @@ import { ${contract.controllerName}, ${contract.controllerName}FastSchema } from
 export class ${controllerName} {
     constructor(private readonly ${serviceName.toLowerCase()}: ${serviceName}) {}
 
-    @Get()${hasCache ? `\n    @Cache("${cacheKeyPrefix}getAll", { ttl: ${cacheTtl}, compress: ${cacheCompress}, schema: ${contract.controllerName}FastSchema })` : ''}
+    @Get()${this.getControllerDecorators({ authRouter, hasCache, contract }, { cacheKeyPrefix, cacheTtl, cacheCompress }, 'get')}
     async getAll(@Queries() queries: any, @Request() req) {
         Telemetry.start('${controllerName}::GetAll', req.requestId);
         let result = await this.${serviceName.toLowerCase()}.getAll(queries, req);
@@ -167,7 +185,7 @@ export class ${controllerName} {
         return result;
     }
 
-    @Get(':id')${hasCache ? `\n    @Cache("${cacheKeyPrefix}{id}", { ttl: ${cacheTtl}, compress: ${cacheCompress}, schema: ${contract.controllerName}FastSchema })` : ''}
+    @Get(':id')${this.getControllerDecorators({ authRouter, hasCache, contract }, { cacheKeyPrefix, cacheTtl, cacheCompress }, 'get')}
     async getById(@Param('id') id: string, @Request() req) {
         Telemetry.start('${controllerName}::GetById', req.requestId);
         let result = await this.${serviceName.toLowerCase()}.getById(id, req);
@@ -175,7 +193,7 @@ export class ${controllerName} {
         return result;
     }
 
-    @Post()
+    @Post()${this.getControllerDecorators({ authRouter, hasCache, contract }, { cacheKeyPrefix, cacheTtl, cacheCompress }, 'insert')}
     async add(@Body() item: ${contract.controllerName}, @Request() req) {
         Telemetry.start('${controllerName}::Add', req.requestId);
         let result = await this.${serviceName.toLowerCase()}.add(item, req);
@@ -185,7 +203,7 @@ export class ${controllerName} {
         return result;
     }
 
-    @Put(':id')
+    @Put(':id')${this.getControllerDecorators({ authRouter, hasCache, contract }, { cacheKeyPrefix, cacheTtl, cacheCompress }, 'update')}
     async update(@Param('id') id: string, @Body() item: ${contract.controllerName}, @Request() req) {
         Telemetry.start('${controllerName}::Update', req.requestId);
         let result = await this.${serviceName.toLowerCase()}.update(id, item, req);
@@ -195,7 +213,7 @@ export class ${controllerName} {
         return result;
     }
 
-    @Delete(':id')
+    @Delete(':id')${this.getControllerDecorators({ authRouter, hasCache, contract }, { cacheKeyPrefix, cacheTtl, cacheCompress }, 'delete')}
     async delete(@Param('id') id: string, @Request() req): Promise<{ success: boolean, affected: number }> {
         Telemetry.start('${controllerName}::Delete', req.requestId);
         let result = await this.${serviceName.toLowerCase()}.delete(id, req);

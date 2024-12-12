@@ -173,7 +173,10 @@ export class AuthService extends AbstractService {
 
         const token = jwt.sign({ 
             id: ${Config.get('repository.type') === 'mongodb' ? `user._id` : `user.id`},
-            username: payload.username 
+            username: payload.username,
+            root: user.root,
+            roles: user.roles || [],
+            groups: user.groups || []
         }, jwtToken, { expiresIn });
 
         res.cookie(cookieName, \`Bearer \${token}\`, {

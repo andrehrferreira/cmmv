@@ -58,9 +58,20 @@ export class AuthContract extends AbstractContract {
     @ContractField({
         protoType: 'string',
         defaultValue: '[]',
+        objectType: 'Array<string>',
         transform: ({ value }) => JSON.stringify(value),
+        toObject: ({ value }) => JSON.parse(value),
     })
-    groups: string;
+    groups: Array<string>;
+
+    @ContractField({
+        protoType: 'string',
+        defaultValue: '[]',
+        objectType: 'Array<string>',
+        transform: ({ value }) => JSON.stringify(value),
+        toObject: ({ value }) => JSON.parse(value),
+    })
+    roles: Array<string>;
 
     @ContractField({
         protoType: 'bool',

@@ -30,7 +30,14 @@ export class ApplicationTranspile implements ITranspile {
 ${this.generateClassImports(contract)}
         
 export interface ${modelInterfaceName} {
-${includeId}${contract.fields?.map((field: any) => `    ${field.propertyKey}: ${this.mapToTsType(field.protoType)};`).join('\n')}
+${includeId}${contract.fields
+            ?.map((field: any) => {
+                const fieldType = field.objectType
+                    ? field.objectType
+                    : this.mapToTsType(field.protoType);
+                return `    ${field.propertyKey}: ${fieldType};`;
+            })
+            .join('\n')}
 }
 
 export class ${modelName} implements ${modelInterfaceName} {
@@ -201,10 +208,17 @@ ${contract.fields?.map((field: any) => `        ${field.propertyKey}: ${this.gen
                 typeof field.defaultValue === 'string'
                     ? `"${field.defaultValue}"`
                     : field.defaultValue;
-            defaultValueString = ` = ${defaultValue};`;
+
+            defaultValueString = field.objectType
+                ? ` = ${field.defaultValue};`
+                : ` = ${defaultValue};`;
         }
 
-        return `${decorators.length > 0 ? decorators.join('\n') + '\n' : ''}    ${field.propertyKey}: ${this.mapToTsType(field.protoType)}${defaultValueString}`;
+        const fieldType = field.objectType
+            ? field.objectType
+            : this.mapToTsType(field.protoType);
+
+        return `${decorators.length > 0 ? decorators.join('\n') + '\n' : ''}    ${field.propertyKey}: ${fieldType}${defaultValueString}`;
     }
 
     private mapToTsType(protoType: string): string {

@@ -8,7 +8,8 @@ message User {
    string password = 2;
    string googleId = 3;
    string groups = 4;
-   bool root = 5;
+   string roles = 5;
+   bool root = 6;
 }
 
 message LoginRequest {

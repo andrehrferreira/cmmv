@@ -5,6 +5,7 @@ export namespace User {
     export type password = string;
     export type googleId = string;
     export type groups = string;
+    export type roles = string;
     export type root = boolean;
 }
 

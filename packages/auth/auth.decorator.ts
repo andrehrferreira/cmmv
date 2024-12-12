@@ -3,7 +3,7 @@ import { Config } from '@cmmv/core';
 import { IAuthSettings } from './auth.interface';
 
 export function Auth(
-    rolesOrSettings?: string[] | IAuthSettings,
+    rolesOrSettings?: string[] | string | IAuthSettings,
 ): MethodDecorator {
     return (target, propertyKey: string | symbol, descriptor: any) => {
         const middleware = (request: any, response: any, next?: any) => {
@@ -29,25 +29,37 @@ export function Auth(
                     if (err) return response.code(401).end('Unauthorized');
 
                     if (
-                        rolesOrSettings &&
-                        Array.isArray(rolesOrSettings) &&
-                        (!decoded.roles ||
-                            !rolesOrSettings.some(role =>
-                                decoded.roles.includes(role),
-                            ))
+                        (rolesOrSettings &&
+                            Array.isArray(rolesOrSettings) &&
+                            (!decoded.roles ||
+                                !rolesOrSettings.some(role =>
+                                    decoded?.roles.includes(role),
+                                ))) ||
+                        (typeof rolesOrSettings == 'string' &&
+                            decoded?.roles.includes(rolesOrSettings))
                     ) {
                         return response.code(401).end('Unauthorized');
                     } else if (rolesOrSettings) {
-                        const settings = rolesOrSettings as IAuthSettings;
+                        try {
+                            const settings = rolesOrSettings as IAuthSettings;
 
-                        if (settings.roles && Array.isArray(settings.roles)) {
                             if (
-                                !decoded.roles ||
-                                !settings.roles.some(role =>
-                                    decoded.roles.includes(role),
-                                )
-                            )
-                                return response.code(401).end('Unauthorized');
+                                settings.roles &&
+                                Array.isArray(settings.roles)
+                            ) {
+                                if (
+                                    !decoded.roles ||
+                                    !settings.roles.some(role =>
+                                        decoded.roles.includes(role),
+                                    )
+                                ) {
+                                    return response
+                                        .code(401)
+                                        .end('Unauthorized');
+                                }
+                            }
+                        } catch {
+                            return response.code(401).end('Unauthorized');
                         }
                     }
 

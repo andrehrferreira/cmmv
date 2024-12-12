@@ -2,6 +2,7 @@
 
 import { Telemetry } from '@cmmv/core';
 import { Cache, CacheService } from '@cmmv/cache';
+import { Auth } from '@cmmv/auth';
 import {
     Controller,
     Get,
@@ -22,6 +23,7 @@ export class TaskController {
     constructor(private readonly taskservice: TaskService) {}
 
     @Get()
+    @Auth('task:get')
     @Cache('task:getAll', { ttl: 300, compress: true, schema: TaskFastSchema })
     async getAll(@Queries() queries: any, @Request() req) {
         Telemetry.start('TaskController::GetAll', req.requestId);
@@ -31,7 +33,8 @@ export class TaskController {
     }
 
     @Get(':id')
-    @Cache('task:{id}', { ttl: 300, compress: true, schema: TaskFastSchema })
+    @Auth('task:get')
+    @Cache('task:getAll', { ttl: 300, compress: true, schema: TaskFastSchema })
     async getById(@Param('id') id: string, @Request() req) {
         Telemetry.start('TaskController::GetById', req.requestId);
         let result = await this.taskservice.getById(id, req);
@@ -40,6 +43,8 @@ export class TaskController {
     }
 
     @Post()
+    @Auth('task:insert')
+    @Cache('task:getAll', { ttl: 300, compress: true, schema: TaskFastSchema })
     async add(@Body() item: Task, @Request() req) {
         Telemetry.start('TaskController::Add', req.requestId);
         let result = await this.taskservice.add(item, req);
@@ -50,6 +55,8 @@ export class TaskController {
     }
 
     @Put(':id')
+    @Auth('task:update')
+    @Cache('task:getAll', { ttl: 300, compress: true, schema: TaskFastSchema })
     async update(@Param('id') id: string, @Body() item: Task, @Request() req) {
         Telemetry.start('TaskController::Update', req.requestId);
         let result = await this.taskservice.update(id, item, req);
@@ -60,6 +67,8 @@ export class TaskController {
     }
 
     @Delete(':id')
+    @Auth('task:delete')
+    @Cache('task:getAll', { ttl: 300, compress: true, schema: TaskFastSchema })
     async delete(
         @Param('id') id: string,
         @Request() req,

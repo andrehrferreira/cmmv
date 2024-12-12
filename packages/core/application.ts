@@ -223,29 +223,6 @@ export class Application {
 
         const bundleContent = lines.join('\n');
 
-        /*const tempFilePath = path.join(os.tmpdir(), 'temp-bundle.js');
-        fs.writeFileSync(tempFilePath, bundleContent, 'utf8');
-    
-        await build({
-            entryPoints: [tempFilePath],
-            outfile: finalbundle,
-            bundle: true,
-            minify: false,
-            platform: 'browser',
-            format: 'esm',
-            sourcemap: true,
-            target: ['esnext'],
-            external: ['vue', 'axios', 'moment'],
-            define: {
-                'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production'),
-            },
-            logLevel: 'silent',
-            keepNames: true,
-            ignoreAnnotations: true,
-        });
-
-        fs.unlinkSync(tempFilePath);*/
-
         const result = await Terser.minify(bundleContent, {
             compress: {
                 dead_code: true,
@@ -413,8 +390,12 @@ ${Application.appModule.controllers.map(controller => `import { ${controller.nam
 ${Application.appModule.providers.map(provider => `import { ${provider.name} } from '${provider.path}';`).join('\n')}
 
 export let ApplicationModule = new Module("app", {
-    controllers: [${Application.appModule.controllers.map(controller => controller.name).join(', ')}],
-    providers: [${Application.appModule.providers.map(provider => provider.name).join(', ')}],
+    controllers: [
+        ${Application.appModule.controllers.map(controller => controller.name).join(', \n\t\t')}
+    ],
+    providers: [
+        ${Application.appModule.providers.map(provider => provider.name).join(', \n\t\t')}
+    ],
     transpilers: [ApplicationTranspile]
 });`;
 

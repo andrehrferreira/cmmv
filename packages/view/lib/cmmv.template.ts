@@ -447,7 +447,7 @@ export class Template {
             scripts.forEach((script: Record<string, string>) => {
                 let scriptString = '<script ';
 
-                for (let [key, value] of Object.entries(script)) {
+                for (const [key, value] of Object.entries(script)) {
                     if (key === 'src' && value.startsWith('@')) {
                         scriptString += `${key}="node_modules/${value}" `;
                     } else {
