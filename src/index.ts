@@ -9,6 +9,7 @@ import { SchedulingModule, SchedulingService } from '@cmmv/scheduling';
 import { AuthModule } from '@cmmv/auth';
 import { ViteModule } from '@cmmv/vite';
 import { IndexModule } from './modules/index.module';
+import morgan from '@cmmv/morgan';
 
 //Contracts
 import { TasksContract } from './contracts/tasks.contract';
@@ -16,6 +17,7 @@ import { TasksContract } from './contracts/tasks.contract';
 Application.create({
     httpAdapter: DefaultAdapter,
     wsAdapter: WSAdapter,
+    httpMiddlewares: [morgan('combined')],
     modules: [
         DefaultHTTPModule,
         ProtobufModule,

@@ -605,6 +605,4 @@ export class DefaultAdapter extends AbstractHttpAdapter<
             }
         });
     }
-
-    public override use(...args: any[]) {}
 }

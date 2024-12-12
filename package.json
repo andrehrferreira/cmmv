@@ -67,6 +67,7 @@
 		]
 	},
 	"devDependencies": {
+		"@cmmv/morgan": "^0.0.2",
 		"@cmmv/plugin-vite": "^0.0.4",
 		"@codechecks/client": "^0.0.50",
 		"@commitlint/cli": "^19.6.0",

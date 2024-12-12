@@ -90,10 +90,6 @@ export class Application {
                 : null;
 
         if (this.httpAdapter) {
-            settings?.httpMiddlewares?.forEach(middleware => {
-                this.httpAdapter?.getInstance().use(middleware);
-            });
-
             if (settings.wsAdapter)
                 this.wsAdapter = new settings.wsAdapter(this.httpAdapter);
 
@@ -174,8 +170,8 @@ export class Application {
             if (this.httpAdapter) {
                 await this.httpAdapter.init(this, this.httpOptions);
 
-                Application.appModule.httpMiddlewares?.forEach(middleware => {
-                    this.httpAdapter.use(middleware);
+                settings?.httpMiddlewares?.forEach(middleware => {
+                    this.httpAdapter?.use(middleware);
                 });
 
                 if (this.wsAdapter)

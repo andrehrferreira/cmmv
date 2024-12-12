@@ -437,16 +437,33 @@ export class Template {
 
     parseScripts() {
         const scripts = Config.get('scripts');
+        const scriptsTimestamp = Config.get<boolean>(
+            'view.scriptsTimestamp',
+            false,
+        );
         let scriptsContent = '';
 
         if (scripts) {
             scripts.forEach((script: Record<string, string>) => {
                 let scriptString = '<script ';
 
-                for (const [key, value] of Object.entries(script)) {
-                    if (key === 'src' && value.startsWith('@'))
+                for (let [key, value] of Object.entries(script)) {
+                    if (key === 'src' && value.startsWith('@')) {
                         scriptString += `${key}="node_modules/${value}" `;
-                    else scriptString += `${key}="${value}" `;
+                    } else {
+                        if (key === 'src' && scriptsTimestamp) {
+                            try {
+                                const stats = fs.statSync(
+                                    path.join(cwd(), 'public', value),
+                                );
+                                value += `?t=${new Date(stats.mtime).getTime()}`;
+                            } catch {
+                                value += `?t=${new Date().getTime()}`;
+                            }
+                        }
+
+                        scriptString += `${key}="${value}" `;
+                    }
                 }
 
                 if (this.nonce) scriptString += `nonce="${this.nonce}" `;

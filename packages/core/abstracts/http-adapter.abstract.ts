@@ -15,17 +15,8 @@ export abstract class AbstractHttpAdapter<
 
     public async init(application: Application, settings?: IHTTPSettings) {}
 
-    public use(...args: any[]) {
-        //Cmmv and Fastify use addHook
-        if (this.instance && typeof this.instance.addHook === 'function') {
-            if (args[0] && typeof args[0] === 'function') {
-                return this.instance.addHook('onRequest', args[0].bind(this));
-            }
-        } else if (this.instance && typeof this.instance.use === 'function') {
-            return this.instance.use(...args);
-        }
-
-        return false;
+    public async use(...args: any[]) {
+        return this.instance.use(...args);
     }
 
     public get(handler: RequestHandler);

@@ -25,5 +25,10 @@ export const ViewConfig: ConfigSchema = {
             type: 'boolean',
             default: true,
         },
+        scriptsTimestamp: {
+            required: false,
+            type: 'boolean',
+            default: false,
+        },
     },
 };

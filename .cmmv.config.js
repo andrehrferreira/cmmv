@@ -49,8 +49,7 @@ module.exports = {
     view: {
         extractInlineScript: false,
         minifyHTML: true,
-        vue3: true,
-        tailwind: true
+        scriptsTimestamp: true
     },
 
     repository: {
