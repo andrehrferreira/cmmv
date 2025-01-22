@@ -122,8 +122,6 @@ export class DefaultAdapter extends AbstractHttpAdapter<
     }
 
     public initHttpServer(options: any) {
-        const isHttpsEnabled = options && options.httpsOptions;
-
         this.httpServer = this.instance.server;
 
         if (!this.httpServer) throw new Error('Unable to start HTTP adapter');
@@ -210,12 +208,6 @@ export class DefaultAdapter extends AbstractHttpAdapter<
             const ext = path.extname(req.path);
 
             if (
-                req.path.indexOf('.html') === -1 &&
-                req.path !== '/' &&
-                !this.instance.router.hasRoute(req.method, req.url)
-            )
-                return res.code(404).end();
-            else if (
                 (req.path.indexOf('.html') === -1 &&
                     req.path !== '/' &&
                     typeof done === 'function') ||
@@ -225,11 +217,9 @@ export class DefaultAdapter extends AbstractHttpAdapter<
             ) {
                 return done();
             } else if (
-                (req.path.indexOf('.html') === -1 &&
-                    req.path !== '/' &&
-                    typeof done !== 'function') ||
-                (req.path === '/' &&
-                    this.instance.router.hasRoute(req.method, req.url))
+                req.path.indexOf('.html') === -1 &&
+                req.path !== '/' &&
+                typeof done !== 'function'
             ) {
                 return null;
             }
@@ -249,16 +239,20 @@ export class DefaultAdapter extends AbstractHttpAdapter<
                     fileFound = true;
                     const config = Config.getAll();
 
-                    return res.render(filePath, {
-                        nonce: res.locals.nonce,
-                        services: ServiceRegistry.getServicesArr(),
-                        requestId: req.requestId,
-                        config,
-                    });
+                    try {
+                        res.render(filePath, {
+                            nonce: res.locals.nonce,
+                            services: ServiceRegistry.getServicesArr(),
+                            requestId: req.requestId,
+                            config,
+                        });
+
+                        return false;
+                    } catch {}
                 }
             }
 
-            if (!fileFound) res.code(404).send('Page not found');
+            if (!fileFound) res.code(404).end('Page not found');
 
             if (typeof done === 'function') done(req, res, payload);
         });
@@ -279,10 +273,11 @@ export class DefaultAdapter extends AbstractHttpAdapter<
             const routes = metadata.routes;
 
             routes.forEach(route => {
-                const fullPath = `/${prefix}${route.path ? '/' + route.path : ''}`;
+                let fullPath = `/${prefix}${route.path ? '/' + route.path : ''}`;
+                fullPath = fullPath.replace(/\/\//g, '/');
                 const method = route.method.toLowerCase();
 
-                if (this.instance[method]) {
+                if (this.instance[method] && fullPath !== '/*') {
                     const handler = async (req: any, res: any, next: any) => {
                         const startTime = Date.now();
 

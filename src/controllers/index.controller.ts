@@ -1,4 +1,4 @@
-import { Controller, Request, Response, Get } from '@cmmv/http';
+import { Controller, Request, Response, Get, Param } from '@cmmv/http';
 
 import { ServiceRegistry } from '@cmmv/core';
 

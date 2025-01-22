@@ -5,7 +5,7 @@ import { AbstractContract, Contract, ContractField } from '@cmmv/core';
     protoPath: 'src/protos/task.proto',
     protoPackage: 'task',
     imports: ['crypto'],
-    auth: true,
+    auth: false,
     cache: {
         key: 'task:',
         ttl: 300,
