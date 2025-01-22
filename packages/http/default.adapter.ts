@@ -24,7 +24,6 @@ import {
     Module,
 } from '@cmmv/core';
 
-import { CMMVRenderer } from '@cmmv/view';
 import { ControllerRegistry } from './controller.registry';
 
 export class DefaultAdapter extends AbstractHttpAdapter<
@@ -32,15 +31,20 @@ export class DefaultAdapter extends AbstractHttpAdapter<
 > {
     private logger: Logger = new Logger('DefaultAdapter');
     protected readonly openConnections = new Set<Duplex>();
-    protected render: CMMVRenderer = new CMMVRenderer();
-    protected vite: any;
 
     constructor(protected instance?: any) {
         super(instance || cmmv());
     }
 
     public async init(application: Application, settings?: IHTTPSettings) {
-        const publicDir = path.join(process.cwd(), 'public/views');
+        let publicDirs = Config.get<string[]>('server.publicDirs', [
+            'public/views',
+        ]);
+        const renderEngine = Config.get<string>('server.render', 'cmmv');
+
+        if (publicDirs.length > 0)
+            publicDirs = publicDirs.map(dir => path.join(process.cwd(), dir));
+
         this.application = application;
 
         this.instance = this.instance || cmmv();
@@ -51,38 +55,50 @@ export class DefaultAdapter extends AbstractHttpAdapter<
         if (Config.get<boolean>('server.compress.enabled', true))
             this.instance.use(compression({ level: 6 }));
 
-        await this.setVite();
+        if (renderEngine === '@cmmv/view' || renderEngine === 'cmmv') {
+            for (const publicDir of publicDirs) {
+                this.instance.use(
+                    serverStatic(publicDir, {
+                        setHeaders: (res, path) => {
+                            if (path.endsWith('.html')) {
+                                res.setHeader('Cache-Control', 'no-cache');
+                            } else if (
+                                path.endsWith('.vue') ||
+                                path.endsWith('.cmmv')
+                            ) {
+                                res.setHeader(
+                                    'Content-Type',
+                                    'text/javascript',
+                                );
+                            } else {
+                                res.setHeader(
+                                    'Cache-Control',
+                                    'public, max-age=31536000, immutable',
+                                );
+                            }
+                        },
+                    }),
+                );
+            }
 
-        this.instance.use(
-            serverStatic(publicDir, {
-                setHeaders: (res, path) => {
-                    if (path.endsWith('.html')) {
-                        res.setHeader('Cache-Control', 'no-cache');
-                    } else if (
-                        path.endsWith('.vue') ||
-                        path.endsWith('.cmmv')
-                    ) {
-                        res.setHeader('Content-Type', 'text/javascript');
-                    } else {
-                        res.setHeader(
-                            'Cache-Control',
-                            'public, max-age=31536000, immutable',
-                        );
-                    }
-                },
-            }),
-        );
+            const { CMMVRenderer } = await import('@cmmv/view');
+            const render = new CMMVRenderer();
 
-        this.instance.set('views', publicDir);
-        this.instance.set('view engine', 'html');
-        this.instance.engine('html', (filePath, options, callback) => {
-            this.render.renderFile(
-                filePath,
-                options,
-                { nonce: options.nonce || '' },
-                callback,
-            );
-        });
+            this.instance.set('views', publicDirs);
+            this.instance.set('view engine', 'html');
+            this.instance.engine('html', (filePath, options, callback) => {
+                render.renderFile(
+                    filePath,
+                    options,
+                    { nonce: options.nonce || '' },
+                    callback,
+                );
+            });
+        } else if (renderEngine) {
+            this.instance.set('views', publicDirs);
+            this.instance.set('view engine', renderEngine);
+        }
+
         this.instance.use(cookieParser());
         this.instance.use(etag({ algorithm: 'fnv1a' }));
         this.instance.use(json({ limit: '50mb' }));
@@ -246,71 +262,6 @@ export class DefaultAdapter extends AbstractHttpAdapter<
 
             if (typeof done === 'function') done(req, res, payload);
         });
-    }
-
-    private async setVite() {
-        const useVite = Config.get<boolean>('server.vite', false);
-        const hasViteModule = Module.hasModule('vite');
-
-        if (useVite && hasViteModule) {
-            const { createServer } = await import('vite');
-            const configFilePathJs = path.join(
-                process.cwd(),
-                'vite.config.mjs',
-            );
-            const configFilePathTs = path.join(
-                process.cwd(),
-                'vite.config.mts',
-            );
-
-            this.vite = await createServer({
-                configFile: fs.existsSync(configFilePathTs)
-                    ? configFilePathTs
-                    : configFilePathJs,
-                root: process.cwd(),
-                clearScreen: false,
-                appType: 'custom',
-                server: {
-                    middlewareMode: true,
-                },
-                resolve: {
-                    alias: {
-                        '/public': path.join(process.cwd(), 'public'),
-                        '/assets': path.join(process.cwd(), 'public/assets'),
-                    },
-                },
-            });
-
-            this.instance.addHook('onRequest', (req, res, next) => {
-                if (
-                    req.url?.startsWith('/src/') ||
-                    req.url?.startsWith('/node_modules/') ||
-                    req.url?.startsWith('/public/') ||
-                    req.url?.startsWith('/assets/') ||
-                    req.url?.endsWith('.vue') ||
-                    req.url?.endsWith('.cmmv')
-                ) {
-                    const originalSetHeader = res.res.setHeader;
-                    res.res.setHeader = (name: string, value: string) => {
-                        if (name.toLowerCase() === 'content-type' && !value)
-                            value = 'text/javascript';
-
-                        if (res.res)
-                            originalSetHeader.call(res.res, name, value);
-                    };
-
-                    this.vite.middlewares(req.req, res.res, (err: any) => {
-                        if (err) {
-                            this.logger.error(err);
-                            res.statusCode = 500;
-                            res.end(err.message);
-                        }
-                    });
-                } else {
-                    next();
-                }
-            });
-        }
     }
 
     private registerControllers() {
@@ -595,8 +546,6 @@ export class DefaultAdapter extends AbstractHttpAdapter<
                         if (err) reject(err);
                         else resolve('');
                     });
-
-                    if (this.vite) await this.vite.close();
                 } catch (err) {
                     reject(err);
                 }

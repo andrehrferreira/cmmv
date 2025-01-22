@@ -5,14 +5,9 @@
         "rootDir": ".",
         "paths": {
             "@cmmv/core": ["../core"],
-            "@cmmv/core/*": ["../core/*"],
-            "@cmmv/view": ["../view"],
-            "@cmmv/view/*": ["../view/*"],
+            "@cmmv/core/*": ["../core/*"]
         }
     },
     "exclude": ["node_modules", "dist"],
-    "references": [
-        { "path": "../core/tsconfig.build.json"},
-        { "path": "../view/tsconfig.build.json"},
-    ]
+    "references": [{ "path": "../core/tsconfig.build.json" }]
 }

@@ -6,7 +6,8 @@ module.exports = {
         port: process.env.PORT || 3000,
         poweredBy: false,
         removePolicyHeaders: false,
-        vite: true,
+        publicDirs: ["public", 'public/views'],
+        render: "@cmmv/view",
         compress: {
             enabled: true,
             options: {
@@ -49,7 +50,7 @@ module.exports = {
     view: {
         extractInlineScript: false,
         minifyHTML: true,
-        scriptsTimestamp: true
+        scriptsTimestamp: false
     },
 
     repository: {
