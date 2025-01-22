@@ -77,7 +77,7 @@ export class Application {
     protected host: string;
     protected port: number;
 
-    constructor(settings: IApplicationSettings) {
+    constructor(settings: IApplicationSettings, compile: boolean = false) {
         this.logger.log('Initialize application');
 
         Config.loadConfig();
@@ -89,7 +89,7 @@ export class Application {
                 ? new settings.httpAdapter()
                 : null;
 
-        if (this.httpAdapter) {
+        if (this.httpAdapter && !compile) {
             if (settings.wsAdapter)
                 this.wsAdapter = new settings.wsAdapter(this.httpAdapter);
 
@@ -100,7 +100,7 @@ export class Application {
             this.contracts =
                 settings.contracts?.map(contractClass => new contractClass()) ||
                 [];
-            this.initialize(settings);
+            this.initialize(settings, compile);
         } else if (settings && settings.contracts?.length > 0) {
             this.transpilers = (settings && settings.transpilers) || [];
             this.modules = (settings && settings.modules) || [];
@@ -110,11 +110,14 @@ export class Application {
                         contractClass => new contractClass(),
                     )) ||
                 [];
-            this.initialize(settings);
+            this.initialize(settings, compile);
         }
     }
 
-    protected async initialize(settings: IApplicationSettings): Promise<void> {
+    protected async initialize(
+        settings: IApplicationSettings,
+        compile: boolean = false,
+    ): Promise<void> {
         try {
             const env = Config.get<string>('env', process.env.NODE_ENV);
             this.loadModules(this.modules);
@@ -167,7 +170,7 @@ export class Application {
 
             await Promise.all(servicesLoad);
 
-            if (this.httpAdapter) {
+            if (this.httpAdapter && !compile) {
                 await this.httpAdapter.init(this, this.httpOptions);
 
                 settings?.httpMiddlewares?.forEach(middleware => {
@@ -195,10 +198,13 @@ export class Application {
             }
         } catch (error) {
             console.log(error);
+
             this.logger.error(
                 `Failed to initialize application: ${error.message || error}`,
             );
         }
+
+        if (compile) this.logger.log(`Compilation process complete!`);
     }
 
     protected async createScriptBundle() {
@@ -376,6 +382,10 @@ export class Application {
 
     public static create(settings?: IApplicationSettings): Application {
         return new Application(settings);
+    }
+
+    public static compile(settings?: IApplicationSettings): Application {
+        return new Application(settings, true);
     }
 
     protected static async generateModule(): Promise<Module> {

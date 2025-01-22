@@ -18,6 +18,7 @@
 		"prod:packages": "tsc -b -v packages",
 		"build:test": "rm -rf ./packages/**/*.tsbuildinfo && tsc -b -v packages",
 		"dev": "./tools/cleanupPackages.sh && pnpm run clean && NODE_ENV=dev nodemon",
+		"compile": "./tools/cleanupPackages.sh && pnpm run clean && set \"VITE_CJS_TRACE=true\" && NODE_ENV=dev node -r @swc-node/register ./src/compile.ts",
 		"clean:tsfiles": "find ./src -type f \\( -name '*.d.ts' -o -name '*.js' \\) -exec rm -f {} +",
 		"clean:packages": "find ./packages -name 'node_modules' -prune -o -type f \\( -name '*.d.ts' -o -name '*.js' \\) -exec rm -f {} +",
 		"clean": "pnpm run clean:tsfiles && pnpm run clean:packages > /dev/null 2>&1",
