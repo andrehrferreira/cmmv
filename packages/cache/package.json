@@ -1,6 +1,6 @@
 {
     "name": "@cmmv/cache",
-    "version": "0.8.3",
+    "version": "0.8.4",
     "description": "Cache module using cache-manager for CMMV",
     "publishConfig": {
         "access": "public"

@@ -1,6 +1,6 @@
 {
     "name": "@cmmv/testing",
-    "version": "0.8.3",
+    "version": "0.8.4",
     "description": "Module testing module and application for CMMV",
     "publishConfig": {
         "access": "public"
@@ -16,6 +16,6 @@
     },
     "homepage": "https://cmmv.io",
     "dependencies": {
-        "@cmmv/core": "0.8.3"
+        "@cmmv/core": "0.8.4"
     }
 }
