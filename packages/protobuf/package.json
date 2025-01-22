@@ -1,6 +1,6 @@
 {
     "name": "@cmmv/protobuf",
-    "version": "0.8.2",
+    "version": "0.8.3",
     "description": "Protobuf management module for RPC communication for CMMV",
     "publishConfig": {
         "access": "public"
