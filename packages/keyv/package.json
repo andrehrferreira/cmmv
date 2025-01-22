@@ -2,6 +2,12 @@
     "name": "@cmmv/keyv",
     "version": "0.8.5",
     "description": "In-memory cache management module using Key for CMMV",
+    "keywords": [
+        "cmmv",
+        "framework",
+        "http",
+        "keyv"
+    ],
     "publishConfig": {
         "access": "public"
     },

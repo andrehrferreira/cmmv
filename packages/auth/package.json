@@ -2,6 +2,13 @@
     "name": "@cmmv/auth",
     "version": "0.8.5",
     "description": "Authentication module for CMMV",
+    "keywords": [
+        "cmmv",
+        "framework",
+        "http",
+        "auth",
+        "authentication"
+    ],
     "publishConfig": {
         "access": "public"
     },

@@ -2,6 +2,12 @@
     "name": "@cmmv/ws",
     "version": "0.8.5",
     "description": "Websocket interaction module for creating Gateways and RPC in CMMV",
+    "keywords": [
+        "cmmv",
+        "framework",
+        "websocket",
+        "rpc"
+    ],
     "publishConfig": {
         "access": "public"
     },

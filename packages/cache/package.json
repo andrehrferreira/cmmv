@@ -2,6 +2,12 @@
     "name": "@cmmv/cache",
     "version": "0.8.5",
     "description": "Cache module using cache-manager for CMMV",
+    "keywords": [
+        "cmmv",
+        "framework",
+        "http",
+        "cache"
+    ],
     "publishConfig": {
         "access": "public"
     },

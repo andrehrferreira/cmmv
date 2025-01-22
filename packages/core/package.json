@@ -14,6 +14,12 @@
     "bugs": {
         "url": "https://github.com/andrehrferreira/cmmv/issues"
     },
+    "keywords": [
+        "cmmv",
+        "framework",
+        "http",
+        "contract"
+    ],
     "homepage": "https://cmmv.io",
     "dependencies": {
         "class-transformer": "^0.5.1",

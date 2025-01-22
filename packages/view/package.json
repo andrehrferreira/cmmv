@@ -2,6 +2,13 @@
     "name": "@cmmv/view",
     "version": "0.8.5",
     "description": "SSR view module for CMMV",
+    "keywords": [
+        "cmmv",
+        "framework",
+        "view",
+        "ssr",
+        "reactivity"
+    ],
     "publishConfig": {
         "access": "public"
     },

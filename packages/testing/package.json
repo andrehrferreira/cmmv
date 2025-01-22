@@ -2,6 +2,11 @@
     "name": "@cmmv/testing",
     "version": "0.8.5",
     "description": "Module testing module and application for CMMV",
+    "keywords": [
+        "cmmv",
+        "framework",
+        "testing"
+    ],
     "publishConfig": {
         "access": "public"
     },
