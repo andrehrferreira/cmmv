@@ -22,6 +22,15 @@ export const HTTPConfig: ConfigSchema = {
             type: 'boolean',
             default: false,
         },
+        publicDirs: {
+            required: false,
+            type: 'array',
+        },
+        render: {
+            required: false,
+            type: 'string',
+            default: '@cmmv/view',
+        },
         cors: {
             required: false,
             type: 'boolean',
