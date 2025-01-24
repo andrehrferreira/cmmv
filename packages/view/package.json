@@ -1,6 +1,6 @@
 {
     "name": "@cmmv/view",
-    "version": "0.8.7",
+    "version": "0.8.8",
     "description": "SSR view module for CMMV",
     "keywords": [
         "cmmv",
@@ -14,16 +14,16 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/andrehrferreira/cmmv.git"
+        "url": "git+https://github.com/cmmvio/cmmv.git"
     },
     "author": "Andre Ferreira",
     "license": "MIT",
     "bugs": {
-        "url": "https://github.com/andrehrferreira/cmmv/issues"
+        "url": "https://github.com/cmmvio/cmmv/issues"
     },
     "homepage": "https://cmmv.io",
     "dependencies": {
-        "@cmmv/protobuf": "0.8.7",
+        "@cmmv/protobuf": "0.8.8",
         "@cmmv/reactivity": "^0.4.6",
         "fast-glob": "^3.3.2",
         "html-minifier-terser": "^7.2.0",

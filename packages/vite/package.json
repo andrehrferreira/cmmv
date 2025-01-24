@@ -1,6 +1,6 @@
 {
     "name": "@cmmv/vite",
-    "version": "0.8.7",
+    "version": "0.8.8",
     "description": "Vite Integration Module for CMMV",
     "keywords": [
         "cmmv",
@@ -13,12 +13,12 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/andrehrferreira/cmmv.git"
+        "url": "git+https://github.com/cmmvio/cmmv.git"
     },
     "author": "Andre Ferreira",
     "license": "MIT",
     "bugs": {
-        "url": "https://github.com/andrehrferreira/cmmv/issues"
+        "url": "https://github.com/cmmvio/cmmv/issues"
     },
     "homepage": "https://cmmv.io",
     "devDependencies": {

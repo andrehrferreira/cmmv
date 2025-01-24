@@ -1,18 +1,18 @@
 {
     "name": "@cmmv/core",
-    "version": "0.8.7",
+    "version": "0.8.8",
     "description": "CMMV core module for contract and application management",
     "publishConfig": {
         "access": "public"
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/andrehrferreira/cmmv.git"
+        "url": "git+https://github.com/cmmvio/cmmv.git"
     },
     "author": "Andre Ferreira",
     "license": "MIT",
     "bugs": {
-        "url": "https://github.com/andrehrferreira/cmmv/issues"
+        "url": "https://github.com/cmmvio/cmmv/issues"
     },
     "keywords": [
         "cmmv",

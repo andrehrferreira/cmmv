@@ -38,12 +38,12 @@
 	"packageManager": "pnpm@9.12.1",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/andrehrferreira/cmmv.git"
+		"url": "git+https://github.com/cmmvio/cmmv.git"
 	},
 	"author": "Andre Ferreira",
 	"license": "MIT",
 	"bugs": {
-		"url": "https://github.com/andrehrferreira/cmmv/issues"
+		"url": "https://github.com/cmmvio/cmmv/issues"
 	},
 	"homepage": "https://cmmv.io",
 	"engines": {
