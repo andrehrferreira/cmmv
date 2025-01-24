@@ -9,16 +9,13 @@ import { IHTTPSettings, ConfigSchema } from './interfaces';
 
 import { ITranspile, Logger, Scope, Transpile, Module, Config } from '.';
 
-import {
-    AbstractContract,
-    AbstractHttpAdapter,
-    AbstractWSAdapter,
-} from './abstracts';
+import { AbstractHttpAdapter, AbstractWSAdapter } from './abstracts';
 
 import {
     CONTROLLER_NAME_METADATA,
-    DATABASE_TYPE_METADATA,
     FIELD_METADATA,
+    MESSAGE_METADATA,
+    SERVICE_METADATA,
     PROTO_PATH_METADATA,
     DIRECTMESSAGE_METADATA,
     PROTO_PACKAGE_METADATA,
@@ -308,7 +305,11 @@ export class Application {
                 PROTO_PACKAGE_METADATA,
                 contract.constructor,
             );
-            const fields = Reflect.getMetadata(FIELD_METADATA, prototype);
+            const fields = Reflect.getMetadata(FIELD_METADATA, prototype) || [];
+            const messages =
+                Reflect.getMetadata(MESSAGE_METADATA, prototype) || [];
+            const services =
+                Reflect.getMetadata(SERVICE_METADATA, prototype) || [];
             const directMessage = Reflect.getMetadata(
                 DIRECTMESSAGE_METADATA,
                 contract.constructor,
@@ -351,6 +352,8 @@ export class Application {
                 protoPath,
                 protoPackage,
                 fields,
+                messages,
+                services,
                 directMessage,
                 generateController,
                 generateEntities,

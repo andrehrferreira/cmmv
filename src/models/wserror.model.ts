@@ -1,7 +1,6 @@
 // Generated automatically by CMMV
 
 import * as fastJson from 'fast-json-stringify';
-import { ObjectId } from 'mongodb';
 import { Expose, instanceToPlain } from 'class-transformer';
 
 export interface IWsError {

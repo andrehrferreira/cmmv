@@ -222,8 +222,6 @@ export class ${serviceName} extends AbstractService {
 
     private generateField(field: any): string {
         const tsType = this.mapToTsType(field.protoType);
-        const typeormType = this.mapToTypeORMType(field.protoType);
-
         const columnOptions = this.generateColumnOptions(field);
         const decorators = [`@Column({ ${columnOptions} })`];
 
@@ -233,10 +231,14 @@ export class ${serviceName} extends AbstractService {
     private generateColumnOptions(field: any): string {
         const options = [];
         options.push(`type: '${this.mapToTypeORMType(field.protoType)}'`);
+
         if (field.defaultValue !== undefined)
-            options.push(`default: ${JSON.stringify(field.defaultValue)}`);
+            options.push(
+                `default: ${typeof field.defaultValue === 'object' ? JSON.stringify(field.defaultValue) : field.defaultValue}`,
+            );
         if (field.nullable && field.nullable === true)
             options.push(`nullable: true`);
+
         return options.join(', ');
     }
 

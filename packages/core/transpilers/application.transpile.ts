@@ -27,7 +27,7 @@ export class ApplicationTranspile implements ITranspile {
 
         const modelTemplate = `// Generated automatically by CMMV
 
-${this.generateClassImports(contract)}
+${this.generateClassImports(contract, modelInterfaceName)}
         
 export interface ${modelInterfaceName} {
 ${includeId}${contract.fields
@@ -68,6 +68,8 @@ ${contract.fields?.map((field: any) => `        ${field.propertyKey}: ${this.gen
         .map((field: any) => `"${field.propertyKey}"`)
         .join(', ')}]
 });
+
+${this.generateDTOs(contract)}
 `;
 
         const dirname = path.resolve(outputDir, '../models');
@@ -78,13 +80,21 @@ ${contract.fields?.map((field: any) => `        ${field.propertyKey}: ${this.gen
         fs.writeFileSync(outputFilePath, modelTemplate, 'utf8');
     }
 
-    private generateClassImports(contract: any): string {
+    private generateClassImports(
+        contract: any,
+        modelInterfaceName: string,
+    ): string {
         const importStatements: string[] = [
             `import * as fastJson from 'fast-json-stringify';`,
         ];
 
-        if (Config.get('repository.type') === 'mongodb') {
-            importStatements.push(`import { ObjectId } from 'mongodb';`);
+        if (
+            modelInterfaceName !== 'IWsCall' &&
+            modelInterfaceName !== 'IWsError'
+        ) {
+            if (Config.get('repository.type') === 'mongodb') {
+                importStatements.push(`import { ObjectId } from 'mongodb';`);
+            }
         }
 
         const hasExclude = contract.fields?.some(
@@ -112,6 +122,7 @@ ${contract.fields?.map((field: any) => `        ${field.propertyKey}: ${this.gen
         );
 
         const validationImports = new Set<string>();
+
         contract.fields?.forEach((field: any) => {
             if (field.validations) {
                 field.validations?.forEach((validation: any) => {
@@ -156,7 +167,17 @@ ${contract.fields?.map((field: any) => `        ${field.propertyKey}: ${this.gen
                 .replace(/_([a-zA-Z]+)/g, ' $1');
 
             decorators.push(
-                `    @Transform(${cleanedTransform}${field.toClassOnly ? `, { toClassOnly: true }` : ''})`,
+                `    @Transform(${cleanedTransform}, { toClassOnly: true })`,
+            );
+        }
+
+        if (field.toPlain) {
+            const cleanedToPlain = field.toPlain
+                .toString()
+                .replace(/_([a-zA-Z]+)/g, ' $1');
+
+            decorators.push(
+                `    @Transform(${cleanedToPlain}, { toPlainOnly: true })`,
             );
         }
 
@@ -203,6 +224,7 @@ ${contract.fields?.map((field: any) => `        ${field.propertyKey}: ${this.gen
         }
 
         let defaultValueString = '';
+
         if (field.defaultValue !== undefined) {
             const defaultValue =
                 typeof field.defaultValue === 'string'
@@ -259,13 +281,11 @@ ${contract.fields?.map((field: any) => `        ${field.propertyKey}: ${this.gen
     private generateJsonSchemaField(field: any): string {
         const parts = [`type: "${this.mapToJsonSchemaType(field.protoType)}"`];
 
-        if (field.defaultValue !== undefined) {
+        if (field.defaultValue !== undefined)
             parts.push(`default: ${JSON.stringify(field.defaultValue)}`);
-        }
 
-        if (field.description) {
+        if (field.description)
             parts.push(`description: "${field.description}"`);
-        }
 
         return `{ ${parts.join(', ')} }`;
     }
@@ -303,5 +323,43 @@ ${contract.fields?.map((field: any) => `        ${field.propertyKey}: ${this.gen
         };
 
         return typeMapping[protoType] || 'any';
+    }
+
+    private generateDTOs(contract: any) {
+        let result = '';
+
+        if (Object.keys(contract.messages).length > 0) {
+            result += '// Messages\n';
+
+            for (let key in contract.messages) {
+                result += `export interface ${contract.messages[key].name} {
+${Object.entries(contract.messages[key].properties)
+    .map(([fieldName, field]: [string, any]) => {
+        const fieldType = this.mapToTsType(field.type);
+        return `    ${fieldName}${field.required ? '' : '?'}: ${fieldType}${field.default ? ' = ' + JSON.stringify(field.default) : ''};`;
+    })
+    .join('\n')}
+}\n\n`;
+
+                result += `export class ${contract.messages[key].name}DTO implements ${contract.messages[key].name} {
+${Object.entries(contract.messages[key].properties)
+    .map(([fieldName, field]: [string, any]) => {
+        const fieldType = this.mapToTsType(field.type);
+        return `    ${fieldName}${field.required ? '' : '?'}: ${fieldType}${field.default ? ' = ' + JSON.stringify(field.default) : ''};`;
+    })
+    .join('\n')}
+
+    constructor(partial: Partial<${contract.messages[key].name}DTO>) {
+        Object.assign(this, partial);
+    }
+
+    public serialize(){
+        return instanceToPlain(this);
+    }
+}\n\n`;
+            }
+        }
+
+        return result;
     }
 }

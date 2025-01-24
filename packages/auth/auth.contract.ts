@@ -1,5 +1,11 @@
 import * as crypto from 'crypto';
-import { AbstractContract, Contract, ContractField } from '@cmmv/core';
+import {
+    AbstractContract,
+    Contract,
+    ContractField,
+    ContractMessage,
+    ContractService,
+} from '@cmmv/core';
 
 @Contract({
     controllerName: 'User',
@@ -57,19 +63,19 @@ export class AuthContract extends AbstractContract {
 
     @ContractField({
         protoType: 'string',
-        defaultValue: '[]',
-        objectType: 'Array<string>',
+        defaultValue: '"[]"',
+        objectType: 'string',
         transform: ({ value }) => JSON.stringify(value),
-        toObject: ({ value }) => JSON.parse(value),
+        toPlain: ({ value }) => (value ? JSON.parse(value) : []),
     })
     groups: Array<string>;
 
     @ContractField({
         protoType: 'string',
-        defaultValue: '[]',
-        objectType: 'Array<string>',
+        defaultValue: '"[]"',
+        objectType: 'string',
         transform: ({ value }) => JSON.stringify(value),
-        toObject: ({ value }) => JSON.parse(value),
+        toPlain: ({ value }) => (value ? JSON.parse(value) : []),
     })
     roles: Array<string>;
 
@@ -79,7 +85,117 @@ export class AuthContract extends AbstractContract {
     })
     root: boolean;
 
-    customProto(): string {
+    // Login
+    @ContractMessage({
+        name: 'LoginRequest',
+        properties: {
+            username: {
+                type: 'string',
+                required: true,
+            },
+            password: {
+                type: 'string',
+                required: true,
+            },
+        },
+    })
+    LoginRequest: {
+        username: string;
+        password: string;
+    };
+
+    @ContractMessage({
+        name: 'LoginResponse',
+        properties: {
+            success: {
+                type: 'bool',
+                required: true,
+            },
+            token: {
+                type: 'string',
+                required: false,
+            },
+            message: {
+                type: 'string',
+                required: false,
+            },
+        },
+    })
+    LoginResponse: {
+        success: boolean;
+        token: string;
+        message: string;
+    };
+
+    @ContractService({
+        name: 'Login',
+        path: 'login',
+        method: 'POST',
+        createBoilerplate: true,
+        functionBoilerplate: 'LoginParser',
+        auth: false,
+        functionName: 'Login',
+        request: 'LoginRequest',
+        response: 'LoginResponse',
+    })
+    Login: Function;
+
+    //Register
+    @ContractMessage({
+        name: 'RegisterRequest',
+        properties: {
+            username: {
+                type: 'string',
+                required: true,
+            },
+            email: {
+                type: 'string',
+                required: true,
+            },
+            password: {
+                type: 'string',
+                required: true,
+            },
+        },
+    })
+    RegisterRequest: {
+        username: string;
+        email: string;
+        password: string;
+    };
+
+    @ContractMessage({
+        name: 'RegisterResponse',
+        properties: {
+            success: {
+                type: 'bool',
+                required: true,
+            },
+            message: {
+                type: 'string',
+                required: false,
+            },
+        },
+    })
+    RegisterResponse: {
+        success: boolean;
+        message: string;
+    };
+
+    @ContractService({
+        name: 'Register',
+        path: 'register',
+        method: 'POST',
+        createBoilerplate: true,
+        functionBoilerplate: 'RegisterParser',
+        auth: false,
+        functionName: 'Register',
+        request: 'RegisterRequest',
+        response: 'RegisterResponse',
+    })
+    Register: Function;
+
+    /*customProto(): string {
         return `
 message LoginRequest {
     string username = 1;
@@ -132,5 +248,5 @@ export interface RegisterResponse {
     success: boolean;
     message: string;
 }`;
-    }
+    }*/
 }

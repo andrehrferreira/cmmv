@@ -9,10 +9,10 @@ export class AuthTranspile implements ITranspile {
     run(): void {
         const hasWs = Module.hasModule('ws');
 
-        this.generateService();
-        this.generateController();
+        //this.generateService();
+        //this.generateController();
 
-        if (hasWs) this.generateWebSocketIntegration();
+        //if (hasWs) this.generateWebSocketIntegration();
     }
 
     async generateController() {
