@@ -14,11 +14,16 @@ import {
     directMessage: true,
     generateController: false,
     imports: ['crypto'],
+    index: [
+        {
+            name: 'idx_user_login',
+            fields: ['username', 'password'],
+        },
+    ],
 })
 export class AuthContract extends AbstractContract {
     @ContractField({
         protoType: 'string',
-        index: true,
         unique: true,
         validations: [
             {

@@ -32,7 +32,7 @@ import {
 import { I${entityName} } from '../models/${modelName.toLowerCase()}';
 
 @Entity('${entityName.toLowerCase()}')
-${this.generateIndexes(entityName, contract.fields)}
+${this.generateIndexes(entityName, contract.fields, contract)}
 export class ${entityName}Entity implements I${entityName} {
     ${Config.get('repository.type') === 'mongodb' ? '@ObjectIdColumn()' : "@PrimaryGeneratedColumn('uuid')"}
     ${Config.get('repository.type') === 'mongodb' ? '_id: ObjectId' : 'id: string'};
@@ -207,8 +207,12 @@ export class ${serviceName} extends AbstractService {
         fs.writeFileSync(outputFilePath, serviceTemplate, 'utf8');
     }
 
-    private generateIndexes(entityName: string, fields: any[]): string {
-        const indexDecorators = fields
+    private generateIndexes(
+        entityName: string,
+        fields: any[],
+        contract: any,
+    ): string {
+        let indexDecorators = fields
             .filter(field => field.index || field.unique)
             .map(field => {
                 const indexName = `idx_${entityName.toLowerCase()}_${field.propertyKey}`;
@@ -216,6 +220,21 @@ export class ${serviceName} extends AbstractService {
                 const uniqueOption = field.unique ? `{ unique: true }` : '';
                 return `@Index("${indexName}", ${columns}${uniqueOption ? `, ${uniqueOption}` : ''})`;
             });
+
+        if (
+            contract.indexs &&
+            Array.isArray(contract.indexs) &&
+            contract.indexs.length > 0
+        ) {
+            console.log(contract.indexs);
+
+            indexDecorators = [
+                ...indexDecorators,
+                contract.indexs.map(index => {
+                    return `@Index("${index.name}", ${JSON.stringify(index.fields)}${index.options ? `, ${JSON.stringify(index.options)}` : ''})`;
+                }),
+            ];
+        }
 
         return indexDecorators.join('\n');
     }

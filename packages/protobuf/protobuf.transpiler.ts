@@ -183,6 +183,34 @@ export class ProtobufTranspile implements ITranspile {
             lines.push(`}`);
         }
 
+        if (contract.messages && Object.keys(contract.messages).length > 0) {
+            lines.push('\n// Messages');
+
+            for (let key in contract.messages) {
+                lines.push(`message ${contract.messages[key].name} {
+${Object.entries(contract.messages[key].properties)
+    .map(([fieldName, field]: [string, any], index: number) => {
+        const fieldType = this.mapToTsType(field.type);
+        return `   ${field.required ? '' : 'optional '}${this.mapToProtoType(fieldType)} ${fieldName} = ${index + 1};`;
+    })
+    .join('\n')}
+}\n`);
+            }
+        }
+
+        if (contract.services && Object.keys(contract.services).length > 0) {
+            lines.push(`// Services
+service ${contract.controllerName}Service {`);
+
+            for (let key in contract.services) {
+                lines.push(
+                    `   rpc ${contract.services[key].name} (${contract.services[key].request}) returns (${contract.services[key].response});`,
+                );
+            }
+
+            lines.push(`}`);
+        }
+
         if (contract.customProto && typeof contract.customProto === 'function')
             lines.push(contract.customProto());
 

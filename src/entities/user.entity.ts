@@ -14,6 +14,7 @@ import { IUser } from '../models/user.model';
 @Entity('user')
 @Index('idx_user_username', ['username'], { unique: true })
 @Index('idx_user_googleId', ['googleId'])
+@Index('idx_user_login', ['username', 'password'])
 export class UserEntity implements IUser {
     @ObjectIdColumn()
     _id: ObjectId;

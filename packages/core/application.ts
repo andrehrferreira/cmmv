@@ -23,6 +23,7 @@ import {
     AUTH_METADATA,
     CONTROLLER_CUSTOM_PATH_METADATA,
     CONTROLLER_IMPORTS,
+    CONTROLLER_INDEXS,
     CONTROLLER_CACHE,
     GENERATE_ENTITIES_METADATA,
     CONTROLLER_VIEWFORM,
@@ -334,6 +335,10 @@ export class Application {
                 CONTROLLER_IMPORTS,
                 contract.constructor,
             );
+            const indexs = Reflect.getMetadata(
+                CONTROLLER_INDEXS,
+                contract.constructor,
+            );
             const cache = Reflect.getMetadata(
                 CONTROLLER_CACHE,
                 contract.constructor,
@@ -360,6 +365,7 @@ export class Application {
                 auth,
                 controllerCustomPath,
                 imports,
+                indexs,
                 cache,
                 customProto: contract.customProto,
                 customTypes: contract.customTypes,

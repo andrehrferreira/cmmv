@@ -11,3 +11,32 @@ message User {
    string roles = 5;
    bool root = 6;
 }
+
+// Messages
+message LoginRequest {
+   string username = 1;
+   string password = 2;
+}
+
+message LoginResponse {
+   bool success = 1;
+   optional string token = 2;
+   optional string message = 3;
+}
+
+message RegisterRequest {
+   string username = 1;
+   string email = 2;
+   string password = 3;
+}
+
+message RegisterResponse {
+   bool success = 1;
+   optional string message = 2;
+}
+
+// Services
+service UserService {
+   rpc Login (LoginRequest) returns (LoginResponse);
+   rpc Register (RegisterRequest) returns (RegisterResponse);
+}

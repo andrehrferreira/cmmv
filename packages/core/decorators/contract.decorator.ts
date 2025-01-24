@@ -29,6 +29,25 @@ export interface ContractFieldOptions {
     validations?: ValidationOption[];
 }
 
+export interface ContractIndex {
+    name: string;
+    fields: string[];
+    options?: ContractIndexOptions;
+}
+
+export interface ContractIndexOptions {
+    unique?: boolean;
+    spatial?: boolean;
+    fulltext?: boolean;
+    nullFiltered?: boolean;
+    parser?: string;
+    where?: string;
+    sparse?: boolean;
+    background?: boolean;
+    concurrent?: boolean;
+    expireAfterSeconds?: number;
+}
+
 export interface ContractOptions {
     controllerName: string;
     controllerCustomPath?: string;
@@ -40,6 +59,7 @@ export interface ContractOptions {
     auth?: boolean;
     imports?: Array<string>;
     cache?: CacheOptions;
+    index?: ContractIndex[];
     viewForm?: new () => any;
     viewPage?: new () => any;
 }
@@ -96,6 +116,7 @@ export const CONTROLLER_CUSTOM_PATH_METADATA = Symbol(
     'controller_custom_path_metadata',
 );
 export const CONTROLLER_IMPORTS = Symbol('contract_imports');
+export const CONTROLLER_INDEXS = Symbol('contract_indexs');
 export const CONTROLLER_CACHE = Symbol('contract_cache');
 export const CONTROLLER_VIEWFORM = Symbol('contract_viewform');
 export const CONTROLLER_VIEWPAGE = Symbol('contract_viewpage');
@@ -122,6 +143,7 @@ export function Contract(options?: ContractOptions): ClassDecorator {
     const defaultAuth = true;
     const defaultControllerCustomPath = '';
     const defaultImports = [];
+    const defaultIndexs = [];
     const defaultCache = null;
     const defaultViewForm = null;
     const defaultViewPage = null;
@@ -136,6 +158,7 @@ export function Contract(options?: ContractOptions): ClassDecorator {
         auth,
         controllerCustomPath,
         imports,
+        indexs,
         cache,
         viewForm,
         viewPage,
@@ -150,6 +173,7 @@ export function Contract(options?: ContractOptions): ClassDecorator {
               defaultAuth,
               defaultControllerCustomPath,
               defaultImports,
+              defaultIndexs,
               defaultCache,
               defaultViewForm,
               defaultViewPage,
@@ -164,6 +188,7 @@ export function Contract(options?: ContractOptions): ClassDecorator {
               options.auth ?? defaultAuth,
               options.controllerCustomPath || defaultControllerCustomPath,
               options.imports || defaultImports,
+              options.index || defaultIndexs,
               options.cache || defaultCache,
               options.viewForm || defaultViewForm,
               options.viewPage || defaultViewPage,
@@ -196,6 +221,7 @@ export function Contract(options?: ContractOptions): ClassDecorator {
             target,
         );
         Reflect.defineMetadata(CONTROLLER_IMPORTS, imports, target);
+        Reflect.defineMetadata(CONTROLLER_INDEXS, indexs, target);
         Reflect.defineMetadata(CONTROLLER_CACHE, cache, target);
         Reflect.defineMetadata(CONTROLLER_VIEWFORM, viewForm, target);
         Reflect.defineMetadata(CONTROLLER_VIEWPAGE, viewPage, target);
