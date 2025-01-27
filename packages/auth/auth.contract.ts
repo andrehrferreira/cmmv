@@ -9,10 +9,10 @@ import {
 
 @Contract({
     controllerName: 'User',
-    protoPath: 'src/protos/auth.proto',
     protoPackage: 'auth',
-    directMessage: true,
-    generateController: false,
+    subPath: '/auth',
+    generateController: true,
+    auth: true,
     imports: ['crypto'],
     index: [
         {
@@ -70,6 +70,7 @@ export class AuthContract extends AbstractContract {
         protoType: 'string',
         defaultValue: '"[]"',
         objectType: 'string',
+        protoRepeated: true,
         transform: ({ value }) => JSON.stringify(value),
         toPlain: ({ value }) => (value ? JSON.parse(value) : []),
     })
@@ -79,6 +80,7 @@ export class AuthContract extends AbstractContract {
         protoType: 'string',
         defaultValue: '"[]"',
         objectType: 'string',
+        protoRepeated: true,
         transform: ({ value }) => JSON.stringify(value),
         toPlain: ({ value }) => (value ? JSON.parse(value) : []),
     })
@@ -136,12 +138,11 @@ export class AuthContract extends AbstractContract {
         name: 'Login',
         path: 'login',
         method: 'POST',
-        createBoilerplate: true,
-        functionBoilerplate: 'LoginParser',
         auth: false,
-        functionName: 'Login',
+        functionName: 'login',
         request: 'LoginRequest',
         response: 'LoginResponse',
+        createBoilerplate: false,
     })
     Login: Function;
 
@@ -191,67 +192,11 @@ export class AuthContract extends AbstractContract {
         name: 'Register',
         path: 'register',
         method: 'POST',
-        createBoilerplate: true,
-        functionBoilerplate: 'RegisterParser',
         auth: false,
-        functionName: 'Register',
+        functionName: 'register',
         request: 'RegisterRequest',
         response: 'RegisterResponse',
+        createBoilerplate: false,
     })
     Register: Function;
-
-    /*customProto(): string {
-        return `
-message LoginRequest {
-    string username = 1;
-    string password = 2;
-}
-
-message LoginResponse {
-    bool success = 1;
-    string token = 2;
-    string message = 3;
-}
-
-message RegisterRequest {
-    string username = 1;
-    string email = 2;
-    string password = 3;
-}
-
-message RegisterResponse {
-    bool success = 1;
-    string message = 3;
-}
-          
-service AuthService {
-    rpc Login (LoginRequest) returns (LoginResponse);
-    rpc Register (RegisterRequest) returns (RegisterResponse);
-}`;
-    }
-
-    customTypes(): string {
-        return `
-export interface LoginRequest {
-    username: string;
-    password: string;
-}
-
-export interface LoginResponse {
-    success: boolean;
-    token: string;
-    message: string;
-}
-
-export interface RegisterRequest {
-    username: string;
-    email: string;
-    password: string;
-}
-
-export interface RegisterResponse {
-    success: boolean;
-    message: string;
-}`;
-    }*/
 }

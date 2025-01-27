@@ -1,7 +1,31 @@
+import * as path from 'path';
+import * as fs from 'fs';
 import { Logger } from './logger';
 
 export interface ITranspile {
     run(): void;
+}
+
+export abstract class AbstractTranspile {
+    public getRootPath(contract: any, context: string): string {
+        let outputDir = contract.subPath
+            ? path.join('src', context, contract.subPath)
+            : path.join('src', context);
+
+        if (!fs.existsSync(outputDir))
+            fs.mkdirSync(outputDir, { recursive: true });
+
+        return outputDir;
+    }
+
+    public getImportPath(contract: any, context: string, filename: string) {
+        return contract.subPath
+            ? `${contract.subPath
+                  .split('/')
+                  .map(() => '../')
+                  .join('')}${context}${contract.subPath}/${filename}`
+            : `../${context}/${filename}`;
+    }
 }
 
 export class Transpile {

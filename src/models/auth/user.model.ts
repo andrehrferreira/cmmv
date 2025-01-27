@@ -1,4 +1,10 @@
-// Generated automatically by CMMV
+/**                                                                               
+    **********************************************
+    This script was generated automatically by CMMV.
+    It is recommended not to modify this file manually, 
+    as it may be overwritten by the application.
+    **********************************************
+**/
 
 import * as fastJson from 'fast-json-stringify';
 import { ObjectId } from 'mongodb';
@@ -79,8 +85,8 @@ export const UserFastSchema = fastJson({
         username: { type: 'string' },
         password: { type: 'string' },
         googleId: { type: 'string' },
-        groups: { type: 'string', default: '"[]"' },
-        roles: { type: 'string', default: '"[]"' },
+        groups: { type: 'string', default: '[]' },
+        roles: { type: 'string', default: '[]' },
         root: { type: 'boolean', default: false },
     },
     required: [],

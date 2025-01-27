@@ -1,4 +1,10 @@
-// Generated automatically by CMMV
+/**                                                                               
+    **********************************************
+    This script was generated automatically by CMMV.
+    It is recommended not to modify this file manually, 
+    as it may be overwritten by the application.
+    **********************************************
+**/
 
 export namespace Task {
     export type label = string;

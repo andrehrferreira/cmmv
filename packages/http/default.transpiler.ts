@@ -1,9 +1,19 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { Application, Config, ITranspile, Logger, Scope } from '@cmmv/core';
+import {
+    Application,
+    Config,
+    ITranspile,
+    Logger,
+    Scope,
+    AbstractTranspile,
+} from '@cmmv/core';
 
-export class DefaultHTTPTranspiler implements ITranspile {
+export class DefaultHTTPTranspiler
+    extends AbstractTranspile
+    implements ITranspile
+{
     private logger: Logger = new Logger('DefaultHTTPTranspiler');
 
     run(): void {
@@ -15,8 +25,14 @@ export class DefaultHTTPTranspiler implements ITranspile {
             if (contract.generateController) {
                 this.generateService(contract);
                 this.generateController(contract);
-                controllers.push(`${contract.controllerName}Controller`);
-                providers.push(`${contract.controllerName}Service`);
+                controllers.push({
+                    name: `${contract.controllerName}Controller`,
+                    subPath: contract.subPath ? contract.subPath : '',
+                });
+                providers.push({
+                    name: `${contract.controllerName}Service`,
+                    subPath: contract.subPath ? contract.subPath : '',
+                });
             }
         });
 
@@ -24,23 +40,41 @@ export class DefaultHTTPTranspiler implements ITranspile {
     }
 
     private generateService(contract: any): void {
-        const outputPath = path.resolve(contract.protoPath);
-        const outputDir = path.dirname(outputPath);
         const serviceName = `${contract.controllerName}Service`;
         const modelName = `${contract.controllerName}`;
         const modelInterfaceName = `I${modelName}`;
+        const serviceFileNameGenerated = `${contract.controllerName.toLowerCase()}.service.generated.ts`;
         const serviceFileName = `${contract.controllerName.toLowerCase()}.service.ts`;
 
-        const serviceTemplate = `// Generated automatically by CMMV
+        let importsFromModel = [];
+
+        contract.services
+            .filter(service => service.createBoilerplate === true)
+            .map(service => {
+                importsFromModel.push(service.request);
+                importsFromModel.push(service.response);
+            });
+
+        importsFromModel = [...new Set(importsFromModel)];
+
+        const serviceTemplateGenerated = `/**                                                                               
+    **********************************************
+    This script was generated automatically by CMMV.
+    It is recommended not to modify this file manually, 
+    as it may be overwritten by the application.
+    **********************************************
+**/
 
 import { validate } from 'class-validator';
 import { instanceToPlain, plainToClass } from 'class-transformer';
 import { AbstractService, Service } from '@cmmv/core';
-import { ${modelName}, ${modelInterfaceName} } from '../models/${modelName.toLowerCase()}.model';
 
-@Service("${contract.controllerName.toLowerCase()}")
-export class ${serviceName} extends AbstractService {
-    public override name = "${contract.controllerName.toLowerCase()}";
+import { 
+    ${modelName}, 
+    ${modelInterfaceName},${importsFromModel.join(', \n   ')}
+} from "${this.getImportPath(contract, 'models', modelName.toLowerCase() + '.model')}";
+
+export class ${serviceName}Generated extends AbstractService {
     private items: ${modelName}[] = [];
 
     async getAll(queries?: any, req?: any): Promise<${modelName}[]> {
@@ -112,19 +146,50 @@ export class ${serviceName} extends AbstractService {
                     
         throw new Error('Item not found');
     }
+
+    ${contract.services
+        .filter(service => service.createBoilerplate === true)
+        .map(service => {
+            return `    async ${service.name}(payload: ${service.request}): Promise<${service.response}> {
+            throw new Error("Function ${service.name} not implemented");
+        }`;
+        })
+        .join('\n\n')}
 }`;
 
-        const dirname = path.resolve(outputDir, '../services');
+        const outputDir = this.getRootPath(contract, 'services');
 
-        if (!fs.existsSync(dirname)) fs.mkdirSync(dirname, { recursive: true });
+        const outputFilePath = path.join(outputDir, serviceFileNameGenerated);
 
-        const outputFilePath = path.join(
-            outputDir,
-            '../services',
-            serviceFileName,
-        );
+        fs.writeFileSync(outputFilePath, serviceTemplateGenerated, 'utf8');
 
-        fs.writeFileSync(outputFilePath, serviceTemplate, 'utf8');
+        //Service
+        const serviceTemplate = `import { Service } from '@cmmv/core';
+
+import { 
+    ${serviceName}Generated 
+} from "./${contract.controllerName.toLowerCase()}.service.generated";
+
+import {
+   ${importsFromModel.join(', \n   ')}
+} from "${this.getImportPath(contract, 'models', modelName.toLowerCase() + '.model')}";
+
+@Service("${contract.controllerName.toLowerCase()}")
+export class ${serviceName} extends ${serviceName}Generated {
+${contract.services
+    .filter(service => service.createBoilerplate === true)
+    .map(service => {
+        return `    override async ${service.functionName}(payload: ${service.request}): Promise<${service.response}> {
+        throw new Error("Function ${service.functionName} not implemented");
+    }`;
+    })
+    .join('\n\n')}
+}`;
+
+        const outputFilePathFinal = path.join(outputDir, serviceFileName);
+
+        if (!fs.existsSync(outputFilePathFinal))
+            fs.writeFileSync(outputFilePathFinal, serviceTemplate, 'utf8');
     }
 
     private getControllerDecorators(
@@ -144,10 +209,9 @@ export class ${serviceName} extends AbstractService {
     }
 
     private generateController(contract: any): void {
-        const outputPath = path.resolve(contract.protoPath);
-        const outputDir = path.dirname(outputPath);
         const controllerName = `${contract.controllerName}Controller`;
         const serviceName = `${contract.controllerName}Service`;
+        const controllerFileNameGenerated = `${contract.controllerName.toLowerCase()}.controller.generated.ts`;
         const controllerFileName = `${contract.controllerName.toLowerCase()}.controller.ts`;
 
         const hasCache =
@@ -160,25 +224,46 @@ export class ${serviceName} extends AbstractService {
         const cacheCompress =
             hasCache && contract.cache.compress ? 'true' : 'false';
 
-        const controllerTemplate = `// Generated automatically by CMMV
+        let importsFromModel = [];
 
-import { Telemetry } from "@cmmv/core";
-${hasCache ? `import { Cache, CacheService } from "@cmmv/cache";` : ''}
+        contract.services.map(service => {
+            importsFromModel.push(service.request);
+            importsFromModel.push(service.response);
+        });
+
+        importsFromModel = [...new Set(importsFromModel)];
+
+        const controllerTemplateGenerated = `/**                                                                               
+    **********************************************
+    This script was generated automatically by CMMV.
+    It is recommended not to modify this file manually, 
+    as it may be overwritten by the application.
+    **********************************************
+**/
+
+import { Telemetry } from "@cmmv/core";${hasCache ? `\nimport { Cache, CacheService } from "@cmmv/cache";` : ''}
 ${authRouter ? `import { Auth } from "@cmmv/auth";` : ''}
-import { 
-    Controller, Get, Post, Put, Delete, 
-    Queries, Param, Body, Request 
-} from '@cmmv/http';
 
-import { ${serviceName} } from '../services/${contract.controllerName.toLowerCase()}.service';
-import { ${contract.controllerName}, ${contract.controllerName}FastSchema } from '../models/${contract.controllerName.toLowerCase()}.model';
+import { 
+   Controller, Get, Post, Put, Delete, 
+   Queries, Param, Body, Req
+} from "@cmmv/http";
+
+import { 
+   ${contract.controllerName}, 
+   ${contract.controllerName}FastSchema, ${importsFromModel.join(', \n   ')}
+} from "${this.getImportPath(contract, 'models', contract.controllerName.toLowerCase() + '.model')}";
+
+import { 
+   ${serviceName} 
+} from "${this.getImportPath(contract, 'services', contract.controllerName.toLowerCase() + '.service')}";
 
 @Controller('${contract.controllerName.toLowerCase()}')
-export class ${controllerName} {
+export class ${controllerName}Generated {
     constructor(private readonly ${serviceName.toLowerCase()}: ${serviceName}) {}
 
     @Get()${this.getControllerDecorators({ authRouter, hasCache, contract }, { cacheKeyPrefix, cacheTtl, cacheCompress }, 'get')}
-    async getAll(@Queries() queries: any, @Request() req) {
+    async getAll(@Queries() queries: any, @Req() req) {
         Telemetry.start('${controllerName}::GetAll', req.requestId);
         let result = await this.${serviceName.toLowerCase()}.getAll(queries, req);
         Telemetry.end('${controllerName}::GetAll', req.requestId);
@@ -186,7 +271,7 @@ export class ${controllerName} {
     }
 
     @Get(':id')${this.getControllerDecorators({ authRouter, hasCache, contract }, { cacheKeyPrefix, cacheTtl, cacheCompress }, 'get')}
-    async getById(@Param('id') id: string, @Request() req) {
+    async getById(@Param('id') id: string, @Req() req) {
         Telemetry.start('${controllerName}::GetById', req.requestId);
         let result = await this.${serviceName.toLowerCase()}.getById(id, req);
         Telemetry.end('${controllerName}::GetById', req.requestId);
@@ -194,67 +279,114 @@ export class ${controllerName} {
     }
 
     @Post()${this.getControllerDecorators({ authRouter, hasCache, contract }, { cacheKeyPrefix, cacheTtl, cacheCompress }, 'insert')}
-    async add(@Body() item: ${contract.controllerName}, @Request() req) {
+    async add(@Body() item: ${contract.controllerName}, @Req() req) {
         Telemetry.start('${controllerName}::Add', req.requestId);
-        let result = await this.${serviceName.toLowerCase()}.add(item, req);
-        ${hasCache ? `CacheService.set(\`${cacheKeyPrefix}\${${Config.get('repository.type') === 'mongodb' ? `result._id` : `result.id`}}\`, ${contract.controllerName}FastSchema(result), ${cacheTtl});` : ''}
-        ${hasCache ? `CacheService.del("${cacheKeyPrefix}getAll");` : ''}
+        let result = await this.${serviceName.toLowerCase()}.add(item, req);${hasCache ? `\n        CacheService.set(\`${cacheKeyPrefix}\${${Config.get('repository.type') === 'mongodb' ? `result._id` : `result.id`}}\`, ${contract.controllerName}FastSchema(result), ${cacheTtl});\n        CacheService.del("${cacheKeyPrefix}getAll");` : ''}
         Telemetry.end('${controllerName}::Add', req.requestId);
         return result;
     }
 
     @Put(':id')${this.getControllerDecorators({ authRouter, hasCache, contract }, { cacheKeyPrefix, cacheTtl, cacheCompress }, 'update')}
-    async update(@Param('id') id: string, @Body() item: ${contract.controllerName}, @Request() req) {
+    async update(@Param('id') id: string, @Body() item: ${contract.controllerName}, @Req() req) {
         Telemetry.start('${controllerName}::Update', req.requestId);
-        let result = await this.${serviceName.toLowerCase()}.update(id, item, req);
-        ${hasCache ? `CacheService.set(\`${cacheKeyPrefix}\${${Config.get('repository.type') === 'mongodb' ? `result._id` : `result.id`}}\`, ${contract.controllerName}FastSchema(result), ${cacheTtl});` : ''}
-        ${hasCache ? `CacheService.del("${cacheKeyPrefix}getAll");` : ''}
+        let result = await this.${serviceName.toLowerCase()}.update(id, item, req);${hasCache ? `\n        CacheService.set(\`${cacheKeyPrefix}\${${Config.get('repository.type') === 'mongodb' ? `result._id` : `result.id`}}\`, ${contract.controllerName}FastSchema(result), ${cacheTtl});\n        CacheService.del("${cacheKeyPrefix}getAll");` : ''}
         Telemetry.end('${controllerName}::Update', req.requestId);
         return result;
     }
 
     @Delete(':id')${this.getControllerDecorators({ authRouter, hasCache, contract }, { cacheKeyPrefix, cacheTtl, cacheCompress }, 'delete')}
-    async delete(@Param('id') id: string, @Request() req): Promise<{ success: boolean, affected: number }> {
+    async delete(@Param('id') id: string, @Req() req): Promise<{ success: boolean, affected: number }> {
         Telemetry.start('${controllerName}::Delete', req.requestId);
-        let result = await this.${serviceName.toLowerCase()}.delete(id, req);
-        ${hasCache ? `CacheService.del(\`${cacheKeyPrefix}\${id}\`);` : ''}
-        ${hasCache ? `CacheService.del("${cacheKeyPrefix}getAll");` : ''}
+        let result = await this.${serviceName.toLowerCase()}.delete(id, req);${hasCache ? `\n        CacheService.del(\`${cacheKeyPrefix}\${id}\`);\n        CacheService.del("${cacheKeyPrefix}getAll");` : ''}
         Telemetry.end('${controllerName}::Delete', req.requestId);
         return result;
     }
-}
-`;
-        const dirname = path.resolve(outputDir, '../controllers');
+${contract.services
+    .filter(service => service.createBoilerplate === true)
+    .map(service => {
+        return `    @${this.getMethodFormated(service.method)}("${service.path}")${this.getControllerDecorators({ authRouter: service.auth, hasCache: service.cache, contract }, service.cache, service.method.toLowerCase())}
+    async ${service.functionName}(@Body() payload: ${service.request}, @Req() req): Promise<${service.response}> {
+        Telemetry.start('${controllerName}::${service.functionName}', req.requestId);
+        let result = await this.${serviceName.toLowerCase()}.${service.functionName}(payload);
+        Telemetry.end('${controllerName}::${service.functionName}', req.requestId);
+        return result;
+    }`;
+    })
+    .join('\n\n')}
+}`;
 
-        if (!fs.existsSync(dirname)) fs.mkdirSync(dirname, { recursive: true });
+        const outputDir = this.getRootPath(contract, 'controllers');
 
         const outputFilePath = path.join(
             outputDir,
-            '../controllers',
-            controllerFileName,
+            controllerFileNameGenerated,
         );
-        fs.writeFileSync(outputFilePath, controllerTemplate, 'utf8');
+
+        fs.writeFileSync(outputFilePath, controllerTemplateGenerated, 'utf8');
+
+        //Controller
+        const controllerTemplate = `import { 
+   Controller
+} from "@cmmv/http";
+
+import { 
+    ${controllerName}Generated 
+} from "./${contract.controllerName.toLowerCase()}.controller.generated"; ${this.importServices(importsFromModel, contract)}
+
+@Controller('${contract.controllerName.toLowerCase()}')
+export class ${controllerName} extends ${controllerName}Generated {
+        //Function ${controllerName} not implemented
+}`;
+
+        const outputFilePathFinal = path.join(outputDir, controllerFileName);
+
+        if (!fs.existsSync(outputFilePathFinal))
+            fs.writeFileSync(outputFilePathFinal, controllerTemplate, 'utf8');
     }
 
-    private generateModule(controllers: string[], providers: string[]): void {
+    private generateModule(
+        controllers: Array<{ name: string; subPath: string }>,
+        providers: Array<{ name: string; subPath: string }>,
+    ): void {
         Application.appModule.controllers = [
             ...Application.appModule.controllers,
-            ...controllers.map(name => {
+            ...controllers.map(({ name, subPath }) => {
                 return {
                     name,
-                    path: `./controllers/${name.replace('Controller', '').toLowerCase()}.controller`,
+                    path: `./controllers${subPath}/${name.replace('Controller', '').toLowerCase()}.controller`,
                 };
             }),
         ];
 
         Application.appModule.providers = [
             ...Application.appModule.providers,
-            ...providers.map(name => {
+            ...providers.map(({ name, subPath }) => {
                 return {
                     name,
-                    path: `./services/${name.replace('Service', '').toLowerCase()}.service`,
+                    path: `./services${subPath}/${name.replace('Service', '').toLowerCase()}.service`,
                 };
             }),
         ];
+    }
+
+    private getMethodFormated(raw: string): string {
+        switch (raw.toLocaleLowerCase()) {
+            case 'get':
+                return 'Get';
+            case 'post':
+                return 'Post';
+            case 'put':
+                return 'Put';
+            case 'delete':
+                return 'Delete';
+        }
+    }
+
+    private importServices(importsFromModel, contract: any): string {
+        return importsFromModel.length
+            ? `\n\nimport {
+   ${importsFromModel.join(', \n   ')}
+} from "${this.getImportPath(contract, 'models', contract.controllerName.toLowerCase() + '.model')}";`
+            : '';
     }
 }

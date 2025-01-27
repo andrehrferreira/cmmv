@@ -20,16 +20,106 @@
                             "id": 3
                         },
                         "groups": {
+                            "rule": "repeated",
                             "type": "string",
                             "id": 4
                         },
                         "roles": {
+                            "rule": "repeated",
                             "type": "string",
                             "id": 5
                         },
                         "root": {
                             "type": "bool",
                             "id": 6
+                        }
+                    }
+                },
+                "UserList": {
+                    "fields": {
+                        "items": {
+                            "rule": "repeated",
+                            "type": "User",
+                            "id": 1
+                        }
+                    }
+                },
+                "AddUserRequest": {
+                    "fields": {
+                        "item": {
+                            "type": "User",
+                            "id": 1
+                        }
+                    }
+                },
+                "AddUserResponse": {
+                    "fields": {
+                        "id": {
+                            "type": "string",
+                            "id": 1
+                        },
+                        "item": {
+                            "type": "User",
+                            "id": 2
+                        }
+                    }
+                },
+                "UpdateUserRequest": {
+                    "fields": {
+                        "id": {
+                            "type": "string",
+                            "id": 1
+                        },
+                        "item": {
+                            "type": "User",
+                            "id": 2
+                        }
+                    }
+                },
+                "UpdateUserResponse": {
+                    "fields": {
+                        "id": {
+                            "type": "string",
+                            "id": 1
+                        },
+                        "item": {
+                            "type": "User",
+                            "id": 2
+                        }
+                    }
+                },
+                "DeleteUserRequest": {
+                    "fields": {
+                        "id": {
+                            "type": "string",
+                            "id": 1
+                        }
+                    }
+                },
+                "DeleteUserResponse": {
+                    "fields": {
+                        "success": {
+                            "type": "bool",
+                            "id": 1
+                        },
+                        "affected": {
+                            "type": "int32",
+                            "id": 2
+                        },
+                        "id": {
+                            "type": "string",
+                            "id": 3
+                        }
+                    }
+                },
+                "GetAllUserRequest": {
+                    "fields": {}
+                },
+                "GetAllUserResponse": {
+                    "fields": {
+                        "items": {
+                            "type": "UserList",
+                            "id": 1
                         }
                     }
                 },
@@ -119,6 +209,22 @@
                 },
                 "UserService": {
                     "methods": {
+                        "AddUser": {
+                            "requestType": "AddUserRequest",
+                            "responseType": "AddUserResponse"
+                        },
+                        "UpdateUser": {
+                            "requestType": "UpdateUserRequest",
+                            "responseType": "UpdateUserResponse"
+                        },
+                        "DeleteUser": {
+                            "requestType": "DeleteUserRequest",
+                            "responseType": "DeleteUserResponse"
+                        },
+                        "GetAllUser": {
+                            "requestType": "GetAllUserRequest",
+                            "responseType": "GetAllUserResponse"
+                        },
                         "Login": {
                             "requestType": "LoginRequest",
                             "responseType": "LoginResponse"

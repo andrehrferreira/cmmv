@@ -5,9 +5,9 @@ import * as UglifyJS from 'uglify-js';
 
 import { ProtoRegistry } from './protobuf.registry';
 
-import { ITranspile, Logger, Scope } from '@cmmv/core';
+import { AbstractTranspile, ITranspile, Logger, Scope } from '@cmmv/core';
 
-export class ProtobufTranspile implements ITranspile {
+export class ProtobufTranspile extends AbstractTranspile implements ITranspile {
     private logger: Logger = new Logger('ProtobufTranspile');
 
     run(): void {
@@ -15,16 +15,6 @@ export class ProtobufTranspile implements ITranspile {
         const contractsJson: { [key: string]: any } = {};
 
         contracts?.forEach((contract: any) => {
-            const outputPath = path.resolve(contract.protoPath);
-            //const outputPathJson = outputPath.replace('.proto', '.json');
-            const outputPathTs = outputPath.replace('.proto', '.d.ts');
-            const outputDir = path.dirname(outputPath);
-
-            if (!fs.existsSync(outputDir)) {
-                fs.mkdirSync(outputDir, { recursive: true });
-                this.logger.log(`Created directory ${outputDir}`);
-            }
-
             let root = new protobufjs.Root();
             const protoNamespace = root.define(contract.controllerName);
 
@@ -61,7 +51,13 @@ export class ProtobufTranspile implements ITranspile {
             }
 
             const protoContent = this.generateProtoContent(contract);
-            fs.writeFileSync(outputPath, protoContent, 'utf8');
+            const outputDir = path.resolve(
+                this.getRootPath(contract, 'protos'),
+            );
+            const protoFileName = `${contract.controllerName.toLowerCase()}.proto`;
+            const outputFilePath = path.join(outputDir, protoFileName);
+
+            fs.writeFileSync(outputFilePath, protoContent, 'utf8');
 
             if (
                 contract.customProto &&
@@ -79,6 +75,7 @@ export class ProtobufTranspile implements ITranspile {
             }
 
             const tsContent = this.generateTypes(contract);
+            const outputPathTs = outputFilePath.replace('.proto', '.d.ts');
             fs.writeFileSync(outputPathTs, tsContent, 'utf8');
 
             const contractJSON = root.toJSON();
@@ -103,7 +100,13 @@ export class ProtobufTranspile implements ITranspile {
             if (field.protoType === 'any') includesGoogleAny = true;
         });
 
-        lines.push('// Generated automatically by CMMV\n');
+        lines.push(`/**                                                                               
+    **********************************************
+    This script was generated automatically by CMMV.
+    It is recommended not to modify this file manually, 
+    as it may be overwritten by the application.
+    **********************************************
+**/\n`);
         lines.push(`syntax = "proto3";`);
 
         if (packageName) lines.push(`package ${packageName};`);
@@ -135,6 +138,7 @@ export class ProtobufTranspile implements ITranspile {
             lines.push(`message Add${contract.controllerName}Request {`);
             lines.push(`    ${contract.controllerName} item = 1;`);
             lines.push(`}`);
+            lines.push('');
             lines.push(`message Add${contract.controllerName}Response {`);
             lines.push(`    string id = 1;`);
             lines.push(`    ${contract.controllerName} item = 2;`);
@@ -145,6 +149,7 @@ export class ProtobufTranspile implements ITranspile {
             lines.push(`    string id = 1;`);
             lines.push(`    ${contract.controllerName} item = 2;`);
             lines.push(`}`);
+            lines.push('');
             lines.push(`message Update${contract.controllerName}Response {`);
             lines.push(`    string id = 1;`);
             lines.push(`    ${contract.controllerName} item = 2;`);
@@ -154,6 +159,7 @@ export class ProtobufTranspile implements ITranspile {
             lines.push(`message Delete${contract.controllerName}Request {`);
             lines.push(`    string id = 1;`);
             lines.push(`}`);
+            lines.push('');
             lines.push(`message Delete${contract.controllerName}Response {`);
             lines.push(`    bool success = 1;`);
             lines.push(`    int32 affected = 2;`);
@@ -162,11 +168,29 @@ export class ProtobufTranspile implements ITranspile {
 
             lines.push('');
             lines.push(`message GetAll${contract.controllerName}Request {}`);
+            lines.push('');
             lines.push(`message GetAll${contract.controllerName}Response {`);
             lines.push(`    ${contract.controllerName}List items = 1;`);
             lines.push(`}`);
 
-            lines.push('');
+            if (
+                contract.messages &&
+                Object.keys(contract.messages).length > 0
+            ) {
+                lines.push('');
+
+                for (let key in contract.messages) {
+                    lines.push(`message ${contract.messages[key].name} {
+${Object.entries(contract.messages[key].properties)
+    .map(([fieldName, field]: [string, any], index: number) => {
+        const fieldType = this.mapToTsType(field.type);
+        return `   ${field.required ? '' : 'optional '}${this.mapToProtoType(fieldType)} ${fieldName} = ${index + 1};`;
+    })
+    .join('\n')}
+}\n`);
+                }
+            }
+
             lines.push(`service ${contract.controllerName}Service {`);
             lines.push(
                 `   rpc Add${contract.controllerName} (Add${contract.controllerName}Request) returns (Add${contract.controllerName}Response);`,
@@ -180,35 +204,53 @@ export class ProtobufTranspile implements ITranspile {
             lines.push(
                 `   rpc GetAll${contract.controllerName} (GetAll${contract.controllerName}Request) returns (GetAll${contract.controllerName}Response);`,
             );
+
+            if (
+                contract.services &&
+                Object.keys(contract.services).length > 0
+            ) {
+                for (let key in contract.services) {
+                    lines.push(
+                        `   rpc ${contract.services[key].name} (${contract.services[key].request}) returns (${contract.services[key].response});`,
+                    );
+                }
+            }
+
             lines.push(`}`);
-        }
+        } else {
+            if (
+                contract.messages &&
+                Object.keys(contract.messages).length > 0
+            ) {
+                lines.push('\n// Messages');
 
-        if (contract.messages && Object.keys(contract.messages).length > 0) {
-            lines.push('\n// Messages');
-
-            for (let key in contract.messages) {
-                lines.push(`message ${contract.messages[key].name} {
+                for (let key in contract.messages) {
+                    lines.push(`message ${contract.messages[key].name} {
 ${Object.entries(contract.messages[key].properties)
     .map(([fieldName, field]: [string, any], index: number) => {
         const fieldType = this.mapToTsType(field.type);
         return `   ${field.required ? '' : 'optional '}${this.mapToProtoType(fieldType)} ${fieldName} = ${index + 1};`;
     })
-    .join('\n')}
+    .join('\n\n')}
 }\n`);
-            }
-        }
-
-        if (contract.services && Object.keys(contract.services).length > 0) {
-            lines.push(`// Services
-service ${contract.controllerName}Service {`);
-
-            for (let key in contract.services) {
-                lines.push(
-                    `   rpc ${contract.services[key].name} (${contract.services[key].request}) returns (${contract.services[key].response});`,
-                );
+                }
             }
 
-            lines.push(`}`);
+            if (
+                contract.services &&
+                Object.keys(contract.services).length > 0
+            ) {
+                lines.push(`// Services
+    service ${contract.controllerName}Service {`);
+
+                for (let key in contract.services) {
+                    lines.push(
+                        `   rpc ${contract.services[key].name} (${contract.services[key].request}) returns (${contract.services[key].response});`,
+                    );
+                }
+
+                lines.push(`}`);
+            }
         }
 
         if (contract.customProto && typeof contract.customProto === 'function')
@@ -220,7 +262,14 @@ service ${contract.controllerName}Service {`);
     private generateTypes(contract: any): string {
         const lines: string[] = [];
 
-        lines.push(`// Generated automatically by CMMV\n`);
+        lines.push(`/**                                                                               
+    **********************************************
+    This script was generated automatically by CMMV.
+    It is recommended not to modify this file manually, 
+    as it may be overwritten by the application.
+    **********************************************
+**/\n`);
+
         lines.push(`export namespace ${contract.controllerName} {`);
 
         contract.fields.forEach((field: any) => {

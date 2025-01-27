@@ -2,7 +2,6 @@ import { AbstractContract, Contract, ContractField } from '@cmmv/core';
 
 @Contract({
     controllerName: 'Task',
-    protoPath: 'src/protos/task.proto',
     protoPackage: 'task',
     imports: ['crypto'],
     auth: false,

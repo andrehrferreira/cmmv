@@ -1,20 +1,27 @@
-// Generated automatically by CMMV
+/**                                                                               
+    **********************************************
+    This script was generated automatically by CMMV.
+    It is recommended not to modify this file manually, 
+    as it may be overwritten by the application.
+    **********************************************
+**/
 
+import { ObjectId } from 'mongodb';
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import { Telemetry, AbstractService, Service } from '@cmmv/core';
 import { Repository } from '@cmmv/repository';
-import { User, IUser } from '../models/user.model';
-import { UserEntity } from '../entities/user.entity';
 
-@Service('user')
-export class UserService extends AbstractService {
-    public override name = 'user';
+import { User, IUser } from '../../models/auth/user.model';
 
+import { UserEntity } from '../../entities/auth/user.entity';
+
+export class UserServiceGenerated extends AbstractService {
     async getAll(queries?: any, req?: any): Promise<UserEntity[] | null> {
         try {
             Telemetry.start('UserService::GetAll', req?.requestId);
-            let result = await Repository.findAll(UserEntity);
+            let result = await Repository.findAll(UserEntity, queries);
+            result = this.fixId(result);
             Telemetry.end('UserService::GetAll', req?.requestId);
             return result;
         } catch (e) {
@@ -25,7 +32,10 @@ export class UserService extends AbstractService {
     async getById(id: string, req?: any): Promise<UserEntity | null> {
         try {
             Telemetry.start('UserService::GetById', req?.requestId);
-            const item = await Repository.findBy(UserEntity, { id });
+            let item = await Repository.findBy(UserEntity, {
+                _id: new ObjectId(id),
+            });
+            item = this.fixId(item);
             Telemetry.end('UserService::GetById', req?.requestId);
 
             if (!item) throw new Error('Item not found');
@@ -41,23 +51,29 @@ export class UserService extends AbstractService {
             try {
                 Telemetry.start('UserService::Add', req?.requestId);
 
-                const newItem = plainToClass(User, item, {
-                    exposeUnsetFields: true,
+                let newItem: any = plainToClass(User, item, {
+                    exposeUnsetFields: false,
                     enableImplicitConversion: true,
                 });
 
+                newItem = this.removeUndefined(newItem);
+                delete newItem._id;
+
                 const errors = await validate(newItem, {
+                    forbidUnknownValues: false,
                     skipMissingProperties: true,
+                    stopAtFirstError: true,
                 });
 
                 if (errors.length > 0) {
                     Telemetry.end('TaskService::Add', req?.requestId);
                     reject(errors);
                 } else {
-                    const result = await Repository.insert<UserEntity>(
+                    let result: any = await Repository.insert<UserEntity>(
                         UserEntity,
                         newItem,
                     );
+                    result = this.fixId(result);
                     Telemetry.end('TaskService::Add', req?.requestId);
                     resolve(result);
                 }
@@ -74,13 +90,18 @@ export class UserService extends AbstractService {
             try {
                 Telemetry.start('UserService::Update', req?.requestId);
 
-                const newItem = plainToClass(User, item, {
-                    exposeUnsetFields: true,
+                let updateItem: any = plainToClass(User, item, {
+                    exposeUnsetFields: false,
                     enableImplicitConversion: true,
                 });
 
-                const errors = await validate(newItem, {
+                updateItem = this.removeUndefined(updateItem);
+                delete updateItem._id;
+
+                const errors = await validate(updateItem, {
+                    forbidUnknownValues: false,
                     skipMissingProperties: true,
+                    stopAtFirstError: true,
                 });
 
                 if (errors.length > 0) {
@@ -89,8 +110,8 @@ export class UserService extends AbstractService {
                 } else {
                     const result = await Repository.update(
                         UserEntity,
-                        id,
-                        item,
+                        new ObjectId(id),
+                        updateItem,
                     );
                     Telemetry.end('TaskService::Add', req?.requestId);
                     resolve(result);
@@ -109,7 +130,10 @@ export class UserService extends AbstractService {
     ): Promise<{ success: boolean; affected: number }> {
         try {
             Telemetry.start('UserService::Delete', req?.requestId);
-            const result = await Repository.delete(UserEntity, id);
+            const result = await Repository.delete(
+                UserEntity,
+                new ObjectId(id),
+            );
             Telemetry.end('UserService::Delete', req?.requestId);
             return { success: result.affected > 0, affected: result.affected };
         } catch (e) {

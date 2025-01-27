@@ -50,7 +50,21 @@
             "@cmmv/auth": ["packages/auth"],
             "@cmmv/auth/*": ["packages/auth/*"],
             "@cmmv/testing": ["packages/testing"],
-            "@cmmv/testing/*": ["packages/testing/*"]
+            "@cmmv/testing/*": ["packages/testing/*"],
+            "@models": ["models"],
+            "@models/*": ["models/*"],
+            "@services": ["services"],
+            "@services/*": ["services/*"],
+            "@controllers": ["controllers"],
+            "@controllers/*": ["controllers/*"],
+            "@contracts": ["contracts"],
+            "@contracts/*": ["contracts/*"],
+            "@entities": ["entities"],
+            "@entities/*": ["entities/*"],
+            "@gateways": ["gateways"],
+            "@gateways/*": ["gateways/*"],
+            "@protos": ["protos"],
+            "@protos/*": ["protos/*"]
         }
     },
     "include": ["packages/**/*", "src/**/*.ts"],

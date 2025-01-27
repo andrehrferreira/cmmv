@@ -1,9 +1,18 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { Config, ITranspile, Logger, Scope } from '@cmmv/core';
+import {
+    AbstractTranspile,
+    Config,
+    ITranspile,
+    Logger,
+    Scope,
+} from '@cmmv/core';
 
-export class RepositoryTranspile implements ITranspile {
+export class RepositoryTranspile
+    extends AbstractTranspile
+    implements ITranspile
+{
     private logger: Logger = new Logger('RepositoryTranspile');
 
     run(): void {
@@ -16,66 +25,80 @@ export class RepositoryTranspile implements ITranspile {
     }
 
     private generateEntity(contract: any): void {
-        const outputPath = path.resolve(contract.protoPath);
-        const outputDir = path.dirname(outputPath);
         const entityName = contract.controllerName;
         const modelName = `${entityName}.Model`;
         const entityFileName = `${entityName.toLowerCase()}.entity.ts`;
 
-        const entityTemplate = `// Generated automatically by CMMV
+        const entityTemplate = `/**                                                                               
+    **********************************************
+    This script was generated automatically by CMMV.
+    It is recommended not to modify this file manually, 
+    as it may be overwritten by the application.
+    **********************************************
+**/
         
 import { 
-    Entity, PrimaryGeneratedColumn, 
-    Column, Index, ObjectIdColumn, ObjectId
-} from 'typeorm';
+    Entity, ${Config.get('repository.type') === 'mongodb' ? 'ObjectIdColumn' : 'PrimaryGeneratedColumn'}, 
+    Column, Index, ${Config.get('repository.type') === 'mongodb' ? 'ObjectId' : ''}, 
+} from "typeorm";
 
-import { I${entityName} } from '../models/${modelName.toLowerCase()}';
+import { I${entityName} } from "${this.getImportPath(contract, 'models', modelName.toLowerCase())}";
 
-@Entity('${entityName.toLowerCase()}')
+@Entity("${entityName.toLowerCase()}")
 ${this.generateIndexes(entityName, contract.fields, contract)}
 export class ${entityName}Entity implements I${entityName} {
     ${Config.get('repository.type') === 'mongodb' ? '@ObjectIdColumn()' : "@PrimaryGeneratedColumn('uuid')"}
     ${Config.get('repository.type') === 'mongodb' ? '_id: ObjectId' : 'id: string'};
 
 ${contract.fields.map((field: any) => this.generateField(field)).join('\n\n')}
-}
-`;
+}`;
 
-        const dirname = path.resolve(outputDir, '../entities');
+        const outputDir = this.getRootPath(contract, 'entities');
 
-        if (!fs.existsSync(dirname)) fs.mkdirSync(dirname, { recursive: true });
-
-        const outputFilePath = path.join(
-            outputDir,
-            '../entities',
-            entityFileName,
-        );
+        const outputFilePath = path.join(outputDir, entityFileName);
 
         fs.writeFileSync(outputFilePath, entityTemplate, 'utf8');
     }
 
     private generateService(contract: any): void {
-        const outputPath = path.resolve(contract.protoPath);
-        const outputDir = path.dirname(outputPath);
         const serviceName = `${contract.controllerName}Service`;
         const modelName = `${contract.controllerName}`;
         const modelInterfaceName = `I${modelName}`;
         const entityName = `${contract.controllerName}Entity`;
-        const serviceFileName = `${contract.controllerName.toLowerCase()}.service.ts`;
+        const serviceFileNameGenerated = `${contract.controllerName.toLowerCase()}.service.generated.ts`;
 
-        const serviceTemplate = `// Generated automatically by CMMV
+        let importsFromModel = [];
+
+        contract.services
+            .filter(service => service.createBoilerplate === true)
+            .map(service => {
+                importsFromModel.push(service.request);
+                importsFromModel.push(service.response);
+            });
+
+        importsFromModel = [...new Set(importsFromModel)];
+
+        const serviceTemplateGenerated = `/**                                                                               
+    **********************************************
+    This script was generated automatically by CMMV.
+    It is recommended not to modify this file manually, 
+    as it may be overwritten by the application.
+    **********************************************
+**/
 ${Config.get('repository.type') === 'mongodb' ? "\nimport { ObjectId } from 'mongodb';" : ''}
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import { Telemetry, AbstractService, Service } from "@cmmv/core";
 import { Repository } from '@cmmv/repository';
-import { ${modelName}, ${modelInterfaceName} } from '../models/${modelName.toLowerCase()}.model';
-import { ${entityName} } from '../entities/${modelName.toLowerCase()}.entity';
 
-@Service("${contract.controllerName.toLowerCase()}")
-export class ${serviceName} extends AbstractService {
-    public override name = "${contract.controllerName.toLowerCase()}";
+import { 
+   ${modelName}, 
+   ${modelInterfaceName},${importsFromModel.join(', \n   ')}
+} from "${this.getImportPath(contract, 'models', modelName.toLowerCase())}.model";
 
+import { ${entityName} } from "${this.getImportPath(contract, 'entities', modelName.toLowerCase())}.entity";
+
+export class ${serviceName}Generated extends AbstractService {
     async getAll(queries?: any, req?: any): Promise<${entityName}[] | null> {
         try{
             Telemetry.start('${serviceName}::GetAll', req?.requestId);
@@ -192,19 +215,22 @@ export class ${serviceName} extends AbstractService {
             return { success: false, affected: 0 };
         }
     }
+
+${contract.services
+    .filter(service => service.createBoilerplate === true)
+    .map(service => {
+        return `    async ${service.functionName}(payload: ${service.request}): Promise<${service.response}> {
+        throw new Error("Function ${service.functionName} not implemented");
+    }`;
+    })
+    .join('\n\n')}
 }`;
 
-        const dirname = path.resolve(outputDir, '../services');
+        const outputDir = this.getRootPath(contract, 'services');
 
-        if (!fs.existsSync(dirname)) fs.mkdirSync(dirname, { recursive: true });
+        const outputFilePath = path.join(outputDir, serviceFileNameGenerated);
 
-        const outputFilePath = path.join(
-            outputDir,
-            '../services',
-            serviceFileName,
-        );
-
-        fs.writeFileSync(outputFilePath, serviceTemplate, 'utf8');
+        fs.writeFileSync(outputFilePath, serviceTemplateGenerated, 'utf8');
     }
 
     private generateIndexes(
@@ -226,8 +252,6 @@ export class ${serviceName} extends AbstractService {
             Array.isArray(contract.indexs) &&
             contract.indexs.length > 0
         ) {
-            console.log(contract.indexs);
-
             indexDecorators = [
                 ...indexDecorators,
                 contract.indexs.map(index => {

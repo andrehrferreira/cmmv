@@ -51,8 +51,9 @@ export interface ContractIndexOptions {
 export interface ContractOptions {
     controllerName: string;
     controllerCustomPath?: string;
-    protoPath: string;
-    protoPackage?: string;
+    subPath?: string;
+    protoPath?: string;
+    protoPackage?: string; //deprecated
     directMessage?: boolean;
     generateController?: boolean;
     generateEntities?: boolean;
@@ -93,13 +94,13 @@ export interface ContractOptionsService {
     request: string;
     response: string;
     auth?: boolean;
-    createBoilerplate: boolean;
+    createBoilerplate?: boolean;
     functionName: string;
-    functionBoilerplate: string;
 }
 
 export const CONTRACT_WATERMARK = Symbol('contract_watermark');
 export const CONTROLLER_NAME_METADATA = Symbol('controller_name_metadata');
+export const SUB_PATH_METADATA = Symbol('sub_path_metadata');
 export const PROTO_PATH_METADATA = Symbol('proto_path_metadata');
 export const PROTO_PACKAGE_METADATA = Symbol('proto_package_metadata');
 export const DATABASE_TYPE_METADATA = Symbol('database_type_metadata');
@@ -135,6 +136,7 @@ export function Contract(options?: ContractOptions): ClassDecorator {
     }
 
     const defaultControllerName = 'DefaultContract';
+    const defaultSubPath = '';
     const defaultProtoPath = 'contract.proto';
     const defaultProtoPackage = '';
     const defaultDirectMessage = false;
@@ -150,6 +152,7 @@ export function Contract(options?: ContractOptions): ClassDecorator {
 
     const [
         controllerName,
+        subPath,
         protoPath,
         directMessage,
         protoPackage,
@@ -165,6 +168,7 @@ export function Contract(options?: ContractOptions): ClassDecorator {
     ] = !options
         ? [
               defaultControllerName,
+              defaultSubPath,
               defaultProtoPath,
               defaultDirectMessage,
               defaultProtoPackage,
@@ -180,6 +184,7 @@ export function Contract(options?: ContractOptions): ClassDecorator {
           ]
         : [
               options.controllerName || defaultControllerName,
+              options.subPath || defaultSubPath,
               options.protoPath || defaultProtoPath,
               options.directMessage || defaultDirectMessage,
               options.protoPackage || defaultProtoPackage,
@@ -201,6 +206,7 @@ export function Contract(options?: ContractOptions): ClassDecorator {
             controllerName,
             target,
         );
+        Reflect.defineMetadata(SUB_PATH_METADATA, subPath, target);
         Reflect.defineMetadata(PROTO_PATH_METADATA, protoPath, target);
         Reflect.defineMetadata(PROTO_PACKAGE_METADATA, protoPackage, target);
         Reflect.defineMetadata(DIRECTMESSAGE_METADATA, directMessage, target);

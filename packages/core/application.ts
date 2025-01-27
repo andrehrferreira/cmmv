@@ -28,6 +28,7 @@ import {
     GENERATE_ENTITIES_METADATA,
     CONTROLLER_VIEWFORM,
     CONTROLLER_VIEWPAGE,
+    SUB_PATH_METADATA,
 } from './decorators';
 
 import { ApplicationTranspile } from './transpilers';
@@ -218,7 +219,13 @@ export class Application {
         });
 
         const lines: string[] = [];
-        lines.push('// Generated automatically by CMMV');
+        lines.push(`/**                                                                               
+    **********************************************
+    This script was generated automatically by CMMV.
+    It is recommended not to modify this file manually, 
+    as it may be overwritten by the application.
+    **********************************************
+**/`);
 
         files.forEach(file => {
             lines.push(fs.readFileSync(file, 'utf-8'));
@@ -298,6 +305,10 @@ export class Application {
                 CONTROLLER_NAME_METADATA,
                 contract.constructor,
             );
+            const subPath = Reflect.getMetadata(
+                SUB_PATH_METADATA,
+                contract.constructor,
+            );
             const protoPath = Reflect.getMetadata(
                 PROTO_PATH_METADATA,
                 contract.constructor,
@@ -354,6 +365,7 @@ export class Application {
 
             const contractStructure = {
                 controllerName,
+                subPath,
                 protoPath,
                 protoPackage,
                 fields,
@@ -401,11 +413,21 @@ export class Application {
         try {
             const outputPath = path.resolve('src', `app.module.ts`);
 
-            const moduleTemplate = `// Generated automatically by CMMV
+            const moduleTemplate = `/**                                                                               
+    **********************************************
+    This script was generated automatically by CMMV.
+    It is recommended not to modify this file manually, 
+    as it may be overwritten by the application.
+    **********************************************
+**/
 
 import 'reflect-metadata';
 import { Module, ApplicationTranspile } from '@cmmv/core';
+
+//Controllers
 ${Application.appModule.controllers.map(controller => `import { ${controller.name} } from '${controller.path}';`).join('\n')}
+
+//Providers
 ${Application.appModule.providers.map(provider => `import { ${provider.name} } from '${provider.path}';`).join('\n')}
 
 export let ApplicationModule = new Module("app", {

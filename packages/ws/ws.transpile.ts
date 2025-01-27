@@ -1,9 +1,15 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 
-import { Application, Config, ITranspile, Scope } from '@cmmv/core';
+import {
+    AbstractTranspile,
+    Application,
+    Config,
+    ITranspile,
+    Scope,
+} from '@cmmv/core';
 
-export class WSTranspile implements ITranspile {
+export class WSTranspile extends AbstractTranspile implements ITranspile {
     run(): void {
         const contracts = Scope.getArray<any>('__contracts');
 
@@ -13,8 +19,6 @@ export class WSTranspile implements ITranspile {
     }
 
     private generateGateway(contract: any) {
-        const outputPath = path.resolve(contract.protoPath);
-        const outputDir = path.dirname(outputPath);
         const gatewayName = `${contract.controllerName}Gateway`;
         const serviceName = `${contract.controllerName}Service`;
         const gatewayFileName = `${contract.controllerName.toLowerCase()}.gateway.ts`;
@@ -28,27 +32,33 @@ export class WSTranspile implements ITranspile {
         const cacheCompress =
             hasCache && contract.cache.compress ? 'true' : 'false';
 
-        const serviceTemplate = `// Generated automatically by CMMV
+        const protoPath = path.basename(contract.protoPath);
+
+        const serviceTemplate = `/**                                                                               
+    **********************************************
+    This script was generated automatically by CMMV.
+    It is recommended not to modify this file manually, 
+    as it may be overwritten by the application.
+    **********************************************
+**/
     
 import { Rpc, Message, Data, Socket, RpcUtils } from "@cmmv/ws";
 import { plainToClass } from 'class-transformer';
-import { ${contract.controllerName}Entity } from '../entities/${contract.controllerName.toLowerCase()}.entity';
-${hasCache ? `import { Cache, CacheService } from "@cmmv/cache";` : ''}
+import { ${contract.controllerName}Entity } from "${this.getImportPath(contract, 'entities', contract.controllerName.toLowerCase() + '.entity')}";${hasCache ? `\nimport { Cache, CacheService } from "@cmmv/cache";` : ''}
 
 import { 
     Add${contract.controllerName}Request, 
     Update${contract.controllerName}Request,   
     Delete${contract.controllerName}Request 
-} from "../protos/${contract.controllerName.toLowerCase()}";
+} from "${this.getImportPath(contract, 'protos', contract.controllerName.toLowerCase())}.d";
 
-import { ${serviceName} } from '../services/${contract.controllerName.toLowerCase()}.service';
+import { ${serviceName} } from "${this.getImportPath(contract, 'services', contract.controllerName.toLowerCase() + '.service')}";
 
 @Rpc("${contract.controllerName.toLowerCase()}")
 export class ${gatewayName} {
     constructor(private readonly ${serviceName.toLowerCase()}: ${serviceName}) {}
 
-    @Message("GetAll${contract.controllerName}Request")
-    ${hasCache ? `@Cache("${cacheKeyPrefix}getAll", { ttl: ${cacheTtl}, compress: ${cacheCompress} })` : ''}
+    @Message("GetAll${contract.controllerName}Request")${hasCache ? `@Cache("${cacheKeyPrefix}getAll", { ttl: ${cacheTtl}, compress: ${cacheCompress} })` : ''}
     async getAll(@Socket() socket){
         try{
             const items = await this.${serviceName.toLowerCase()}.getAll();
@@ -115,18 +125,13 @@ export class ${gatewayName} {
 
         Application.appModule.providers.push({
             name: gatewayName,
-            path: `./gateways/${contract.controllerName.toLowerCase()}.gateway`,
+            path: `./gateways${contract.subPath}/${contract.controllerName.toLowerCase()}.gateway`,
         });
 
-        const dirname = path.resolve(outputDir, '../gateways');
+        const outputDir = this.getRootPath(contract, 'gateways');
 
-        if (!fs.existsSync(dirname)) fs.mkdirSync(dirname, { recursive: true });
+        const outputFilePath = path.join(outputDir, gatewayFileName);
 
-        const outputFilePath = path.join(
-            outputDir,
-            '../gateways',
-            gatewayFileName,
-        );
         fs.writeFileSync(outputFilePath, serviceTemplate, 'utf8');
     }
 }

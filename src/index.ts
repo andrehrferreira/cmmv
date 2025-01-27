@@ -9,6 +9,7 @@ import { SchedulingModule, SchedulingService } from '@cmmv/scheduling';
 import { AuthModule } from '@cmmv/auth';
 import { ViteModule } from '@cmmv/vite';
 import { IndexModule } from './modules/index.module';
+import { MainModule } from './modules/main.module';
 
 //Contracts
 import { TasksContract } from './contracts/tasks.contract';
@@ -27,6 +28,7 @@ Application.create({
         AuthModule,
         ViteModule,
         IndexModule,
+        MainModule,
     ],
     services: [Repository, CacheService, SchedulingService],
     contracts: [TasksContract],

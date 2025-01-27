@@ -9,20 +9,26 @@ export class AuthTranspile implements ITranspile {
     run(): void {
         const hasWs = Module.hasModule('ws');
 
-        //this.generateService();
-        //this.generateController();
+        this.generateService();
+        this.generateController();
 
-        //if (hasWs) this.generateWebSocketIntegration();
+        if (hasWs) this.generateWebSocketIntegration();
     }
 
     async generateController() {
-        const outputDir = path.resolve(process.cwd(), './src/controllers');
+        const outputDir = path.resolve(process.cwd(), './src/controllers/auth');
         const controllerFileName = `auth.controller.ts`;
         const localLogin = Config.get('auth.localLogin', false);
         const localRegister = Config.get('auth.localRegister', false);
         const hasRepository = Module.hasModule('repository');
 
-        const controllerTemplate = `// Generated automatically by CMMV
+        const controllerTemplate = `/**                                                                               
+    **********************************************
+    This script was generated automatically by CMMV.
+    It is recommended not to modify this file manually, 
+    as it may be overwritten by the application.
+    **********************************************
+**/
     
 import { Config } from "@cmmv/core";
 import { Auth } from "@cmmv/auth";
@@ -32,12 +38,12 @@ import {
     Response, Get, User, Session
 } from "@cmmv/http";
 
-import { AuthService } from '../services/auth.service';
+import { AuthService } from '../../services/auth/auth.service';
 
 import { 
     LoginRequest, LoginResponse, 
     RegisterRequest, RegisterResponse 
-} from '../protos/auth';
+} from '../../models/auth/user.model';
 
 @Controller("auth")
 export class AuthController {
@@ -80,19 +86,25 @@ export class AuthController {
 
         Application.appModule.controllers.push({
             name: 'AuthController',
-            path: `./controllers/auth.controller`,
+            path: `./controllers/auth/auth.controller`,
         });
     }
 
     async generateService() {
         const config = Config.get('auth');
-        const outputDir = path.resolve(process.cwd(), './src/services');
+        const outputDir = path.resolve(process.cwd(), './src/services/auth');
         const serviceFileName = `auth.service.ts`;
 
         const hasRepository = Module.hasModule('repository');
         const hasCache = Module.hasModule('cache');
 
-        const serviceTemplate = `// Generated automatically by CMMV
+        const serviceTemplate = `/**                                                                               
+    **********************************************
+    This script was generated automatically by CMMV.
+    It is recommended not to modify this file manually, 
+    as it may be overwritten by the application.
+    **********************************************
+**/
     
 import * as jwt from 'jsonwebtoken';
 import { validate } from 'class-validator';
@@ -106,14 +118,12 @@ import {
 ${hasRepository ? "import { Repository } from '@cmmv/repository';" : ''}
 ${hasCache ? "import { CacheService } from '@cmmv/cache';" : ''}
 
-import { User } from '../models/user.model';
-
 import { 
-    LoginRequest, LoginResponse, 
+    User, LoginRequest, LoginResponse, 
     RegisterRequest, RegisterResponse 
-} from '../protos/auth';
+} from '../../models/auth/user.model';
 
-${hasRepository ? "import { UserEntity } from '../entities/user.entity';" : ''}
+${hasRepository ? "import { UserEntity } from '../../entities/auth/user.entity';" : ''}
 
 ${Config.get('repository.type') === 'mongodb' ? "import { ObjectId } from 'mongodb';" : ''} 
 
@@ -245,23 +255,29 @@ ${
 
         Application.appModule.providers.push({
             name: 'AuthService',
-            path: `./services/auth.service`,
+            path: `./services/auth/auth.service`,
         });
     }
 
     async generateWebSocketIntegration() {
-        const outputDir = path.resolve(process.cwd(), './src/gateways');
+        const outputDir = path.resolve(process.cwd(), './src/gateways/auth');
         const wsFileName = `auth.gateway.ts`;
 
-        const wsTemplate = `// Generated automatically by CMMV
+        const wsTemplate = `/**                                                                               
+    **********************************************
+    This script was generated automatically by CMMV.
+    It is recommended not to modify this file manually, 
+    as it may be overwritten by the application.
+    **********************************************
+**/
 
 import { Rpc, Message, Data, Socket, RpcUtils } from "@cmmv/ws";
-import { AuthService } from '../services/auth.service';
+import { AuthService } from '../../services/auth/auth.service';
 
 import { 
     LoginRequest,
     RegisterRequest  
-} from "../protos/auth";
+} from "../../models/auth/user.model";
 
 @Rpc("auth")
 export class AuthGateway {
@@ -304,7 +320,7 @@ export class AuthGateway {
 
         Application.appModule.providers.push({
             name: 'AuthGateway',
-            path: `./gateways/auth.gateway`,
+            path: `./gateways/auth/auth.gateway`,
         });
     }
 }

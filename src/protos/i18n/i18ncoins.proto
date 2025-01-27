@@ -1,0 +1,61 @@
+/**                                                                               
+    **********************************************
+    This script was generated automatically by CMMV.
+    It is recommended not to modify this file manually, 
+    as it may be overwritten by the application.
+    **********************************************
+**/
+
+syntax = "proto3";
+package i18n;
+
+message I18nCoins {
+   string code = 1;
+   string name = 2;
+   string format = 3;
+}
+
+message I18nCoinsList {
+    repeated I18nCoins items = 1;
+}
+
+message AddI18nCoinsRequest {
+    I18nCoins item = 1;
+}
+
+message AddI18nCoinsResponse {
+    string id = 1;
+    I18nCoins item = 2;
+}
+
+message UpdateI18nCoinsRequest {
+    string id = 1;
+    I18nCoins item = 2;
+}
+
+message UpdateI18nCoinsResponse {
+    string id = 1;
+    I18nCoins item = 2;
+}
+
+message DeleteI18nCoinsRequest {
+    string id = 1;
+}
+
+message DeleteI18nCoinsResponse {
+    bool success = 1;
+    int32 affected = 2;
+    string id = 3;
+}
+
+message GetAllI18nCoinsRequest {}
+
+message GetAllI18nCoinsResponse {
+    I18nCoinsList items = 1;
+}
+service I18nCoinsService {
+   rpc AddI18nCoins (AddI18nCoinsRequest) returns (AddI18nCoinsResponse);
+   rpc UpdateI18nCoins (UpdateI18nCoinsRequest) returns (UpdateI18nCoinsResponse);
+   rpc DeleteI18nCoins (DeleteI18nCoinsRequest) returns (DeleteI18nCoinsResponse);
+   rpc GetAllI18nCoins (GetAllI18nCoinsRequest) returns (GetAllI18nCoinsResponse);
+}

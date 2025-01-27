@@ -1,9 +1,12 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { Config, ITranspile, Logger, Scope } from '../lib';
+import { AbstractTranspile, Config, ITranspile, Logger, Scope } from '../lib';
 
-export class ApplicationTranspile implements ITranspile {
+export class ApplicationTranspile
+    extends AbstractTranspile
+    implements ITranspile
+{
     private logger: Logger = new Logger('ExpressTranspile');
 
     run(): void {
@@ -12,8 +15,6 @@ export class ApplicationTranspile implements ITranspile {
     }
 
     private generateModel(contract: any): void {
-        const outputPath = path.resolve(contract.protoPath);
-        const outputDir = path.dirname(outputPath);
         const modelName = `${contract.controllerName}`;
         const modelInterfaceName = `I${modelName}`;
         const modelFileName = `${modelName.toLowerCase()}.model.ts`;
@@ -25,7 +26,13 @@ export class ApplicationTranspile implements ITranspile {
         )
             includeId = `${Config.get('repository.type') === 'mongodb' ? '    _id?: ObjectId' : '    id?: any'};\n`;
 
-        const modelTemplate = `// Generated automatically by CMMV
+        const modelTemplate = `/**                                                                               
+    **********************************************
+    This script was generated automatically by CMMV.
+    It is recommended not to modify this file manually, 
+    as it may be overwritten by the application.
+    **********************************************
+**/
 
 ${this.generateClassImports(contract, modelInterfaceName)}
         
@@ -72,11 +79,8 @@ ${contract.fields?.map((field: any) => `        ${field.propertyKey}: ${this.gen
 ${this.generateDTOs(contract)}
 `;
 
-        const dirname = path.resolve(outputDir, '../models');
-
-        if (!fs.existsSync(dirname)) fs.mkdirSync(dirname, { recursive: true });
-
-        const outputFilePath = path.join(outputDir, '../models', modelFileName);
+        const outputDir = this.getRootPath(contract, 'models');
+        const outputFilePath = path.join(outputDir, modelFileName);
         fs.writeFileSync(outputFilePath, modelTemplate, 'utf8');
     }
 
@@ -281,8 +285,15 @@ ${this.generateDTOs(contract)}
     private generateJsonSchemaField(field: any): string {
         const parts = [`type: "${this.mapToJsonSchemaType(field.protoType)}"`];
 
-        if (field.defaultValue !== undefined)
-            parts.push(`default: ${JSON.stringify(field.defaultValue)}`);
+        if (field.defaultValue !== undefined) {
+            parts.push(
+                `default: ${
+                    typeof field.defaultValue == 'object'
+                        ? JSON.stringify(field.defaultValue)
+                        : field.defaultValue
+                }`,
+            );
+        }
 
         if (field.description)
             parts.push(`description: "${field.description}"`);

@@ -1,4 +1,10 @@
-// Generated automatically by CMMV
+/**                                                                               
+    **********************************************
+    This script was generated automatically by CMMV.
+    It is recommended not to modify this file manually, 
+    as it may be overwritten by the application.
+    **********************************************
+**/
 
 syntax = "proto3";
 package task;
@@ -17,6 +23,7 @@ message TaskList {
 message AddTaskRequest {
     Task item = 1;
 }
+
 message AddTaskResponse {
     string id = 1;
     Task item = 2;
@@ -26,6 +33,7 @@ message UpdateTaskRequest {
     string id = 1;
     Task item = 2;
 }
+
 message UpdateTaskResponse {
     string id = 1;
     Task item = 2;
@@ -34,6 +42,7 @@ message UpdateTaskResponse {
 message DeleteTaskRequest {
     string id = 1;
 }
+
 message DeleteTaskResponse {
     bool success = 1;
     int32 affected = 2;
@@ -41,10 +50,10 @@ message DeleteTaskResponse {
 }
 
 message GetAllTaskRequest {}
+
 message GetAllTaskResponse {
     TaskList items = 1;
 }
-
 service TaskService {
    rpc AddTask (AddTaskRequest) returns (AddTaskResponse);
    rpc UpdateTask (UpdateTaskRequest) returns (UpdateTaskResponse);

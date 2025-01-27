@@ -1,4 +1,10 @@
-// Generated automatically by CMMV
+/**                                                                               
+    **********************************************
+    This script was generated automatically by CMMV.
+    It is recommended not to modify this file manually, 
+    as it may be overwritten by the application.
+    **********************************************
+**/
 
 import { Rpc, Message, Data, Socket, RpcUtils } from '@cmmv/ws';
 import { plainToClass } from 'class-transformer';
@@ -9,7 +15,7 @@ import {
     AddTaskRequest,
     UpdateTaskRequest,
     DeleteTaskRequest,
-} from '../protos/task';
+} from '../protos/task.d';
 
 import { TaskService } from '../services/task.service';
 

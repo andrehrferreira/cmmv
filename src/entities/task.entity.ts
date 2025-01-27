@@ -1,13 +1,12 @@
-// Generated automatically by CMMV
+/**                                                                               
+    **********************************************
+    This script was generated automatically by CMMV.
+    It is recommended not to modify this file manually, 
+    as it may be overwritten by the application.
+    **********************************************
+**/
 
-import {
-    Entity,
-    PrimaryGeneratedColumn,
-    Column,
-    Index,
-    ObjectIdColumn,
-    ObjectId,
-} from 'typeorm';
+import { Entity, ObjectIdColumn, Column, Index, ObjectId } from 'typeorm';
 
 import { ITask } from '../models/task.model';
 

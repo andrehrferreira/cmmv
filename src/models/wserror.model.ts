@@ -1,4 +1,10 @@
-// Generated automatically by CMMV
+/**                                                                               
+    **********************************************
+    This script was generated automatically by CMMV.
+    It is recommended not to modify this file manually, 
+    as it may be overwritten by the application.
+    **********************************************
+**/
 
 import * as fastJson from 'fast-json-stringify';
 import { Expose, instanceToPlain } from 'class-transformer';
