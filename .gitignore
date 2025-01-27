@@ -49,5 +49,5 @@ googleapis.json
 newrelic.js
 
 # Sample
-/src
-/src/*
+src
+src/*
