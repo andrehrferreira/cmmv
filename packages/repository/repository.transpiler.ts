@@ -253,10 +253,12 @@ ${contract.services
 }`;
 
         const outputDir = this.getRootPath(contract, 'services');
-
         const outputFilePath = path.join(outputDir, serviceFileNameGenerated);
-
-        fs.writeFileSync(outputFilePath, serviceTemplateGenerated, 'utf8');
+        fs.writeFileSync(
+            outputFilePath,
+            this.removeExtraSpaces(serviceTemplateGenerated),
+            'utf8',
+        );
     }
 
     private generateIndexes(
@@ -264,7 +266,7 @@ ${contract.services
         fields: any[],
         contract: IContract,
     ): string {
-        let indexDecorators = fields
+        let indexDecorators: any = fields
             .filter(field => field.index || field.unique)
             .map(field => {
                 const indexName = `idx_${entityName.toLowerCase()}_${field.propertyKey}`;
@@ -293,7 +295,6 @@ ${contract.services
         const tsType = this.mapToTsType(field.protoType);
         const columnOptions = this.generateColumnOptions(field);
         const decorators = [`@Column({ ${columnOptions} })`];
-
         return `    ${decorators.join(' ')}\n    ${field.propertyKey}: ${tsType};`;
     }
 

@@ -37,8 +37,6 @@
             "@cmmv/protobuf/*": ["packages/protobuf/*"],
             "@cmmv/view": ["packages/view"],
             "@cmmv/view/*": ["packages/view/*"],
-            "@cmmv/vite": ["packages/vite"],
-            "@cmmv/vite/*": ["packages/vite/*"],
             "@cmmv/ws": ["packages/ws"],
             "@cmmv/ws/*": ["packages/ws/*"],
             "@cmmv/repository": ["packages/repository"],
