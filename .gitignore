@@ -47,7 +47,3 @@ yarn.lock
 # Gsuite
 googleapis.json
 newrelic.js
-
-# Sample
-src
-src/*
