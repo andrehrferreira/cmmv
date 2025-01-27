@@ -7,7 +7,7 @@
 **/
 
 import * as fastJson from 'fast-json-stringify';
-import { Expose, instanceToPlain } from 'class-transformer';
+import { Expose, instanceToPlain, plainToClass } from 'class-transformer';
 
 export interface IWsCall {
     contract: number;
@@ -16,6 +16,9 @@ export interface IWsCall {
 }
 
 export class WsCall implements IWsCall {
+    @Expose({ toClassOnly: true })
+    id: string;
+
     @Expose()
     contract: number;
 
@@ -31,6 +34,14 @@ export class WsCall implements IWsCall {
 
     public serialize() {
         return instanceToPlain(this);
+    }
+
+    public static toClass(partial: Partial<WsCall>): WsCall {
+        return plainToClass(WsCall, partial, {
+            exposeUnsetFields: false,
+            enableImplicitConversion: true,
+            excludeExtraneousValues: true,
+        });
     }
 
     public toString() {

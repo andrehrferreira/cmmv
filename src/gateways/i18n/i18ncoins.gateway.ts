@@ -9,6 +9,7 @@
 import { Rpc, Message, Data, Socket, RpcUtils } from '@cmmv/ws';
 import { plainToClass } from 'class-transformer';
 import { I18nCoinsEntity } from '../../entities/i18n/i18ncoins.entity';
+import { Cache, CacheService } from '@cmmv/cache';
 
 import {
     AddI18nCoinsRequest,
@@ -23,6 +24,7 @@ export class I18nCoinsGateway {
     constructor(private readonly i18ncoinsservice: I18nCoinsService) {}
 
     @Message('GetAllI18nCoinsRequest')
+    @Cache('coins:getAll', { ttl: 3000, compress: true })
     async getAll(@Socket() socket) {
         try {
             const items = await this.i18ncoinsservice.getAll();
@@ -47,6 +49,13 @@ export class I18nCoinsGateway {
                 { item: result, id: result._id },
             );
 
+            CacheService.set(
+                `coins:${result._id}`,
+                JSON.stringify(result),
+                3000,
+            );
+            CacheService.del('coins:getAll');
+
             if (response) socket.send(response);
         } catch (e) {}
     }
@@ -59,8 +68,17 @@ export class I18nCoinsGateway {
             const response = await RpcUtils.pack(
                 'i18ncoins',
                 'UpdateI18nCoinsResponse',
-                { item: result, id: result._id },
+                {
+                    success: result.success,
+                    affected: result.affected,
+                },
             );
+            CacheService.set(
+                `coins:${result._id}`,
+                JSON.stringify(result),
+                3000,
+            );
+            CacheService.del('coins:getAll');
 
             if (response) socket.send(response);
         } catch (e) {}
@@ -76,9 +94,10 @@ export class I18nCoinsGateway {
                 {
                     success: result.success,
                     affected: result.affected,
-                    id: data.id,
                 },
             );
+            CacheService.del(`coins:${data.id}`);
+            CacheService.del('coins:getAll');
 
             if (response) socket.send(response);
         } catch (e) {}

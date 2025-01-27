@@ -56,8 +56,8 @@ export class UserGateway {
             const entity = plainToClass(UserEntity, data.item);
             const result = await this.userservice.update(data.id, entity);
             const response = await RpcUtils.pack('user', 'UpdateUserResponse', {
-                item: result,
-                id: result._id,
+                success: result.success,
+                affected: result.affected,
             });
 
             if (response) socket.send(response);
@@ -71,7 +71,6 @@ export class UserGateway {
             const response = await RpcUtils.pack('user', 'DeleteUserResponse', {
                 success: result.success,
                 affected: result.affected,
-                id: data.id,
             });
 
             if (response) socket.send(response);

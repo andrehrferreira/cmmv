@@ -7,6 +7,7 @@ import {
     ITranspile,
     Logger,
     Scope,
+    IContract,
 } from '@cmmv/core';
 
 export class RepositoryTranspile
@@ -18,16 +19,22 @@ export class RepositoryTranspile
     run(): void {
         const contracts = Scope.getArray<any>('__contracts');
 
-        contracts?.forEach((contract: any) => {
+        contracts?.forEach((contract: IContract) => {
             if (contract.generateEntities) this.generateEntity(contract);
             if (contract.generateController) this.generateService(contract);
         });
     }
 
-    private generateEntity(contract: any): void {
+    private generateEntity(contract: IContract): void {
         const entityName = contract.controllerName;
         const modelName = `${entityName}.Model`;
         const entityFileName = `${entityName.toLowerCase()}.entity.ts`;
+        const schemaName = contract.options?.databaseSchemaName
+            ? contract.options?.databaseSchemaName
+            : entityName.toLowerCase();
+
+        const extraFields = this.generateExtraFields(contract);
+        const extraEntitiesImport = this.generateExtraImport(contract);
 
         const entityTemplate = `/**                                                                               
     **********************************************
@@ -38,29 +45,26 @@ export class RepositoryTranspile
 **/
         
 import { 
-    Entity, ${Config.get('repository.type') === 'mongodb' ? 'ObjectIdColumn' : 'PrimaryGeneratedColumn'}, 
-    Column, Index, ${Config.get('repository.type') === 'mongodb' ? 'ObjectId' : ''}, 
+    ${this.generateTypeORMImports(contract)}
 } from "typeorm";
 
-import { I${entityName} } from "${this.getImportPath(contract, 'models', modelName.toLowerCase())}";
+import { I${entityName} } from "${this.getImportPath(contract, 'models', modelName.toLowerCase())}";${this.generateEntitiesImport(contract, extraEntitiesImport)}
 
-@Entity("${entityName.toLowerCase()}")
+@Entity("${schemaName}")
 ${this.generateIndexes(entityName, contract.fields, contract)}
 export class ${entityName}Entity implements I${entityName} {
     ${Config.get('repository.type') === 'mongodb' ? '@ObjectIdColumn()' : "@PrimaryGeneratedColumn('uuid')"}
     ${Config.get('repository.type') === 'mongodb' ? '_id: ObjectId' : 'id: string'};
 
-${contract.fields.map((field: any) => this.generateField(field)).join('\n\n')}
+${contract.fields.map((field: any) => this.generateField(field)).join('\n\n')}${extraFields}
 }`;
 
         const outputDir = this.getRootPath(contract, 'entities');
-
         const outputFilePath = path.join(outputDir, entityFileName);
-
         fs.writeFileSync(outputFilePath, entityTemplate, 'utf8');
     }
 
-    private generateService(contract: any): void {
+    private generateService(contract: IContract): void {
         const serviceName = `${contract.controllerName}Service`;
         const modelName = `${contract.controllerName}`;
         const modelInterfaceName = `I${modelName}`;
@@ -88,7 +92,12 @@ ${contract.fields.map((field: any) => this.generateField(field)).join('\n\n')}
 ${Config.get('repository.type') === 'mongodb' ? "\nimport { ObjectId } from 'mongodb';" : ''}
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
-import { Telemetry, AbstractService, Service } from "@cmmv/core";
+
+import { 
+    Telemetry, AbstractService, 
+    Logger 
+} from "@cmmv/core";
+
 import { Repository } from '@cmmv/repository';
 
 import { 
@@ -99,37 +108,48 @@ import {
 import { ${entityName} } from "${this.getImportPath(contract, 'entities', modelName.toLowerCase())}.entity";
 
 export class ${serviceName}Generated extends AbstractService {
-    async getAll(queries?: any, req?: any): Promise<${entityName}[] | null> {
+    protected logger: Logger = new Logger("${serviceName}Generated");
+
+    async getAll(queries?: any, req?: any): Promise<${modelName}[] | null> {
         try{
             Telemetry.start('${serviceName}::GetAll', req?.requestId);
             let result = await Repository.findAll(${entityName}, queries);
-            ${Config.get('repository.type') === 'mongodb' ? 'result = this.fixId(result)' : ''}
+            
+            ${Config.get('repository.type') === 'mongodb' ? 'result = this.fixIds(result)' : ''}
             Telemetry.end('${serviceName}::GetAll', req?.requestId);
-            return result;
+
+            return result && result.length > 0 ? result.map((item) => {
+                return plainToClass(${modelName}, item, {
+                    exposeUnsetFields: false,
+                    enableImplicitConversion: true,
+                    excludeExtraneousValues: true
+                });
+            }) : null;
         }
         catch(e){
+            this.logger.error(e);
             return null;
         }
     }
 
-    async getById(id: string, req?: any): Promise<${entityName} | null> {
+    async getById(id: string, req?: any): Promise<${modelName} | null> {
         try{
             Telemetry.start('${serviceName}::GetById', req?.requestId);
             let item = await Repository.findBy(${entityName}, { ${Config.get('repository.type') === 'mongodb' ? '_id: new ObjectId(id)' : 'id'} });
-            ${Config.get('repository.type') === 'mongodb' ? 'item = this.fixId(item)' : ''}
+            ${Config.get('repository.type') === 'mongodb' ? 'item = this.fixIds(item)' : ''}
             Telemetry.end('${serviceName}::GetById', req?.requestId);
 
             if (!item) 
                 throw new Error('Item not found');
             
-            return item;
+            return ${modelName}.toClass(item);
         }
         catch(e){
             return null;
         }
     }
 
-    async add(item: ${modelInterfaceName}, req?: any): Promise<${entityName}> {
+    async add(item: ${modelInterfaceName}, req?: any): Promise<${modelName}> {
         return new Promise(async (resolve, reject) => {
             try{
                 Telemetry.start('${serviceName}::Add', req?.requestId);
@@ -148,26 +168,31 @@ export class ${serviceName}Generated extends AbstractService {
                     stopAtFirstError: true, 
                 });
 
+                const userId: string = req.user.id;
+
+                if(typeof userId === "string")
+                    newItem.userCreator = ${Config.get('repository.type') === 'mongodb' ? 'new ObjectId(userId)' : 'userId'};
+
                 if (errors.length > 0) {
                     Telemetry.end('TaskService::Add', req?.requestId);
                     reject(errors);
                 } 
                 else {                   
                     let result: any = await Repository.insert<${entityName}>(${entityName}, newItem);
-                    ${Config.get('repository.type') === 'mongodb' ? 'result = this.fixId(result)' : ''}
+                    ${Config.get('repository.type') === 'mongodb' ? 'result = this.fixIds(result)' : ''}
                     Telemetry.end('TaskService::Add', req?.requestId);
-                    resolve(result);                    
+                    resolve(${modelName}.toClass(result));                    
                 }
             }
             catch(e){ 
                 Telemetry.end('TaskService::Add', req?.requestId);
-                console.log(e); 
+                console.error(e); 
                 reject(e)
             }
         });
     }
 
-    async update(id: string, item: ${modelInterfaceName}, req?: any): Promise<${entityName}> {
+    async update(id: string, item: ${modelInterfaceName}, req?: any): Promise<{ success: boolean, affected: number }> {
         return new Promise(async (resolve, reject) => {
             try{
                 Telemetry.start('${serviceName}::Update', req?.requestId);
@@ -193,13 +218,13 @@ export class ${serviceName}Generated extends AbstractService {
                 else {  
                     const result = await Repository.update(${entityName}, ${Config.get('repository.type') === 'mongodb' ? 'new ObjectId(id)' : 'id'}, updateItem);                    
                     Telemetry.end('TaskService::Add', req?.requestId);
-                    resolve(result);        
+                    resolve({ success: result > 0, affected: result });       
                 }                
             }
             catch(e){
+                console.log(e);
                 Telemetry.end('${serviceName}::Update', req?.requestId);
-                console.log(e); 
-                reject(e)
+                reject({ success: false, affected: 0 });
             }
         });
     }
@@ -212,6 +237,7 @@ export class ${serviceName}Generated extends AbstractService {
             return { success: result.affected > 0, affected: result.affected };
         }
         catch(e){
+            Telemetry.end('${serviceName}::Delete', req?.requestId);
             return { success: false, affected: 0 };
         }
     }
@@ -236,7 +262,7 @@ ${contract.services
     private generateIndexes(
         entityName: string,
         fields: any[],
-        contract: any,
+        contract: IContract,
     ): string {
         let indexDecorators = fields
             .filter(field => field.index || field.unique)
@@ -331,5 +357,82 @@ ${contract.services
         };
 
         return typeMapping[type] || 'varchar';
+    }
+
+    private generateTypeORMImports(contract: IContract) {
+        let extraImport = [];
+
+        if (contract.options?.databaseTimestamps)
+            extraImport.push('CreateDateColumn', 'UpdateDateColumn');
+
+        if (contract.options?.databaseUserAction)
+            extraImport.push('ManyToOne', 'BeforeInsert');
+
+        return `Entity, ${Config.get('repository.type') === 'mongodb' ? 'ObjectIdColumn' : 'PrimaryGeneratedColumn'}, 
+    Column, Index, ${Config.get('repository.type') === 'mongodb' ? 'ObjectId,' : ''} ${extraImport.length > 0 ? `\n\t${extraImport.join(', ')}` : ''}`;
+    }
+
+    private generateExtraFields(contract: IContract) {
+        let extraFields = '';
+
+        if (contract.options?.databaseTimestamps) {
+            extraFields += `
+    @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+    createdAt: Date;
+
+    @UpdateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
+    updatedAt: Date;`;
+        }
+
+        if (contract.options?.databaseUserAction) {
+            if (extraFields) extraFields += '\n';
+
+            extraFields += `
+    @ManyToOne(() => UserEntity, { nullable: false })
+    ${Config.get('repository.type') === 'mongodb' ? '@ObjectIdColumn({ nullable: false })' : "@Column({ type: 'varchar', nullable: false })"}
+    userCreator: ${Config.get('repository.type') === 'mongodb' ? 'ObjectId' : 'string'};
+
+    @ManyToOne(() => UserEntity, { nullable: true })
+    ${Config.get('repository.type') === 'mongodb' ? '@ObjectIdColumn({ nullable: true })' : "@Column({ type: 'varchar', nullable: true })"}
+    userLastUpdate: ${Config.get('repository.type') === 'mongodb' ? 'ObjectId' : 'string'};
+    
+    @BeforeInsert()
+    checkUserCreator() {
+        if (!this.userCreator) 
+            throw new Error("userCreator is required");
+    }`;
+        }
+
+        return extraFields ? `\n${extraFields}` : '';
+    }
+
+    private generateExtraImport(contract: IContract) {
+        let imports: Array<{ name: string; path: string }> = [];
+
+        if (contract.options?.databaseUserAction) {
+            imports.push({
+                name: 'UserEntity',
+                path: this.getImportPathWithoutSubPath(
+                    contract,
+                    'entities',
+                    'auth/user.entity',
+                ),
+            });
+        }
+
+        return imports;
+    }
+
+    private generateEntitiesImport(
+        contract: IContract,
+        extraImports: Array<{ name: string; path: string }>,
+    ) {
+        return extraImports.length > 0
+            ? extraImports
+                  .map(value => {
+                      return `\nimport { ${value.name} } from "${value.path}";`;
+                  })
+                  .join('')
+            : '';
     }
 }

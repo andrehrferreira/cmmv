@@ -29,7 +29,6 @@ import { ControllerRegistry } from './controller.registry';
 export class DefaultAdapter extends AbstractHttpAdapter<
     http.Server | https.Server
 > {
-    private logger: Logger = new Logger('DefaultAdapter');
     protected readonly openConnections = new Set<Duplex>();
 
     constructor(protected instance?: any) {
@@ -81,6 +80,7 @@ export class DefaultAdapter extends AbstractHttpAdapter<
                 );
             }
 
+            //@ts-ignore
             const { CMMVRenderer } = await import('@cmmv/view');
             const render = new CMMVRenderer();
 

@@ -7,6 +7,7 @@ import {
     Config,
     ITranspile,
     Scope,
+    IContract,
 } from '@cmmv/core';
 
 export class WSTranspile extends AbstractTranspile implements ITranspile {
@@ -18,7 +19,7 @@ export class WSTranspile extends AbstractTranspile implements ITranspile {
         });
     }
 
-    private generateGateway(contract: any) {
+    private generateGateway(contract: IContract) {
         const gatewayName = `${contract.controllerName}Gateway`;
         const serviceName = `${contract.controllerName}Service`;
         const gatewayFileName = `${contract.controllerName.toLowerCase()}.gateway.ts`;
@@ -62,7 +63,11 @@ export class ${gatewayName} {
     async getAll(@Socket() socket){
         try{
             const items = await this.${serviceName.toLowerCase()}.getAll();
-            const response = await RpcUtils.pack("${contract.controllerName.toLowerCase()}", "GetAll${contract.controllerName}Response", items);
+            const response = await RpcUtils.pack(
+                "${contract.controllerName.toLowerCase()}", 
+                "GetAll${contract.controllerName}Response", 
+                items
+            );
 
             if(response)
                 socket.send(response);
@@ -75,7 +80,12 @@ export class ${gatewayName} {
         try{
             const entity = plainToClass(${contract.controllerName}Entity, data.item);
             const result = await this.${serviceName.toLowerCase()}.add(entity);
-            const response = await RpcUtils.pack("${contract.controllerName.toLowerCase()}", "Add${contract.controllerName}Response", { item: result, id: ${Config.get('repository.type') === 'mongodb' ? `result._id` : `result.id`} });
+            const response = await RpcUtils.pack(
+                "${contract.controllerName.toLowerCase()}", 
+                "Add${contract.controllerName}Response", 
+                { item: result, id: ${Config.get('repository.type') === 'mongodb' ? `result._id` : `result.id`} }
+            );
+
             ${hasCache ? `CacheService.set(\`${cacheKeyPrefix}\${${Config.get('repository.type') === 'mongodb' ? `result._id` : `result.id`}}\`, JSON.stringify(result), ${cacheTtl});` : ''}
             ${hasCache ? `CacheService.del("${cacheKeyPrefix}getAll");` : ''}
 
@@ -90,7 +100,14 @@ export class ${gatewayName} {
         try{
             const entity = plainToClass(${contract.controllerName}Entity, data.item);
             const result = await this.${serviceName.toLowerCase()}.update(data.id, entity);
-            const response = await RpcUtils.pack("${contract.controllerName.toLowerCase()}", "Update${contract.controllerName}Response", { item: result, id: ${Config.get('repository.type') === 'mongodb' ? `result._id` : `result.id`} });
+            const response = await RpcUtils.pack(
+                "${contract.controllerName.toLowerCase()}", 
+                "Update${contract.controllerName}Response", 
+                { 
+                    success: result.success, 
+                    affected: result.affected 
+                }
+            );
             ${hasCache ? `CacheService.set(\`${cacheKeyPrefix}\${${Config.get('repository.type') === 'mongodb' ? `result._id` : `result.id`}}\`, JSON.stringify(result), ${cacheTtl});` : ''}
             ${hasCache ? `CacheService.del("${cacheKeyPrefix}getAll");` : ''}
 
@@ -103,14 +120,13 @@ export class ${gatewayName} {
     @Message("Delete${contract.controllerName}Request")
     async delete(@Data() data: Delete${contract.controllerName}Request, @Socket() socket){
         try{
-            const result = (await this.${serviceName.toLowerCase()}.delete(data.id));
+            const result = await this.${serviceName.toLowerCase()}.delete(data.id);
             const response = await RpcUtils.pack(
                 "${contract.controllerName.toLowerCase()}", 
                 "Delete${contract.controllerName}Response", 
                 { 
                     success: result.success, 
-                    affected: result.affected, 
-                    id: data.id 
+                    affected: result.affected
                 }
             );
             ${hasCache ? `CacheService.del(\`${cacheKeyPrefix}\${data.id}\`);` : ''}
@@ -129,9 +145,11 @@ export class ${gatewayName} {
         });
 
         const outputDir = this.getRootPath(contract, 'gateways');
-
         const outputFilePath = path.join(outputDir, gatewayFileName);
-
-        fs.writeFileSync(outputFilePath, serviceTemplate, 'utf8');
+        fs.writeFileSync(
+            outputFilePath,
+            this.removeExtraSpaces(serviceTemplate),
+            'utf8',
+        );
     }
 }

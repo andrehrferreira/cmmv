@@ -26,7 +26,8 @@ export interface UpdateI18nCoinsRequest {
 }
 
 export interface UpdateI18nCoinsResponse {
-    item: I18nCoins;
+    success: boolean;
+    affected: number;
 }
 
 export interface DeleteI18nCoinsRequest {
@@ -36,7 +37,6 @@ export interface DeleteI18nCoinsRequest {
 export interface DeleteI18nCoinsResponse {
     success: boolean;
     affected: number;
-    id: string;
 }
 
 export interface GetAllI18nCoinsRequest {}

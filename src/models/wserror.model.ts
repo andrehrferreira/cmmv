@@ -7,7 +7,7 @@
 **/
 
 import * as fastJson from 'fast-json-stringify';
-import { Expose, instanceToPlain } from 'class-transformer';
+import { Expose, instanceToPlain, plainToClass } from 'class-transformer';
 
 export interface IWsError {
     message: string;
@@ -16,6 +16,9 @@ export interface IWsError {
 }
 
 export class WsError implements IWsError {
+    @Expose({ toClassOnly: true })
+    id: string;
+
     @Expose()
     message: string;
 
@@ -31,6 +34,14 @@ export class WsError implements IWsError {
 
     public serialize() {
         return instanceToPlain(this);
+    }
+
+    public static toClass(partial: Partial<WsError>): WsError {
+        return plainToClass(WsError, partial, {
+            exposeUnsetFields: false,
+            enableImplicitConversion: true,
+            excludeExtraneousValues: true,
+        });
     }
 
     public toString() {

@@ -8,7 +8,7 @@
 
 import * as fastJson from 'fast-json-stringify';
 import { ObjectId } from 'mongodb';
-import { Expose, instanceToPlain } from 'class-transformer';
+import { Expose, instanceToPlain, plainToClass } from 'class-transformer';
 import { IsString, IsNotEmpty } from 'class-validator';
 
 export interface II18nCoins {
@@ -21,6 +21,9 @@ export interface II18nCoins {
 export class I18nCoins implements II18nCoins {
     @Expose()
     _id?: ObjectId;
+
+    @Expose({ toClassOnly: true })
+    id: string;
 
     @Expose()
     @IsString({ message: 'Invalid currency code' })
@@ -42,6 +45,14 @@ export class I18nCoins implements II18nCoins {
 
     public serialize() {
         return instanceToPlain(this);
+    }
+
+    public static toClass(partial: Partial<I18nCoins>): I18nCoins {
+        return plainToClass(I18nCoins, partial, {
+            exposeUnsetFields: false,
+            enableImplicitConversion: true,
+            excludeExtraneousValues: true,
+        });
     }
 
     public toString() {

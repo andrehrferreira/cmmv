@@ -5,7 +5,13 @@ import * as UglifyJS from 'uglify-js';
 
 import { ProtoRegistry } from './protobuf.registry';
 
-import { AbstractTranspile, ITranspile, Logger, Scope } from '@cmmv/core';
+import {
+    AbstractTranspile,
+    ITranspile,
+    Logger,
+    Scope,
+    IContract,
+} from '@cmmv/core';
 
 export class ProtobufTranspile extends AbstractTranspile implements ITranspile {
     private logger: Logger = new Logger('ProtobufTranspile');
@@ -91,7 +97,7 @@ export class ProtobufTranspile extends AbstractTranspile implements ITranspile {
         this.generateContractsJs(contractsJson);
     }
 
-    private generateProtoContent(contract: any): string {
+    private generateProtoContent(contract: IContract): string {
         const packageName = contract.protoPackage || null;
         const lines: string[] = [];
         let includesGoogleAny = false;
@@ -151,8 +157,8 @@ export class ProtobufTranspile extends AbstractTranspile implements ITranspile {
             lines.push(`}`);
             lines.push('');
             lines.push(`message Update${contract.controllerName}Response {`);
-            lines.push(`    string id = 1;`);
-            lines.push(`    ${contract.controllerName} item = 2;`);
+            lines.push(`    bool success = 1;`);
+            lines.push(`    int32 affected = 2;`);
             lines.push(`}`);
 
             lines.push('');
@@ -163,7 +169,6 @@ export class ProtobufTranspile extends AbstractTranspile implements ITranspile {
             lines.push(`message Delete${contract.controllerName}Response {`);
             lines.push(`    bool success = 1;`);
             lines.push(`    int32 affected = 2;`);
-            lines.push(`    string id = 3;`);
             lines.push(`}`);
 
             lines.push('');
@@ -259,7 +264,7 @@ ${Object.entries(contract.messages[key].properties)
         return lines.join('\n');
     }
 
-    private generateTypes(contract: any): string {
+    private generateTypes(contract: IContract): string {
         const lines: string[] = [];
 
         lines.push(`/**                                                                               
@@ -304,7 +309,8 @@ ${Object.entries(contract.messages[key].properties)
             lines.push(
                 `export interface Update${contract.controllerName}Response {`,
             );
-            lines.push(`    item: ${contract.controllerName};`);
+            lines.push(`    success: boolean;`);
+            lines.push(`    affected: number;`);
             lines.push(`}`);
             lines.push('');
 
@@ -319,7 +325,7 @@ ${Object.entries(contract.messages[key].properties)
             );
             lines.push(`    success: boolean;`);
             lines.push(`    affected: number;`);
-            lines.push(`    id: string;`);
+
             lines.push(`}`);
             lines.push('');
 

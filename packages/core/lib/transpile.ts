@@ -26,6 +26,25 @@ export abstract class AbstractTranspile {
                   .join('')}${context}${contract.subPath}/${filename}`
             : `../${context}/${filename}`;
     }
+
+    public getImportPathWithoutSubPath(
+        contract: any,
+        context: string,
+        filename: string,
+    ) {
+        return contract.subPath
+            ? `${contract.subPath
+                  .split('/')
+                  .map(() => '../')
+                  .join('')}${context}/${filename}`
+            : `../${context}/${filename}`;
+    }
+
+    public removeExtraSpaces(code: string): string {
+        return code
+            .replace(/\n{3,}/g, '\n\n')
+            .replace(/(\n\s*\n\s*\n)/g, '\n\n');
+    }
 }
 
 export class Transpile {

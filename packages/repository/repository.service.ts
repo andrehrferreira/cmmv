@@ -163,13 +163,11 @@ export class Repository extends Singleton {
         entity: new () => Entity,
         id: any,
         data: any,
-    ): Promise<Entity | null> {
+    ): Promise<number | null> {
         try {
             const repository = this.getRepository(entity);
-            await repository.update(id, data);
-            return await this.findOneBy(entity, {
-                id,
-            } as FindOptionsWhere<Entity>);
+            const result = await repository.update(id, data);
+            return result.affected;
         } catch (e) {
             if (process.env.NODE_ENV === 'dev')
                 Repository.logger.error(e.message);

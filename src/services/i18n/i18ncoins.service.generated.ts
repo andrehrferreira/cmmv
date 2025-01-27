@@ -9,7 +9,9 @@
 import { ObjectId } from 'mongodb';
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
-import { Telemetry, AbstractService, Service } from '@cmmv/core';
+
+import { Telemetry, AbstractService, Logger } from '@cmmv/core';
+
 import { Repository } from '@cmmv/repository';
 
 import { I18nCoins, II18nCoins } from '../../models/i18n/i18ncoins.model';
@@ -17,36 +19,49 @@ import { I18nCoins, II18nCoins } from '../../models/i18n/i18ncoins.model';
 import { I18nCoinsEntity } from '../../entities/i18n/i18ncoins.entity';
 
 export class I18nCoinsServiceGenerated extends AbstractService {
-    async getAll(queries?: any, req?: any): Promise<I18nCoinsEntity[] | null> {
+    protected logger: Logger = new Logger('I18nCoinsServiceGenerated');
+
+    async getAll(queries?: any, req?: any): Promise<I18nCoins[] | null> {
         try {
             Telemetry.start('I18nCoinsService::GetAll', req?.requestId);
             let result = await Repository.findAll(I18nCoinsEntity, queries);
-            result = this.fixId(result);
+
+            result = this.fixIds(result);
             Telemetry.end('I18nCoinsService::GetAll', req?.requestId);
-            return result;
+
+            return result && result.length > 0
+                ? result.map(item => {
+                      return plainToClass(I18nCoins, item, {
+                          exposeUnsetFields: false,
+                          enableImplicitConversion: true,
+                          excludeExtraneousValues: true,
+                      });
+                  })
+                : null;
         } catch (e) {
+            this.logger.error(e);
             return null;
         }
     }
 
-    async getById(id: string, req?: any): Promise<I18nCoinsEntity | null> {
+    async getById(id: string, req?: any): Promise<I18nCoins | null> {
         try {
             Telemetry.start('I18nCoinsService::GetById', req?.requestId);
             let item = await Repository.findBy(I18nCoinsEntity, {
                 _id: new ObjectId(id),
             });
-            item = this.fixId(item);
+            item = this.fixIds(item);
             Telemetry.end('I18nCoinsService::GetById', req?.requestId);
 
             if (!item) throw new Error('Item not found');
 
-            return item;
+            return I18nCoins.toClass(item);
         } catch (e) {
             return null;
         }
     }
 
-    async add(item: II18nCoins, req?: any): Promise<I18nCoinsEntity> {
+    async add(item: II18nCoins, req?: any): Promise<I18nCoins> {
         return new Promise(async (resolve, reject) => {
             try {
                 Telemetry.start('I18nCoinsService::Add', req?.requestId);
@@ -65,6 +80,11 @@ export class I18nCoinsServiceGenerated extends AbstractService {
                     stopAtFirstError: true,
                 });
 
+                const userId: string = req.user.id;
+
+                if (typeof userId === 'string')
+                    newItem.userCreator = new ObjectId(userId);
+
                 if (errors.length > 0) {
                     Telemetry.end('TaskService::Add', req?.requestId);
                     reject(errors);
@@ -73,13 +93,13 @@ export class I18nCoinsServiceGenerated extends AbstractService {
                         I18nCoinsEntity,
                         newItem,
                     );
-                    result = this.fixId(result);
+                    result = this.fixIds(result);
                     Telemetry.end('TaskService::Add', req?.requestId);
-                    resolve(result);
+                    resolve(I18nCoins.toClass(result));
                 }
             } catch (e) {
                 Telemetry.end('TaskService::Add', req?.requestId);
-                console.log(e);
+                console.error(e);
                 reject(e);
             }
         });
@@ -89,7 +109,7 @@ export class I18nCoinsServiceGenerated extends AbstractService {
         id: string,
         item: II18nCoins,
         req?: any,
-    ): Promise<I18nCoinsEntity> {
+    ): Promise<{ success: boolean; affected: number }> {
         return new Promise(async (resolve, reject) => {
             try {
                 Telemetry.start('I18nCoinsService::Update', req?.requestId);
@@ -118,12 +138,12 @@ export class I18nCoinsServiceGenerated extends AbstractService {
                         updateItem,
                     );
                     Telemetry.end('TaskService::Add', req?.requestId);
-                    resolve(result);
+                    resolve({ success: result > 0, affected: result });
                 }
             } catch (e) {
-                Telemetry.end('I18nCoinsService::Update', req?.requestId);
                 console.log(e);
-                reject(e);
+                Telemetry.end('I18nCoinsService::Update', req?.requestId);
+                reject({ success: false, affected: 0 });
             }
         });
     }
@@ -141,6 +161,7 @@ export class I18nCoinsServiceGenerated extends AbstractService {
             Telemetry.end('I18nCoinsService::Delete', req?.requestId);
             return { success: result.affected > 0, affected: result.affected };
         } catch (e) {
+            Telemetry.end('I18nCoinsService::Delete', req?.requestId);
             return { success: false, affected: 0 };
         }
     }

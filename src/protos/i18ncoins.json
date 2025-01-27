@@ -64,12 +64,12 @@
                 },
                 "UpdateI18nCoinsResponse": {
                     "fields": {
-                        "id": {
-                            "type": "string",
+                        "success": {
+                            "type": "bool",
                             "id": 1
                         },
-                        "item": {
-                            "type": "I18nCoins",
+                        "affected": {
+                            "type": "int32",
                             "id": 2
                         }
                     }
@@ -91,10 +91,6 @@
                         "affected": {
                             "type": "int32",
                             "id": 2
-                        },
-                        "id": {
-                            "type": "string",
-                            "id": 3
                         }
                     }
                 },

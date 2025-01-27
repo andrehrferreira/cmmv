@@ -2,9 +2,20 @@ import { AbstractContract, Contract, ContractField } from '@cmmv/core';
 
 @Contract({
     controllerName: 'I18nCoins',
+    controllerCustomPath: '/i18n/coins',
     subPath: '/i18n',
     protoPackage: 'i18n',
     auth: true,
+    options: {
+        databaseSchemaName: 'i18n_coins',
+        databaseTimestamps: true,
+        databaseUserAction: true,
+    },
+    cache: {
+        key: 'coins:',
+        ttl: 3000,
+        compress: true,
+    },
 })
 export class I18nCoinsContract extends AbstractContract {
     @ContractField({

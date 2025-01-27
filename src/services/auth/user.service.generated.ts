@@ -9,7 +9,9 @@
 import { ObjectId } from 'mongodb';
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
-import { Telemetry, AbstractService, Service } from '@cmmv/core';
+
+import { Telemetry, AbstractService, Logger } from '@cmmv/core';
+
 import { Repository } from '@cmmv/repository';
 
 import { User, IUser } from '../../models/auth/user.model';
@@ -17,36 +19,49 @@ import { User, IUser } from '../../models/auth/user.model';
 import { UserEntity } from '../../entities/auth/user.entity';
 
 export class UserServiceGenerated extends AbstractService {
-    async getAll(queries?: any, req?: any): Promise<UserEntity[] | null> {
+    protected logger: Logger = new Logger('UserServiceGenerated');
+
+    async getAll(queries?: any, req?: any): Promise<User[] | null> {
         try {
             Telemetry.start('UserService::GetAll', req?.requestId);
             let result = await Repository.findAll(UserEntity, queries);
-            result = this.fixId(result);
+
+            result = this.fixIds(result);
             Telemetry.end('UserService::GetAll', req?.requestId);
-            return result;
+
+            return result && result.length > 0
+                ? result.map(item => {
+                      return plainToClass(User, item, {
+                          exposeUnsetFields: false,
+                          enableImplicitConversion: true,
+                          excludeExtraneousValues: true,
+                      });
+                  })
+                : null;
         } catch (e) {
+            this.logger.error(e);
             return null;
         }
     }
 
-    async getById(id: string, req?: any): Promise<UserEntity | null> {
+    async getById(id: string, req?: any): Promise<User | null> {
         try {
             Telemetry.start('UserService::GetById', req?.requestId);
             let item = await Repository.findBy(UserEntity, {
                 _id: new ObjectId(id),
             });
-            item = this.fixId(item);
+            item = this.fixIds(item);
             Telemetry.end('UserService::GetById', req?.requestId);
 
             if (!item) throw new Error('Item not found');
 
-            return item;
+            return User.toClass(item);
         } catch (e) {
             return null;
         }
     }
 
-    async add(item: IUser, req?: any): Promise<UserEntity> {
+    async add(item: IUser, req?: any): Promise<User> {
         return new Promise(async (resolve, reject) => {
             try {
                 Telemetry.start('UserService::Add', req?.requestId);
@@ -65,6 +80,11 @@ export class UserServiceGenerated extends AbstractService {
                     stopAtFirstError: true,
                 });
 
+                const userId: string = req.user.id;
+
+                if (typeof userId === 'string')
+                    newItem.userCreator = new ObjectId(userId);
+
                 if (errors.length > 0) {
                     Telemetry.end('TaskService::Add', req?.requestId);
                     reject(errors);
@@ -73,19 +93,23 @@ export class UserServiceGenerated extends AbstractService {
                         UserEntity,
                         newItem,
                     );
-                    result = this.fixId(result);
+                    result = this.fixIds(result);
                     Telemetry.end('TaskService::Add', req?.requestId);
-                    resolve(result);
+                    resolve(User.toClass(result));
                 }
             } catch (e) {
                 Telemetry.end('TaskService::Add', req?.requestId);
-                console.log(e);
+                console.error(e);
                 reject(e);
             }
         });
     }
 
-    async update(id: string, item: IUser, req?: any): Promise<UserEntity> {
+    async update(
+        id: string,
+        item: IUser,
+        req?: any,
+    ): Promise<{ success: boolean; affected: number }> {
         return new Promise(async (resolve, reject) => {
             try {
                 Telemetry.start('UserService::Update', req?.requestId);
@@ -114,12 +138,12 @@ export class UserServiceGenerated extends AbstractService {
                         updateItem,
                     );
                     Telemetry.end('TaskService::Add', req?.requestId);
-                    resolve(result);
+                    resolve({ success: result > 0, affected: result });
                 }
             } catch (e) {
-                Telemetry.end('UserService::Update', req?.requestId);
                 console.log(e);
-                reject(e);
+                Telemetry.end('UserService::Update', req?.requestId);
+                reject({ success: false, affected: 0 });
             }
         });
     }
@@ -137,6 +161,7 @@ export class UserServiceGenerated extends AbstractService {
             Telemetry.end('UserService::Delete', req?.requestId);
             return { success: result.affected > 0, affected: result.affected };
         } catch (e) {
+            Telemetry.end('UserService::Delete', req?.requestId);
             return { success: false, affected: 0 };
         }
     }

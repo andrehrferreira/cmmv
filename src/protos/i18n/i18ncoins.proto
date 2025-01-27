@@ -34,8 +34,8 @@ message UpdateI18nCoinsRequest {
 }
 
 message UpdateI18nCoinsResponse {
-    string id = 1;
-    I18nCoins item = 2;
+    bool success = 1;
+    int32 affected = 2;
 }
 
 message DeleteI18nCoinsRequest {
@@ -45,7 +45,6 @@ message DeleteI18nCoinsRequest {
 message DeleteI18nCoinsResponse {
     bool success = 1;
     int32 affected = 2;
-    string id = 3;
 }
 
 message GetAllI18nCoinsRequest {}

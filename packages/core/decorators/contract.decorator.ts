@@ -48,6 +48,12 @@ export interface ContractIndexOptions {
     expireAfterSeconds?: number;
 }
 
+export interface ContractExtraOptions {
+    databaseSchemaName?: string;
+    databaseTimestamps?: boolean;
+    databaseUserAction?: boolean;
+}
+
 export interface ContractOptions {
     controllerName: string;
     controllerCustomPath?: string;
@@ -61,6 +67,7 @@ export interface ContractOptions {
     imports?: Array<string>;
     cache?: CacheOptions;
     index?: ContractIndex[];
+    options?: ContractExtraOptions;
     viewForm?: new () => any;
     viewPage?: new () => any;
 }
@@ -119,6 +126,7 @@ export const CONTROLLER_CUSTOM_PATH_METADATA = Symbol(
 export const CONTROLLER_IMPORTS = Symbol('contract_imports');
 export const CONTROLLER_INDEXS = Symbol('contract_indexs');
 export const CONTROLLER_CACHE = Symbol('contract_cache');
+export const CONTROLLER_OPTIONS = Symbol('contract_options');
 export const CONTROLLER_VIEWFORM = Symbol('contract_viewform');
 export const CONTROLLER_VIEWPAGE = Symbol('contract_viewpage');
 
@@ -147,6 +155,7 @@ export function Contract(options?: ContractOptions): ClassDecorator {
     const defaultImports = [];
     const defaultIndexs = [];
     const defaultCache = null;
+    const defaultOptions = null;
     const defaultViewForm = null;
     const defaultViewPage = null;
 
@@ -163,6 +172,7 @@ export function Contract(options?: ContractOptions): ClassDecorator {
         imports,
         indexs,
         cache,
+        optionsExtra,
         viewForm,
         viewPage,
     ] = !options
@@ -179,6 +189,7 @@ export function Contract(options?: ContractOptions): ClassDecorator {
               defaultImports,
               defaultIndexs,
               defaultCache,
+              defaultOptions,
               defaultViewForm,
               defaultViewPage,
           ]
@@ -195,6 +206,7 @@ export function Contract(options?: ContractOptions): ClassDecorator {
               options.imports || defaultImports,
               options.index || defaultIndexs,
               options.cache || defaultCache,
+              options.options || defaultOptions,
               options.viewForm || defaultViewForm,
               options.viewPage || defaultViewPage,
           ];
@@ -229,6 +241,7 @@ export function Contract(options?: ContractOptions): ClassDecorator {
         Reflect.defineMetadata(CONTROLLER_IMPORTS, imports, target);
         Reflect.defineMetadata(CONTROLLER_INDEXS, indexs, target);
         Reflect.defineMetadata(CONTROLLER_CACHE, cache, target);
+        Reflect.defineMetadata(CONTROLLER_OPTIONS, optionsExtra, target);
         Reflect.defineMetadata(CONTROLLER_VIEWFORM, viewForm, target);
         Reflect.defineMetadata(CONTROLLER_VIEWPAGE, viewPage, target);
     };

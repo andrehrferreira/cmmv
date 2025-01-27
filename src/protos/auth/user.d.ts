@@ -29,7 +29,8 @@ export interface UpdateUserRequest {
 }
 
 export interface UpdateUserResponse {
-    item: User;
+    success: boolean;
+    affected: number;
 }
 
 export interface DeleteUserRequest {
@@ -39,7 +40,6 @@ export interface DeleteUserRequest {
 export interface DeleteUserResponse {
     success: boolean;
     affected: number;
-    id: string;
 }
 
 export interface GetAllUserRequest {}

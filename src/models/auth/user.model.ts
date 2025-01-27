@@ -8,7 +8,12 @@
 
 import * as fastJson from 'fast-json-stringify';
 import { ObjectId } from 'mongodb';
-import { Expose, instanceToPlain, Transform } from 'class-transformer';
+import {
+    Expose,
+    instanceToPlain,
+    plainToClass,
+    Transform,
+} from 'class-transformer';
 import { IsString, MinLength, MaxLength } from 'class-validator';
 import * as crypto from 'crypto';
 
@@ -25,6 +30,9 @@ export interface IUser {
 export class User implements IUser {
     @Expose()
     _id?: ObjectId;
+
+    @Expose({ toClassOnly: true })
+    id: string;
 
     @Expose()
     @Transform(
@@ -72,6 +80,14 @@ export class User implements IUser {
         return instanceToPlain(this);
     }
 
+    public static toClass(partial: Partial<User>): User {
+        return plainToClass(User, partial, {
+            exposeUnsetFields: false,
+            enableImplicitConversion: true,
+            excludeExtraneousValues: true,
+        });
+    }
+
     public toString() {
         return UserFastSchema(this);
     }
@@ -109,6 +125,14 @@ export class LoginRequestDTO implements LoginRequest {
     public serialize() {
         return instanceToPlain(this);
     }
+
+    public static toClass(partial: Partial<LoginRequestDTO>): LoginRequestDTO {
+        return plainToClass(LoginRequestDTO, partial, {
+            exposeUnsetFields: false,
+            enableImplicitConversion: true,
+            excludeExtraneousValues: true,
+        });
+    }
 }
 
 export interface LoginResponse {
@@ -128,6 +152,16 @@ export class LoginResponseDTO implements LoginResponse {
 
     public serialize() {
         return instanceToPlain(this);
+    }
+
+    public static toClass(
+        partial: Partial<LoginResponseDTO>,
+    ): LoginResponseDTO {
+        return plainToClass(LoginResponseDTO, partial, {
+            exposeUnsetFields: false,
+            enableImplicitConversion: true,
+            excludeExtraneousValues: true,
+        });
     }
 }
 
@@ -149,6 +183,16 @@ export class RegisterRequestDTO implements RegisterRequest {
     public serialize() {
         return instanceToPlain(this);
     }
+
+    public static toClass(
+        partial: Partial<RegisterRequestDTO>,
+    ): RegisterRequestDTO {
+        return plainToClass(RegisterRequestDTO, partial, {
+            exposeUnsetFields: false,
+            enableImplicitConversion: true,
+            excludeExtraneousValues: true,
+        });
+    }
 }
 
 export interface RegisterResponse {
@@ -166,5 +210,15 @@ export class RegisterResponseDTO implements RegisterResponse {
 
     public serialize() {
         return instanceToPlain(this);
+    }
+
+    public static toClass(
+        partial: Partial<RegisterResponseDTO>,
+    ): RegisterResponseDTO {
+        return plainToClass(RegisterResponseDTO, partial, {
+            exposeUnsetFields: false,
+            enableImplicitConversion: true,
+            excludeExtraneousValues: true,
+        });
     }
 }

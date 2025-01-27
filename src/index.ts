@@ -11,9 +11,6 @@ import { ViteModule } from '@cmmv/vite';
 import { IndexModule } from './modules/index.module';
 import { MainModule } from './modules/main.module';
 
-//Contracts
-import { TasksContract } from './contracts/tasks.contract';
-
 Application.create({
     httpAdapter: DefaultAdapter,
     wsAdapter: WSAdapter,
@@ -31,5 +28,4 @@ Application.create({
         MainModule,
     ],
     services: [Repository, CacheService, SchedulingService],
-    contracts: [TasksContract],
 });

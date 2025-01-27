@@ -8,14 +8,13 @@ import {
     Logger,
     Scope,
     AbstractTranspile,
+    IContract,
 } from '@cmmv/core';
 
 export class DefaultHTTPTranspiler
     extends AbstractTranspile
     implements ITranspile
 {
-    private logger: Logger = new Logger('DefaultHTTPTranspiler');
-
     run(): void {
         const contracts = Scope.getArray<any>('__contracts');
         const controllers = [];
@@ -39,7 +38,7 @@ export class DefaultHTTPTranspiler
         this.generateModule(controllers, providers);
     }
 
-    private generateService(contract: any): void {
+    private generateService(contract: IContract): void {
         const serviceName = `${contract.controllerName}Service`;
         const modelName = `${contract.controllerName}`;
         const modelInterfaceName = `I${modelName}`;
@@ -158,10 +157,12 @@ export class ${serviceName}Generated extends AbstractService {
 }`;
 
         const outputDir = this.getRootPath(contract, 'services');
-
         const outputFilePath = path.join(outputDir, serviceFileNameGenerated);
-
-        fs.writeFileSync(outputFilePath, serviceTemplateGenerated, 'utf8');
+        fs.writeFileSync(
+            outputFilePath,
+            this.removeExtraSpaces(serviceTemplateGenerated),
+            'utf8',
+        );
 
         //Service
         const serviceTemplate = `import { Service } from '@cmmv/core';
@@ -189,7 +190,11 @@ ${contract.services
         const outputFilePathFinal = path.join(outputDir, serviceFileName);
 
         if (!fs.existsSync(outputFilePathFinal))
-            fs.writeFileSync(outputFilePathFinal, serviceTemplate, 'utf8');
+            fs.writeFileSync(
+                outputFilePathFinal,
+                this.removeExtraSpaces(serviceTemplate),
+                'utf8',
+            );
     }
 
     private getControllerDecorators(
@@ -199,16 +204,16 @@ ${contract.services
     ) {
         let decoracotrs = '';
 
-        if (authRouter)
+        if (authRouter === true)
             decoracotrs += `\n    @Auth("${contract.controllerName.toLowerCase()}:${authRole}")`;
 
-        if (hasCache)
+        if (hasCache === true)
             decoracotrs += `\n    @Cache("${medatada.cacheKeyPrefix}getAll", { ttl: ${medatada.cacheTtl}, compress: ${medatada.cacheCompress}, schema: ${contract.controllerName}FastSchema })`;
 
         return decoracotrs;
     }
 
-    private generateController(contract: any): void {
+    private generateController(contract: IContract): void {
         const controllerName = `${contract.controllerName}Controller`;
         const serviceName = `${contract.controllerName}Service`;
         const controllerFileNameGenerated = `${contract.controllerName.toLowerCase()}.controller.generated.ts`;
@@ -223,6 +228,9 @@ ${contract.services
         const cacheTtl = hasCache ? contract.cache.ttl || 300 : 0;
         const cacheCompress =
             hasCache && contract.cache.compress ? 'true' : 'false';
+        const controllerPath = contract.controllerCustomPath
+            ? contract.controllerCustomPath
+            : contract.controllerName.toLowerCase();
 
         let importsFromModel = [];
 
@@ -258,7 +266,7 @@ import {
    ${serviceName} 
 } from "${this.getImportPath(contract, 'services', contract.controllerName.toLowerCase() + '.service')}";
 
-@Controller('${contract.controllerName.toLowerCase()}')
+@Controller('${controllerPath}')
 export class ${controllerName}Generated {
     constructor(private readonly ${serviceName.toLowerCase()}: ${serviceName}) {}
 
@@ -278,23 +286,23 @@ export class ${controllerName}Generated {
         return result;
     }
 
-    @Post()${this.getControllerDecorators({ authRouter, hasCache, contract }, { cacheKeyPrefix, cacheTtl, cacheCompress }, 'insert')}
+    @Post()${this.getControllerDecorators({ authRouter, hasCache: false, contract }, { cacheKeyPrefix, cacheTtl, cacheCompress }, 'insert')}
     async add(@Body() item: ${contract.controllerName}, @Req() req) {
         Telemetry.start('${controllerName}::Add', req.requestId);
-        let result = await this.${serviceName.toLowerCase()}.add(item, req);${hasCache ? `\n        CacheService.set(\`${cacheKeyPrefix}\${${Config.get('repository.type') === 'mongodb' ? `result._id` : `result.id`}}\`, ${contract.controllerName}FastSchema(result), ${cacheTtl});\n        CacheService.del("${cacheKeyPrefix}getAll");` : ''}
+        let result = await this.${serviceName.toLowerCase()}.add(item, req);${hasCache ? `\n        CacheService.del("${cacheKeyPrefix}getAll");` : ''}
         Telemetry.end('${controllerName}::Add', req.requestId);
         return result;
     }
 
-    @Put(':id')${this.getControllerDecorators({ authRouter, hasCache, contract }, { cacheKeyPrefix, cacheTtl, cacheCompress }, 'update')}
+    @Put(':id')${this.getControllerDecorators({ authRouter, hasCache: false, contract }, { cacheKeyPrefix, cacheTtl, cacheCompress }, 'update')}
     async update(@Param('id') id: string, @Body() item: ${contract.controllerName}, @Req() req) {
         Telemetry.start('${controllerName}::Update', req.requestId);
-        let result = await this.${serviceName.toLowerCase()}.update(id, item, req);${hasCache ? `\n        CacheService.set(\`${cacheKeyPrefix}\${${Config.get('repository.type') === 'mongodb' ? `result._id` : `result.id`}}\`, ${contract.controllerName}FastSchema(result), ${cacheTtl});\n        CacheService.del("${cacheKeyPrefix}getAll");` : ''}
+        let result = await this.${serviceName.toLowerCase()}.update(id, item, req);${hasCache ? `\n        CacheService.del(\`${cacheKeyPrefix}\${id}\`);\n        CacheService.del("${cacheKeyPrefix}getAll");` : ''}
         Telemetry.end('${controllerName}::Update', req.requestId);
         return result;
     }
 
-    @Delete(':id')${this.getControllerDecorators({ authRouter, hasCache, contract }, { cacheKeyPrefix, cacheTtl, cacheCompress }, 'delete')}
+    @Delete(':id')${this.getControllerDecorators({ authRouter, hasCache: false, contract }, { cacheKeyPrefix, cacheTtl, cacheCompress }, 'delete')}
     async delete(@Param('id') id: string, @Req() req): Promise<{ success: boolean, affected: number }> {
         Telemetry.start('${controllerName}::Delete', req.requestId);
         let result = await this.${serviceName.toLowerCase()}.delete(id, req);${hasCache ? `\n        CacheService.del(\`${cacheKeyPrefix}\${id}\`);\n        CacheService.del("${cacheKeyPrefix}getAll");` : ''}
@@ -322,7 +330,11 @@ ${contract.services
             controllerFileNameGenerated,
         );
 
-        fs.writeFileSync(outputFilePath, controllerTemplateGenerated, 'utf8');
+        fs.writeFileSync(
+            outputFilePath,
+            this.removeExtraSpaces(controllerTemplateGenerated),
+            'utf8',
+        );
 
         //Controller
         const controllerTemplate = `import { 
@@ -333,7 +345,7 @@ import {
     ${controllerName}Generated 
 } from "./${contract.controllerName.toLowerCase()}.controller.generated"; ${this.importServices(importsFromModel, contract)}
 
-@Controller('${contract.controllerName.toLowerCase()}')
+@Controller('${controllerPath}')
 export class ${controllerName} extends ${controllerName}Generated {
         //Function ${controllerName} not implemented
 }`;
@@ -341,7 +353,11 @@ export class ${controllerName} extends ${controllerName}Generated {
         const outputFilePathFinal = path.join(outputDir, controllerFileName);
 
         if (!fs.existsSync(outputFilePathFinal))
-            fs.writeFileSync(outputFilePathFinal, controllerTemplate, 'utf8');
+            fs.writeFileSync(
+                outputFilePathFinal,
+                this.removeExtraSpaces(controllerTemplate),
+                'utf8',
+            );
     }
 
     private generateModule(
@@ -382,7 +398,7 @@ export class ${controllerName} extends ${controllerName}Generated {
         }
     }
 
-    private importServices(importsFromModel, contract: any): string {
+    private importServices(importsFromModel, contract: IContract): string {
         return importsFromModel.length
             ? `\n\nimport {
    ${importsFromModel.join(', \n   ')}

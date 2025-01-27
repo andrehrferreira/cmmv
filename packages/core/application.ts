@@ -26,6 +26,7 @@ import {
     CONTROLLER_INDEXS,
     CONTROLLER_CACHE,
     GENERATE_ENTITIES_METADATA,
+    CONTROLLER_OPTIONS,
     CONTROLLER_VIEWFORM,
     CONTROLLER_VIEWPAGE,
     SUB_PATH_METADATA,
@@ -354,6 +355,10 @@ export class Application {
                 CONTROLLER_CACHE,
                 contract.constructor,
             );
+            const options = Reflect.getMetadata(
+                CONTROLLER_OPTIONS,
+                contract.constructor,
+            );
             const viewForm = Reflect.getMetadata(
                 CONTROLLER_VIEWFORM,
                 contract.constructor,
@@ -381,6 +386,7 @@ export class Application {
                 cache,
                 customProto: contract.customProto,
                 customTypes: contract.customTypes,
+                options,
                 viewForm,
                 viewPage,
             };

@@ -3,6 +3,8 @@ import * as path from 'path';
 
 import { AbstractTranspile, Config, ITranspile, Logger, Scope } from '../lib';
 
+import { IContract } from '../interfaces/contract.interface';
+
 export class ApplicationTranspile
     extends AbstractTranspile
     implements ITranspile
@@ -14,7 +16,7 @@ export class ApplicationTranspile
         contracts?.forEach((contract: any) => this.generateModel(contract));
     }
 
-    private generateModel(contract: any): void {
+    private generateModel(contract: IContract): void {
         const modelName = `${contract.controllerName}`;
         const modelInterfaceName = `I${modelName}`;
         const modelFileName = `${modelName.toLowerCase()}.model.ts`;
@@ -48,7 +50,10 @@ ${includeId}${contract.fields
 }
 
 export class ${modelName} implements ${modelInterfaceName} {
-${includeId ? '    @Expose()\n' + includeId + '\n' : ''}${contract.fields?.map((field: any) => this.generateClassField(field)).join('\n\n')}
+${includeId ? '    @Expose()\n' + includeId + '\n' : ''}    @Expose({ toClassOnly: true })
+    id: string;
+
+${contract.fields?.map((field: any) => this.generateClassField(field)).join('\n\n')}
 
     constructor(partial: Partial<${modelName}>) {
         Object.assign(this, partial);
@@ -56,6 +61,14 @@ ${includeId ? '    @Expose()\n' + includeId + '\n' : ''}${contract.fields?.map((
 
     public serialize(){
         return instanceToPlain(this);
+    }
+
+    public static toClass(partial: Partial<${modelName}>): ${modelName}{
+        return plainToClass(${modelName}, partial, {
+            exposeUnsetFields: false,
+            enableImplicitConversion: true,
+            excludeExtraneousValues: true
+        })
     }
 
     public toString(){
@@ -81,11 +94,15 @@ ${this.generateDTOs(contract)}
 
         const outputDir = this.getRootPath(contract, 'models');
         const outputFilePath = path.join(outputDir, modelFileName);
-        fs.writeFileSync(outputFilePath, modelTemplate, 'utf8');
+        fs.writeFileSync(
+            outputFilePath,
+            this.removeExtraSpaces(modelTemplate),
+            'utf8',
+        );
     }
 
     private generateClassImports(
-        contract: any,
+        contract: IContract,
         modelInterfaceName: string,
     ): string {
         const importStatements: string[] = [
@@ -113,7 +130,7 @@ ${this.generateDTOs(contract)}
             (field: any) => field.protoType === 'date',
         );
 
-        const imports = ['Expose', 'instanceToPlain'];
+        const imports = ['Expose', 'instanceToPlain', 'plainToClass'];
 
         if (hasExclude || hasTransform || hasType) {
             if (hasExclude) imports.push('Exclude');
@@ -336,7 +353,7 @@ ${this.generateDTOs(contract)}
         return typeMapping[protoType] || 'any';
     }
 
-    private generateDTOs(contract: any) {
+    private generateDTOs(contract: IContract) {
         let result = '';
 
         if (Object.keys(contract.messages).length > 0) {
@@ -366,6 +383,14 @@ ${Object.entries(contract.messages[key].properties)
 
     public serialize(){
         return instanceToPlain(this);
+    }
+
+    public static toClass(partial: Partial<${contract.messages[key].name}DTO>): ${contract.messages[key].name}DTO{
+        return plainToClass(${contract.messages[key].name}DTO, partial, {
+            exposeUnsetFields: false,
+            enableImplicitConversion: true,
+            excludeExtraneousValues: true
+        })
     }
 }\n\n`;
             }
