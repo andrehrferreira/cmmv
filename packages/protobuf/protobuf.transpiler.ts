@@ -62,9 +62,9 @@ export class ProtobufTranspile extends AbstractTranspile implements ITranspile {
             );
             const protoFileName = `${contract.controllerName.toLowerCase()}.proto`;
             const outputFilePath = path.join(outputDir, protoFileName);
-
             fs.writeFileSync(outputFilePath, protoContent, 'utf8');
 
+            //Types
             if (
                 contract.customProto &&
                 typeof contract.customProto === 'function'
@@ -84,14 +84,13 @@ export class ProtobufTranspile extends AbstractTranspile implements ITranspile {
             const outputPathTs = outputFilePath.replace('.proto', '.d.ts');
             fs.writeFileSync(outputPathTs, tsContent, 'utf8');
 
-            const contractJSON = root.toJSON();
-            contractsJson[contract.controllerName] = contractJSON;
+            //JSON
 
-            /*fs.writeFileSync(
-                outputPathJson,
-                JSON.stringify(contractJSON, null, 4),
-                'utf8',
-            );*/
+            const contractJSON = root.toJSON();
+            contractsJson[contract.controllerName.toLocaleLowerCase()] = {
+                content: contractJSON,
+                path: outputFilePath.replace('.proto', '.json'),
+            };
         });
 
         this.generateContractsJs(contractsJson);
@@ -362,18 +361,18 @@ ${Object.entries(contract.messages[key].properties)
 
         await ProtoRegistry.load();
         const contracts = ProtoRegistry.retrieveAll();
-        const contractsJSON = {};
+        const contractsList = {};
         const index = {};
         let pointer = 0;
 
         for (const key in contracts) {
             const contract = ProtoRegistry.retrieve(key);
-            const jsonProtoFile = path.resolve(`src/protos/${key}.json`);
-            contractsJSON[key] = contract.toJSON();
+            const jsonProtoFile = contractsJson[key].path;
+            contractsList[key] = contract.toJSON();
 
             fs.writeFileSync(
                 jsonProtoFile,
-                JSON.stringify(contractsJSON[key], null, 4),
+                JSON.stringify(contractsList[key], null, 4),
             );
 
             const types = {};
@@ -392,7 +391,7 @@ ${Object.entries(contract.messages[key].properties)
 
         const data = {
             index,
-            contracts: contractsJSON,
+            contracts: contractsList,
         };
 
         if (returnResult) {
