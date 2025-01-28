@@ -74,6 +74,7 @@ export class AuthContract extends AbstractContract {
         defaultValue: '"[]"',
         objectType: 'string',
         protoRepeated: true,
+        nullable: true,
         transform: ({ value }) => JSON.stringify(value),
         toPlain: ({ value }) => (value ? JSON.parse(value) : []),
     })
@@ -85,6 +86,7 @@ export class AuthContract extends AbstractContract {
         objectType: 'object',
         entityType: 'RolesEntity',
         protoRepeated: true,
+        nullable: true,
         link: [
             {
                 contract: RolesContract,

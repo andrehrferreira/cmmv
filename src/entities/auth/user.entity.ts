@@ -33,13 +33,13 @@ export class UserEntity implements IUser {
     password: string;
 
     @Column({ type: 'varchar', nullable: true })
-    googleId: string;
+    googleId?: string;
 
-    @Column({ type: 'varchar', default: '[]' })
-    groups: string;
+    @Column({ type: 'varchar', default: '[]', nullable: true })
+    groups?: string;
 
     @ManyToOne(() => RolesEntity, roles => roles._id, { nullable: false })
-    roles: RolesEntity;
+    roles?: RolesEntity[];
 
     @Column({ type: 'boolean', default: false })
     root: boolean;

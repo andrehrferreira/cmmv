@@ -21,6 +21,8 @@ export class ApplicationTranspile
         const modelName = `${contract.controllerName}`;
         const modelInterfaceName = `I${modelName}`;
         const modelFileName = `${modelName.toLowerCase()}.model.ts`;
+        const outputDir = this.getRootPath(contract, 'models');
+        const outputFilePath = path.join(outputDir, modelFileName);
         let includeId = '';
 
         if (
@@ -37,19 +39,27 @@ export class ApplicationTranspile
     **********************************************
 **/
 
-${this.generateClassImports(contract, modelInterfaceName)}
+${this.generateClassImports(contract, modelInterfaceName, outputFilePath)}
         
 export interface ${modelInterfaceName} {
 ${includeId}${contract.fields
             ?.map((field: any) => {
-                const fieldType = field.objectType
-                    ? field.objectType
-                    : this.mapToTsType(field.protoType);
-                return `    ${field.propertyKey}: ${fieldType};`;
+                let optional = field.nullable ? '?' : '';
+
+                if (field.link && field.link.length > 0) {
+                    return `    ${field.propertyKey}${optional}: object;`;
+                } else {
+                    const fieldType = field.objectType
+                        ? field.objectType
+                        : this.mapToTsType(field.protoType);
+
+                    return `    ${field.propertyKey}${optional}: ${fieldType};`;
+                }
             })
             .join('\n')}
 }
 
+//Model
 export class ${modelName} implements ${modelInterfaceName} {
 ${includeId ? '    @Expose()\n' + includeId + '\n' : ''}    @Expose({ toClassOnly: true })
     id: string;
@@ -78,23 +88,25 @@ ${contract.fields?.map((field: any) => this.generateClassField(field)).join('\n\
 }
 
 // Schema for fast-json-stringify
-export const ${modelName}FastSchema = fastJson({
+export const ${modelName}FastSchemaStructure = {
     title: '${modelName} Schema',
     type: 'object',
     properties: {
 ${contract.fields?.map((field: any) => `        ${field.propertyKey}: ${this.generateJsonSchemaField(field)}`).join(',\n')}
     },
     required: [${contract.fields
-        .filter((field: any) => field.required)
+        .filter((field: any) =>
+            field.nullable ? field.nullable !== true : true,
+        )
         .map((field: any) => `"${field.propertyKey}"`)
         .join(', ')}]
-});
+};
+
+export const ${modelName}FastSchema = fastJson(${modelName}FastSchemaStructure);
 
 ${this.generateDTOs(contract)}
 `;
 
-        const outputDir = this.getRootPath(contract, 'models');
-        const outputFilePath = path.join(outputDir, modelFileName);
         fs.writeFileSync(
             outputFilePath,
             this.removeExtraSpaces(modelTemplate),
@@ -105,6 +117,7 @@ ${this.generateDTOs(contract)}
     private generateClassImports(
         contract: IContract,
         modelInterfaceName: string,
+        outputFilePath?: string,
     ): string {
         const importStatements: string[] = [
             `import * as fastJson from 'fast-json-stringify';`,
@@ -171,6 +184,8 @@ import {
             }
 
             if (field.link && field.link.length > 0) {
+                validationImports.add('ValidateNested');
+
                 field.link.map(link => {
                     const contractInstance = new link.contract();
                     const controllerName = Reflect.getMetadata(
@@ -178,15 +193,16 @@ import {
                         contractInstance.constructor,
                     );
                     const entityName = controllerName;
-                    const entityFileName = `${entityName.toLowerCase()}.entity`;
+                    const entityFileName = `${entityName.toLowerCase()}.model`;
 
                     importEntitiesList.push({
-                        entityName: `${entityName}Entity`,
+                        entityName: `${entityName}, ${entityName}FastSchemaStructure`,
                         path: this.getImportPathRelative(
                             contractInstance,
                             contract,
-                            'entities',
+                            'models',
                             entityFileName,
+                            outputFilePath,
                         ),
                     });
                 });
@@ -253,6 +269,7 @@ import {
                 const validationName = Array.isArray(validation.type)
                     ? validation.type[0]
                     : validation.type;
+
                 const validationParams = Array.isArray(validation.type)
                     ? validation.type
                           .slice(1)
@@ -263,15 +280,17 @@ import {
                       : '';
 
                 const options = [];
-                if (validation.message) {
+
+                if (validation.message)
                     options.push(`message: "${validation.message}"`);
-                }
+
                 if (validation.context) {
                     const contextString = JSON.stringify(
                         validation.context,
                     ).replace(/"([^"]+)":/g, '$1:');
                     options.push(`context: ${contextString}`);
                 }
+
                 let optionsString =
                     options.length > 0 ? `{ ${options.join(', ')} }` : '';
 
@@ -286,7 +305,8 @@ import {
             });
         }
 
-        let defaultValueString = '';
+        let defaultValueString = ';';
+        let optional = field.nullable ? '?' : '';
 
         if (field.defaultValue !== undefined) {
             const defaultValue =
@@ -299,11 +319,16 @@ import {
                 : ` = ${defaultValue};`;
         }
 
-        const fieldType = field.objectType
-            ? field.objectType
-            : this.mapToTsType(field.protoType);
+        if (field.link && field.link.length > 0) {
+            decorators.push('    @ValidateNested()');
+            return `${decorators.length > 0 ? decorators.join('\n') + '\n' : ''}    ${field.propertyKey}${optional}: ${field.entityType.replace('Entity', '')}${field.protoRepeated ? '[]' : ''};`;
+        } else {
+            const fieldType = field.objectType
+                ? field.objectType
+                : this.mapToTsType(field.protoType);
 
-        return `${decorators.length > 0 ? decorators.join('\n') + '\n' : ''}    ${field.propertyKey}: ${fieldType}${defaultValueString}`;
+            return `${decorators.length > 0 ? decorators.join('\n') + '\n' : ''}    ${field.propertyKey}${optional}: ${fieldType}${defaultValueString}`;
+        }
     }
 
     private mapToTsType(protoType: string): string {
@@ -343,25 +368,49 @@ import {
 
     private generateJsonSchemaField(field: any): string {
         const parts = [
-            `type: "${this.mapToJsonSchemaType(
-                field.objectType ? field.objectType : field.protoType,
-            )}"`,
+            `type: "${
+                field.protoRepeated
+                    ? 'array'
+                    : this.mapToJsonSchemaType(
+                          field.objectType ? field.objectType : field.protoType,
+                      )
+            }"`,
+            `    nullable: ${field.nullable === true ? 'true' : 'false'}`,
         ];
 
-        if (field.defaultValue !== undefined) {
-            parts.push(
-                `default: ${
-                    typeof field.defaultValue == 'object'
-                        ? JSON.stringify(field.defaultValue)
-                        : field.defaultValue
-                }`,
-            );
+        if (field.defaultValue !== undefined && !field.protoRepeated) {
+            const defaultValue =
+                typeof field.defaultValue === 'object'
+                    ? JSON.stringify(field.defaultValue)
+                    : field.defaultValue;
+            parts.push(`    default: ${defaultValue}`);
         }
 
-        if (field.description)
+        if (field.description) {
             parts.push(`description: "${field.description}"`);
+        }
 
-        return `{ ${parts.join(', ')} }`;
+        if (field.protoRepeated || field.protoType === 'array') {
+            const itemType = this.mapToJsonSchemaType(
+                field.items?.protoType || field.protoType,
+            );
+
+            if (field.link && field.link.length > 0) {
+                field.link.map(link => {
+                    parts.push(
+                        `    items: ${field.entityType.replace('Entity', '')}FastSchemaStructure`,
+                    );
+                });
+            } else {
+                parts.push(`    items: {
+                type: "${itemType}"
+            }`);
+            }
+        }
+
+        return `{ 
+            ${parts.join(',\n        ')} 
+        }`;
     }
 
     private mapToJsonSchemaType(protoType: string): string {
@@ -404,7 +453,7 @@ import {
         let result = '';
 
         if (Object.keys(contract.messages).length > 0) {
-            result += '// Messages\n';
+            result += '// DTOs\n';
 
             for (let key in contract.messages) {
                 result += `export interface ${contract.messages[key].name} {

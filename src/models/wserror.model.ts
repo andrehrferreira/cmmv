@@ -16,6 +16,7 @@ export interface IWsError {
     context: string;
 }
 
+//Model
 export class WsError implements IWsError {
     @Expose({ toClassOnly: true })
     id: string;
@@ -51,13 +52,24 @@ export class WsError implements IWsError {
 }
 
 // Schema for fast-json-stringify
-export const WsErrorFastSchema = fastJson({
+export const WsErrorFastSchemaStructure = {
     title: 'WsError Schema',
     type: 'object',
     properties: {
-        message: { type: 'string' },
-        code: { type: 'integer' },
-        context: { type: 'string' },
+        message: {
+            type: 'string',
+            nullable: false,
+        },
+        code: {
+            type: 'integer',
+            nullable: false,
+        },
+        context: {
+            type: 'string',
+            nullable: false,
+        },
     },
-    required: [],
-});
+    required: ['message', 'code', 'context'],
+};
+
+export const WsErrorFastSchema = fastJson(WsErrorFastSchemaStructure);

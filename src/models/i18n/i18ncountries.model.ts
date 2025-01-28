@@ -11,9 +11,9 @@ import { ObjectId } from 'mongodb';
 
 import { Expose, instanceToPlain, plainToClass } from 'class-transformer';
 
-import { IsString, IsNotEmpty } from 'class-validator';
+import { IsString, IsNotEmpty, ValidateNested } from 'class-validator';
 
-import { I18nCoinsEntity } from './i18ncoins.entity';
+import { I18nCoins, I18nCoinsFastSchemaStructure } from './i18ncoins.model';
 
 export interface II18nCountries {
     _id?: ObjectId;
@@ -22,6 +22,7 @@ export interface II18nCountries {
     currency: object;
 }
 
+//Model
 export class I18nCountries implements II18nCountries {
     @Expose()
     _id?: ObjectId;
@@ -41,7 +42,8 @@ export class I18nCountries implements II18nCountries {
 
     @Expose()
     @IsString({ message: 'Invalid currency code' })
-    currency: object;
+    @ValidateNested()
+    currency: I18nCoins;
 
     constructor(partial: Partial<I18nCountries>) {
         Object.assign(this, partial);
@@ -65,13 +67,26 @@ export class I18nCountries implements II18nCountries {
 }
 
 // Schema for fast-json-stringify
-export const I18nCountriesFastSchema = fastJson({
+export const I18nCountriesFastSchemaStructure = {
     title: 'I18nCountries Schema',
     type: 'object',
     properties: {
-        code: { type: 'string' },
-        name: { type: 'string' },
-        currency: { type: 'object' },
+        code: {
+            type: 'string',
+            nullable: false,
+        },
+        name: {
+            type: 'string',
+            nullable: false,
+        },
+        currency: {
+            type: 'object',
+            nullable: false,
+        },
     },
-    required: [],
-});
+    required: ['code', 'name', 'currency'],
+};
+
+export const I18nCountriesFastSchema = fastJson(
+    I18nCountriesFastSchemaStructure,
+);

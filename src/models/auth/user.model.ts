@@ -17,20 +17,26 @@ import {
     Transform,
 } from 'class-transformer';
 
-import { IsString, MinLength, MaxLength } from 'class-validator';
+import {
+    IsString,
+    MinLength,
+    MaxLength,
+    ValidateNested,
+} from 'class-validator';
 
-import { RolesEntity } from './roles.entity';
+import { Roles, RolesFastSchemaStructure } from './roles.model';
 
 export interface IUser {
     _id?: ObjectId;
     username: string;
     password: string;
-    googleId: string;
-    groups: string;
-    roles: object;
+    googleId?: string;
+    groups?: string;
+    roles?: object;
     root: boolean;
 }
 
+//Model
 export class User implements IUser {
     @Expose()
     _id?: ObjectId;
@@ -57,17 +63,18 @@ export class User implements IUser {
     password: string;
 
     @Expose()
-    googleId: string;
+    googleId?: string;
 
     @Expose()
     @Transform(({ value }) => JSON.stringify(value), { toClassOnly: true })
     @Transform(({ value }) => (value ? JSON.parse(value) : []), {
         toPlainOnly: true,
     })
-    groups: string = '[]';
+    groups?: string = '[]';
 
     @Expose()
-    roles: object = null;
+    @ValidateNested()
+    roles?: Roles[];
 
     @Expose()
     root: boolean = false;
@@ -94,21 +101,46 @@ export class User implements IUser {
 }
 
 // Schema for fast-json-stringify
-export const UserFastSchema = fastJson({
+export const UserFastSchemaStructure = {
     title: 'User Schema',
     type: 'object',
     properties: {
-        username: { type: 'string' },
-        password: { type: 'string' },
-        googleId: { type: 'string' },
-        groups: { type: 'string', default: '[]' },
-        roles: { type: 'object', default: null },
-        root: { type: 'boolean', default: false },
+        username: {
+            type: 'string',
+            nullable: false,
+        },
+        password: {
+            type: 'string',
+            nullable: false,
+        },
+        googleId: {
+            type: 'string',
+            nullable: true,
+        },
+        groups: {
+            type: 'array',
+            nullable: true,
+            items: {
+                type: 'string',
+            },
+        },
+        roles: {
+            type: 'array',
+            nullable: true,
+            items: RolesFastSchemaStructure,
+        },
+        root: {
+            type: 'boolean',
+            nullable: false,
+            default: false,
+        },
     },
-    required: [],
-});
+    required: ['username', 'password', 'root'],
+};
 
-// Messages
+export const UserFastSchema = fastJson(UserFastSchemaStructure);
+
+// DTOs
 export interface LoginRequest {
     username: string;
     password: string;

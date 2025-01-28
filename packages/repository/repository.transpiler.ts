@@ -294,6 +294,7 @@ ${contract.services
         let tsType = this.mapToTsType(field.protoType);
         const columnOptions = this.generateColumnOptions(field);
         let decorators = [`@Column({ ${columnOptions} })`];
+        let optional = field.nullable ? '?' : '';
 
         if (field.link) {
             decorators = [];
@@ -311,10 +312,12 @@ ${contract.services
                 );
             });
 
-            tsType = field.entityType || 'object';
+            tsType =
+                `${field.entityType}${field.protoRepeated ? '[]' : ''}` ||
+                'object';
         }
 
-        return `    ${decorators.join(' ')}\n    ${field.propertyKey}: ${tsType};`;
+        return `    ${decorators.join(' ')}\n    ${field.propertyKey}${optional}: ${tsType};`;
     }
 
     private generateColumnOptions(field: any): string {

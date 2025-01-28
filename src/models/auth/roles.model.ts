@@ -18,6 +18,7 @@ export interface IRoles {
     name: string;
 }
 
+//Model
 export class Roles implements IRoles {
     @Expose()
     _id?: ObjectId;
@@ -53,11 +54,16 @@ export class Roles implements IRoles {
 }
 
 // Schema for fast-json-stringify
-export const RolesFastSchema = fastJson({
+export const RolesFastSchemaStructure = {
     title: 'Roles Schema',
     type: 'object',
     properties: {
-        name: { type: 'string' },
+        name: {
+            type: 'string',
+            nullable: false,
+        },
     },
-    required: [],
-});
+    required: ['name'],
+};
+
+export const RolesFastSchema = fastJson(RolesFastSchemaStructure);

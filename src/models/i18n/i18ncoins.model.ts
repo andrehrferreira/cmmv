@@ -20,6 +20,7 @@ export interface II18nCoins {
     format: string;
 }
 
+//Model
 export class I18nCoins implements II18nCoins {
     @Expose()
     _id?: ObjectId;
@@ -63,13 +64,24 @@ export class I18nCoins implements II18nCoins {
 }
 
 // Schema for fast-json-stringify
-export const I18nCoinsFastSchema = fastJson({
+export const I18nCoinsFastSchemaStructure = {
     title: 'I18nCoins Schema',
     type: 'object',
     properties: {
-        code: { type: 'string' },
-        name: { type: 'string' },
-        format: { type: 'string' },
+        code: {
+            type: 'string',
+            nullable: false,
+        },
+        name: {
+            type: 'string',
+            nullable: false,
+        },
+        format: {
+            type: 'string',
+            nullable: false,
+        },
     },
-    required: [],
-});
+    required: ['code', 'name', 'format'],
+};
+
+export const I18nCoinsFastSchema = fastJson(I18nCoinsFastSchemaStructure);

@@ -16,6 +16,7 @@ export interface IWsCall {
     data: Uint8Array;
 }
 
+//Model
 export class WsCall implements IWsCall {
     @Expose({ toClassOnly: true })
     id: string;
@@ -51,13 +52,24 @@ export class WsCall implements IWsCall {
 }
 
 // Schema for fast-json-stringify
-export const WsCallFastSchema = fastJson({
+export const WsCallFastSchemaStructure = {
     title: 'WsCall Schema',
     type: 'object',
     properties: {
-        contract: { type: 'integer' },
-        message: { type: 'integer' },
-        data: { type: 'string' },
+        contract: {
+            type: 'integer',
+            nullable: false,
+        },
+        message: {
+            type: 'integer',
+            nullable: false,
+        },
+        data: {
+            type: 'string',
+            nullable: false,
+        },
     },
-    required: [],
-});
+    required: ['contract', 'message', 'data'],
+};
+
+export const WsCallFastSchema = fastJson(WsCallFastSchemaStructure);
