@@ -13,14 +13,16 @@ import { Expose, instanceToPlain, plainToClass } from 'class-transformer';
 
 import { IsString, IsNotEmpty } from 'class-validator';
 
-export interface II18nCoins {
+import { I18nCoinsEntity } from './i18ncoins.entity';
+
+export interface II18nCountries {
     _id?: ObjectId;
     code: string;
     name: string;
-    format: string;
+    currency: object;
 }
 
-export class I18nCoins implements II18nCoins {
+export class I18nCountries implements II18nCountries {
     @Expose()
     _id?: ObjectId;
 
@@ -28,20 +30,20 @@ export class I18nCoins implements II18nCoins {
     id: string;
 
     @Expose()
-    @IsString({ message: 'Invalid currency code' })
-    @IsNotEmpty({ message: 'Currency code is required' })
+    @IsString({ message: 'Invalid country code' })
+    @IsNotEmpty({ message: 'Country code is required' })
     code: string;
 
     @Expose()
-    @IsString({ message: 'Invalid currency name' })
-    @IsNotEmpty({ message: 'Currency name is required' })
+    @IsString({ message: 'Invalid country name' })
+    @IsNotEmpty({ message: 'Country name is required' })
     name: string;
 
     @Expose()
-    @IsString({ message: 'Invalid format' })
-    format: string;
+    @IsString({ message: 'Invalid currency code' })
+    currency: object;
 
-    constructor(partial: Partial<I18nCoins>) {
+    constructor(partial: Partial<I18nCountries>) {
         Object.assign(this, partial);
     }
 
@@ -49,8 +51,8 @@ export class I18nCoins implements II18nCoins {
         return instanceToPlain(this);
     }
 
-    public static toClass(partial: Partial<I18nCoins>): I18nCoins {
-        return plainToClass(I18nCoins, partial, {
+    public static toClass(partial: Partial<I18nCountries>): I18nCountries {
+        return plainToClass(I18nCountries, partial, {
             exposeUnsetFields: false,
             enableImplicitConversion: true,
             excludeExtraneousValues: true,
@@ -58,18 +60,18 @@ export class I18nCoins implements II18nCoins {
     }
 
     public toString() {
-        return I18nCoinsFastSchema(this);
+        return I18nCountriesFastSchema(this);
     }
 }
 
 // Schema for fast-json-stringify
-export const I18nCoinsFastSchema = fastJson({
-    title: 'I18nCoins Schema',
+export const I18nCountriesFastSchema = fastJson({
+    title: 'I18nCountries Schema',
     type: 'object',
     properties: {
         code: { type: 'string' },
         name: { type: 'string' },
-        format: { type: 'string' },
+        currency: { type: 'object' },
     },
     required: [],
 });

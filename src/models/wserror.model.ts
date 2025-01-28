@@ -7,6 +7,7 @@
 **/
 
 import * as fastJson from 'fast-json-stringify';
+
 import { Expose, instanceToPlain, plainToClass } from 'class-transformer';
 
 export interface IWsError {

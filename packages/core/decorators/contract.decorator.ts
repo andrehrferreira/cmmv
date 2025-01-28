@@ -26,7 +26,10 @@ export interface ContractFieldOptions {
     toObject?: Function;
     toPlain?: Function;
     objectType?: string;
+    entityType?: string;
+    entityNullable?: boolean;
     validations?: ValidationOption[];
+    link?: ContractLink[];
 }
 
 export interface ContractIndex {
@@ -70,6 +73,13 @@ export interface ContractOptions {
     options?: ContractExtraOptions;
     viewForm?: new () => any;
     viewPage?: new () => any;
+}
+
+export interface ContractLink {
+    contract: new () => any;
+    entityName: string;
+    field: string;
+    array?: boolean;
 }
 
 export interface ContractMessageProperty {

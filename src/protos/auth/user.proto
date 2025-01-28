@@ -9,12 +9,14 @@
 syntax = "proto3";
 package auth;
 
+import "./roles.proto";
+
 message User {
    string username = 1;
    string password = 2;
    string googleId = 3;
    repeated string groups = 4;
-   repeated string roles = 5;
+   repeated Roles roles = 5;
    bool root = 6;
 }
 

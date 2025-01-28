@@ -1,4 +1,5 @@
 import * as crypto from 'crypto';
+
 import {
     AbstractContract,
     Contract,
@@ -6,6 +7,8 @@ import {
     ContractMessage,
     ContractService,
 } from '@cmmv/core';
+
+import { RolesContract } from './roles.contract';
 
 @Contract({
     controllerName: 'User',
@@ -77,14 +80,21 @@ export class AuthContract extends AbstractContract {
     groups: Array<string>;
 
     @ContractField({
-        protoType: 'string',
-        defaultValue: '"[]"',
-        objectType: 'string',
+        protoType: 'Roles',
+        defaultValue: 'null',
+        objectType: 'object',
+        entityType: 'RolesEntity',
         protoRepeated: true,
-        transform: ({ value }) => JSON.stringify(value),
-        toPlain: ({ value }) => (value ? JSON.parse(value) : []),
+        link: [
+            {
+                contract: RolesContract,
+                entityName: 'roles',
+                field: '_id',
+                array: true,
+            },
+        ],
     })
-    roles: Array<string>;
+    roles: Array<any>;
 
     @ContractField({
         protoType: 'bool',

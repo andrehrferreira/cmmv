@@ -33,6 +33,7 @@ export class IContractField {
     unique?: boolean;
     validations?: Array<any>;
     transform?: Function;
+    link?: ContractIndex[];
 }
 
 export class IContractMessage {

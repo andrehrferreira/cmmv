@@ -6,9 +6,17 @@
     **********************************************
 **/
 
-import { Entity, ObjectIdColumn, Column, Index, ObjectId } from 'typeorm';
+import {
+    Entity,
+    ObjectIdColumn,
+    Column,
+    Index,
+    ObjectId,
+    ManyToOne,
+} from 'typeorm';
 
 import { IUser } from '../../models/auth/user.model';
+import { RolesEntity } from './roles.entity';
 
 @Entity('user')
 @Index('idx_user_username', ['username'], { unique: true })
@@ -30,8 +38,8 @@ export class UserEntity implements IUser {
     @Column({ type: 'varchar', default: '[]' })
     groups: string;
 
-    @Column({ type: 'varchar', default: '[]' })
-    roles: string;
+    @ManyToOne(() => RolesEntity, roles => roles._id, { nullable: false })
+    roles: RolesEntity;
 
     @Column({ type: 'boolean', default: false })
     root: boolean;

@@ -6,12 +6,14 @@
     **********************************************
 **/
 
+import { Roles } from './roles.d';
+
 export namespace User {
     export type username = string;
     export type password = string;
     export type googleId = string;
     export type groups = string;
-    export type roles = string;
+    export type roles = Roles;
     export type root = boolean;
 }
 

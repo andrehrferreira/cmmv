@@ -11,10 +11,12 @@ import {
     Logger,
     Scope,
     IContract,
+    CONTROLLER_NAME_METADATA,
 } from '@cmmv/core';
 
 export class ProtobufTranspile extends AbstractTranspile implements ITranspile {
     private logger: Logger = new Logger('ProtobufTranspile');
+    private imports: Set<string> = new Set();
 
     run(): void {
         const contracts = Scope.getArray<any>('__contracts');
@@ -29,12 +31,14 @@ export class ProtobufTranspile extends AbstractTranspile implements ITranspile {
             ).add(new protobufjs.Field('id', 1, 'int32'));
 
             contract.fields.forEach((field: any, index: number) => {
-                const protoType = this.mapToProtoType(field.protoType);
+                let protoType = this.mapToProtoType(field.protoType);
+                let fieldType = protoType;
+
                 itemMessage.add(
                     new protobufjs.Field(
                         field.propertyKey,
                         index + 2,
-                        protoType,
+                        fieldType,
                     ),
                 );
             });
@@ -56,13 +60,20 @@ export class ProtobufTranspile extends AbstractTranspile implements ITranspile {
                 protoNamespace.add(listMessage);
             }
 
-            const protoContent = this.generateProtoContent(contract);
             const outputDir = path.resolve(
                 this.getRootPath(contract, 'protos'),
             );
             const protoFileName = `${contract.controllerName.toLowerCase()}.proto`;
             const outputFilePath = path.join(outputDir, protoFileName);
-            fs.writeFileSync(outputFilePath, protoContent, 'utf8');
+            const protoContent = this.generateProtoContent(
+                contract,
+                outputFilePath,
+            );
+            fs.writeFileSync(
+                outputFilePath,
+                this.removeExtraSpaces(protoContent),
+                'utf8',
+            );
 
             //Types
             if (
@@ -80,12 +91,11 @@ export class ProtobufTranspile extends AbstractTranspile implements ITranspile {
                 }
             }
 
-            const tsContent = this.generateTypes(contract);
+            const tsContent = this.generateTypes(contract, outputFilePath);
             const outputPathTs = outputFilePath.replace('.proto', '.d.ts');
             fs.writeFileSync(outputPathTs, tsContent, 'utf8');
 
             //JSON
-
             const contractJSON = root.toJSON();
             contractsJson[contract.controllerName.toLocaleLowerCase()] = {
                 content: contractJSON,
@@ -96,10 +106,14 @@ export class ProtobufTranspile extends AbstractTranspile implements ITranspile {
         this.generateContractsJs(contractsJson);
     }
 
-    private generateProtoContent(contract: IContract): string {
+    private generateProtoContent(
+        contract: IContract,
+        outputFilePath: string,
+    ): string {
         const packageName = contract.protoPackage || null;
         const lines: string[] = [];
         let includesGoogleAny = false;
+        this.clearImports();
 
         contract.fields.forEach((field: any) => {
             if (field.protoType === 'any') includesGoogleAny = true;
@@ -121,13 +135,59 @@ export class ProtobufTranspile extends AbstractTranspile implements ITranspile {
 
         lines.push('');
 
+        this.imports.forEach(importStatement => {
+            lines.push(importStatement);
+        });
+
+        contract.fields.forEach((field: any, index: number) => {
+            if (field.link) {
+                field.link.forEach((link: any) => {
+                    const contractInstance = new link.contract();
+                    const controllerName = Reflect.getMetadata(
+                        CONTROLLER_NAME_METADATA,
+                        contractInstance.constructor,
+                    );
+
+                    const entityName = controllerName;
+                    const importPath = this.getImportPathRelative(
+                        contractInstance,
+                        contract,
+                        'protos',
+                        `${entityName.toLowerCase()}.proto`,
+                        outputFilePath,
+                    );
+
+                    if (importPath) {
+                        const linkedEntityImport = `import \"${importPath}\";`;
+                        lines.push(linkedEntityImport);
+                    }
+                });
+            }
+        });
+
+        lines.push('');
+
         lines.push(`message ${contract.controllerName} {`);
 
         contract.fields.forEach((field: any, index: number) => {
-            const protoType = this.mapToProtoType(field.protoType);
+            let protoType = this.mapToProtoType(field.protoType);
+            let fieldType = protoType;
+
+            if (field.link) {
+                field.link.forEach((link: any) => {
+                    const contractInstance = new link.contract();
+                    const controllerName = Reflect.getMetadata(
+                        CONTROLLER_NAME_METADATA,
+                        contractInstance.constructor,
+                    );
+                    const entityName = controllerName;
+                    fieldType = entityName;
+                });
+            }
+
             const repeatedPrefix = field.protoRepeated ? 'repeated ' : '';
             lines.push(
-                `   ${repeatedPrefix}${protoType} ${field.propertyKey} = ${index + 1};`,
+                `   ${repeatedPrefix}${fieldType} ${field.propertyKey} = ${index + 1};`,
             );
         });
 
@@ -263,8 +323,9 @@ ${Object.entries(contract.messages[key].properties)
         return lines.join('\n');
     }
 
-    private generateTypes(contract: IContract): string {
+    private generateTypes(contract: IContract, outputFilePath: string): string {
         const lines: string[] = [];
+        this.clearImports();
 
         lines.push(`/**                                                                               
     **********************************************
@@ -274,10 +335,52 @@ ${Object.entries(contract.messages[key].properties)
     **********************************************
 **/\n`);
 
+        contract.fields.forEach((field: any, index: number) => {
+            if (field.link) {
+                field.link.forEach((link: any) => {
+                    const contractInstance = new link.contract();
+                    const controllerName = Reflect.getMetadata(
+                        CONTROLLER_NAME_METADATA,
+                        contractInstance.constructor,
+                    );
+
+                    const entityName = controllerName;
+                    const importPath = this.getImportPathRelative(
+                        contractInstance,
+                        contract,
+                        'protos',
+                        `${entityName.toLowerCase()}.d`,
+                        outputFilePath,
+                    );
+
+                    if (importPath) {
+                        const linkedEntityImport = `import { ${entityName} } from \"${importPath}\";`;
+                        lines.push(linkedEntityImport);
+                    }
+                });
+            }
+        });
+
+        lines.push('');
+
         lines.push(`export namespace ${contract.controllerName} {`);
 
         contract.fields.forEach((field: any) => {
-            const tsType = this.mapToTsType(field.protoType);
+            let tsType = this.mapToTsType(field.protoType);
+
+            if (field.link) {
+                field.link.forEach((link: any) => {
+                    const contractInstance = new link.contract();
+                    const controllerName = Reflect.getMetadata(
+                        CONTROLLER_NAME_METADATA,
+                        contractInstance.constructor,
+                    );
+                    const entityName = controllerName;
+
+                    tsType = entityName;
+                });
+            }
+
             lines.push(`    export type ${field.propertyKey} = ${tsType};`);
         });
 
@@ -414,12 +517,12 @@ ${Object.entries(contract.messages[key].properties)
         }
     }
 
-    public async returnContractJs(): Promise<string> {
+    /*public async returnContractJs(): Promise<string> {
         const contracts = Scope.getArray<any>('__contracts');
         const contractsJson: { [key: string]: any } = {};
 
         contracts?.forEach((contract: any) => {
-            const root = new protobufjs.Root();
+            let root = new protobufjs.Root();
             const protoNamespace = root.define(contract.controllerName);
 
             const itemMessage = new protobufjs.Type(
@@ -427,12 +530,36 @@ ${Object.entries(contract.messages[key].properties)
             ).add(new protobufjs.Field('id', 1, 'int32'));
 
             contract.fields.forEach((field: any, index: number) => {
-                const protoType = this.mapToProtoType(field.protoType);
+                let protoType = this.mapToProtoType(field.protoType);
+                let fieldType = protoType;
+
+                if (field.link) {
+                    field.link.forEach((link: any) => {
+                        const contractInstance = new link.contract();
+                        const controllerName = Reflect.getMetadata(
+                            CONTROLLER_NAME_METADATA,
+                            contractInstance.constructor,
+                        );
+
+                        const entityName = controllerName;
+                        const protoOutputDir = this.getRootPath(contract, 'protos');
+                        const importPath = path.relative(protoOutputDir, path.join(this.getRootPath(contractInstance, 'protos'), `${entityName.toLowerCase()}.proto`));
+
+                        // Only add import if there is a correlation
+                        if (importPath) {
+                            const linkedEntityImport = `import \"${importPath}\";`;
+                            this.addImport(linkedEntityImport);
+                        }
+
+                        fieldType = entityName;
+                    });
+                }
+
                 itemMessage.add(
                     new protobufjs.Field(
                         field.propertyKey,
                         index + 2,
-                        protoType,
+                        fieldType,
                     ),
                 );
             });
@@ -446,8 +573,9 @@ ${Object.entries(contract.messages[key].properties)
             contractsJson,
             true,
         );
+
         return typeof parseContract == 'string' ? parseContract : '';
-    }
+    }*/
 
     private mapToProtoType(type: string): string {
         const typeMapping: { [key: string]: string } = {
@@ -517,5 +645,13 @@ ${Object.entries(contract.messages[key].properties)
         };
 
         return typeMapping[protoType] || 'any';
+    }
+
+    private clearImports(): void {
+        this.imports.clear();
+    }
+
+    private addImport(importStatement: string): void {
+        this.imports.add(importStatement);
     }
 }

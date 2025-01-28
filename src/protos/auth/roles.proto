@@ -1,0 +1,58 @@
+/**                                                                               
+    **********************************************
+    This script was generated automatically by CMMV.
+    It is recommended not to modify this file manually, 
+    as it may be overwritten by the application.
+    **********************************************
+**/
+
+syntax = "proto3";
+package auth;
+
+message Roles {
+   string name = 1;
+}
+
+message RolesList {
+    repeated Roles items = 1;
+}
+
+message AddRolesRequest {
+    Roles item = 1;
+}
+
+message AddRolesResponse {
+    string id = 1;
+    Roles item = 2;
+}
+
+message UpdateRolesRequest {
+    string id = 1;
+    Roles item = 2;
+}
+
+message UpdateRolesResponse {
+    bool success = 1;
+    int32 affected = 2;
+}
+
+message DeleteRolesRequest {
+    string id = 1;
+}
+
+message DeleteRolesResponse {
+    bool success = 1;
+    int32 affected = 2;
+}
+
+message GetAllRolesRequest {}
+
+message GetAllRolesResponse {
+    RolesList items = 1;
+}
+service RolesService {
+   rpc AddRoles (AddRolesRequest) returns (AddRolesResponse);
+   rpc UpdateRoles (UpdateRolesRequest) returns (UpdateRolesResponse);
+   rpc DeleteRoles (DeleteRolesRequest) returns (DeleteRolesResponse);
+   rpc GetAllRoles (GetAllRolesRequest) returns (GetAllRolesResponse);
+}

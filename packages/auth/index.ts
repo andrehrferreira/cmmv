@@ -1,4 +1,4 @@
-export * from './auth.contract';
+export * from './contracts';
 export * from './auth.decorator';
 export * from './auth.interface';
 export * from './auth.module';

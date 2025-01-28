@@ -61,24 +61,10 @@ export class Repository extends Singleton {
         }
     }
 
-    public static async findOneBy<Entity>(
-        entity: new () => Entity,
-        criteria: FindOptionsWhere<Entity>,
-    ): Promise<Entity | null> {
-        try {
-            const repository = this.getRepository(entity);
-            return await repository.findOne({ where: criteria });
-        } catch (e) {
-            if (process.env.NODE_ENV === 'dev')
-                Repository.logger.error(e.message);
-
-            return null;
-        }
-    }
-
     public static async findAll<Entity>(
         entity: new () => Entity,
         queries?: any,
+        relations?: [],
     ): Promise<Entity[]> {
         try {
             const isMongoDB = Config.get('repository.type') === 'mongodb';
@@ -97,10 +83,11 @@ export class Repository extends Singleton {
             if (isMongoDB) {
                 const mongoQuery: any = {};
 
-                if (search && searchField)
+                if (search && searchField) {
                     mongoQuery[searchField] = {
                         $regex: new RegExp(search, 'i'),
                     }; // Case-insensitive search
+                }
 
                 Object.assign(mongoQuery, filters);
 

@@ -8,14 +8,13 @@ import {
     Logger,
     Scope,
     IContract,
+    CONTROLLER_NAME_METADATA,
 } from '@cmmv/core';
 
 export class RepositoryTranspile
     extends AbstractTranspile
     implements ITranspile
 {
-    private logger: Logger = new Logger('RepositoryTranspile');
-
     run(): void {
         const contracts = Scope.getArray<any>('__contracts');
 
@@ -292,9 +291,29 @@ ${contract.services
     }
 
     private generateField(field: any): string {
-        const tsType = this.mapToTsType(field.protoType);
+        let tsType = this.mapToTsType(field.protoType);
         const columnOptions = this.generateColumnOptions(field);
-        const decorators = [`@Column({ ${columnOptions} })`];
+        let decorators = [`@Column({ ${columnOptions} })`];
+
+        if (field.link) {
+            decorators = [];
+
+            field.link.map(link => {
+                const contractInstance = new link.contract();
+                const controllerName = Reflect.getMetadata(
+                    CONTROLLER_NAME_METADATA,
+                    contractInstance.constructor,
+                );
+                const entityName = controllerName;
+
+                decorators.push(
+                    `@ManyToOne(() => ${entityName}Entity, (${link.entityName}) => ${link.entityName}.${link.field}, { nullable: ${link?.entityNullable === true || false ? 'true' : 'false'} })`,
+                );
+            });
+
+            tsType = field.entityType || 'object';
+        }
+
         return `    ${decorators.join(' ')}\n    ${field.propertyKey}: ${tsType};`;
     }
 
@@ -369,6 +388,13 @@ ${contract.services
         if (contract.options?.databaseUserAction)
             extraImport.push('ManyToOne', 'BeforeInsert');
 
+        contract.fields.map(field => {
+            if (field.link && field.link.length > 0)
+                extraImport.push('ManyToOne');
+        });
+
+        extraImport = [...new Set(extraImport)];
+
         return `Entity, ${Config.get('repository.type') === 'mongodb' ? 'ObjectIdColumn' : 'PrimaryGeneratedColumn'}, 
     Column, Index, ${Config.get('repository.type') === 'mongodb' ? 'ObjectId,' : ''} ${extraImport.length > 0 ? `\n\t${extraImport.join(', ')}` : ''}`;
     }
@@ -409,6 +435,34 @@ ${contract.services
 
     private generateExtraImport(contract: IContract) {
         let imports: Array<{ name: string; path: string }> = [];
+        const importEntitiesList = new Array<{
+            entityName: string;
+            path: string;
+        }>();
+
+        contract.fields?.forEach((field: any) => {
+            if (field.link && field.link.length > 0) {
+                field.link.map(link => {
+                    const contractInstance = new link.contract();
+                    const controllerName = Reflect.getMetadata(
+                        CONTROLLER_NAME_METADATA,
+                        contractInstance.constructor,
+                    );
+                    const entityName = controllerName;
+                    const entityFileName = `${entityName.toLowerCase()}.entity`;
+
+                    importEntitiesList.push({
+                        entityName: `${entityName}Entity`,
+                        path: this.getImportPathRelative(
+                            contractInstance,
+                            contract,
+                            'entities',
+                            entityFileName,
+                        ),
+                    });
+                });
+            }
+        });
 
         if (contract.options?.databaseUserAction) {
             imports.push({
@@ -418,6 +472,15 @@ ${contract.services
                     'entities',
                     'auth/user.entity',
                 ),
+            });
+        }
+
+        if (importEntitiesList.length > 0) {
+            importEntitiesList.map(importEntity => {
+                imports.push({
+                    name: importEntity.entityName,
+                    path: importEntity.path,
+                });
             });
         }
 

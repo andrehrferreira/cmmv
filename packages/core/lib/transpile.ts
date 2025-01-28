@@ -1,6 +1,8 @@
 import * as path from 'path';
 import * as fs from 'fs';
+
 import { Logger } from './logger';
+import { Scope } from './scope';
 
 export interface ITranspile {
     run(): void;
@@ -40,10 +42,33 @@ export abstract class AbstractTranspile {
             : `../${context}/${filename}`;
     }
 
+    public getImportPathRelative(
+        contract: any,
+        contractTo: any,
+        context: string,
+        filename: string,
+        baseFilename?: string,
+    ) {
+        if (contractTo.subPath === contractTo.subPath) return `./${filename}`;
+
+        let relativePath = contractTo.subPath
+            ? `${contractTo.subPath
+                  .split('/')
+                  .map(() => '../')
+                  .join('')}${context}${contractTo.subPath}/${filename}`
+            : `../${context}/${filename}`;
+
+        return relativePath;
+    }
+
     public removeExtraSpaces(code: string): string {
         return code
             .replace(/\n{3,}/g, '\n\n')
             .replace(/(\n\s*\n\s*\n)/g, '\n\n');
+    }
+
+    public contractImportPath(contractName: string) {
+        const contracts = Scope.getArray<any>('__contracts');
     }
 }
 

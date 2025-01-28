@@ -4,6 +4,7 @@ import * as path from 'path';
 import { AbstractTranspile, Config, ITranspile, Logger, Scope } from '../lib';
 
 import { IContract } from '../interfaces/contract.interface';
+import { CONTROLLER_NAME_METADATA } from '../decorators';
 
 export class ApplicationTranspile
     extends AbstractTranspile
@@ -109,6 +110,14 @@ ${this.generateDTOs(contract)}
             `import * as fastJson from 'fast-json-stringify';`,
         ];
 
+        if (contract.imports && contract.imports.length > 0) {
+            for (const module of contract.imports) {
+                importStatements.push(
+                    `import * as ${module} from '${module}';`,
+                );
+            }
+        }
+
         if (
             modelInterfaceName !== 'IWsCall' &&
             modelInterfaceName !== 'IWsError'
@@ -139,10 +148,17 @@ ${this.generateDTOs(contract)}
         }
 
         importStatements.push(
-            `import { ${imports.join(', ')} } from 'class-transformer';`,
+            `
+import { 
+    ${imports.join(', ')} 
+} from 'class-transformer';\n`,
         );
 
         const validationImports = new Set<string>();
+        const importEntitiesList = new Array<{
+            entityName: string;
+            path: string;
+        }>();
 
         contract.fields?.forEach((field: any) => {
             if (field.validations) {
@@ -153,19 +169,45 @@ ${this.generateDTOs(contract)}
                     validationImports.add(validationName);
                 });
             }
+
+            if (field.link && field.link.length > 0) {
+                field.link.map(link => {
+                    const contractInstance = new link.contract();
+                    const controllerName = Reflect.getMetadata(
+                        CONTROLLER_NAME_METADATA,
+                        contractInstance.constructor,
+                    );
+                    const entityName = controllerName;
+                    const entityFileName = `${entityName.toLowerCase()}.entity`;
+
+                    importEntitiesList.push({
+                        entityName: `${entityName}Entity`,
+                        path: this.getImportPathRelative(
+                            contractInstance,
+                            contract,
+                            'entities',
+                            entityFileName,
+                        ),
+                    });
+                });
+            }
         });
 
         if (validationImports.size > 0) {
             importStatements.push(
-                `import { ${Array.from(validationImports).join(', ')} } from 'class-validator';`,
+                `
+import { 
+    ${Array.from(validationImports).join(', ')} 
+} from 'class-validator'; \n`,
             );
         }
 
-        if (contract.imports && contract.imports.length > 0) {
-            for (const module of contract.imports)
+        if (importEntitiesList.length > 0) {
+            importEntitiesList.map(importEntity => {
                 importStatements.push(
-                    `import * as ${module} from '${module}';`,
+                    `import { ${importEntity.entityName} } from "${importEntity.path}"; \n`,
                 );
+            });
         }
 
         return importStatements.length > 0 ? importStatements.join('\n') : '';
@@ -300,7 +342,11 @@ ${this.generateDTOs(contract)}
     }
 
     private generateJsonSchemaField(field: any): string {
-        const parts = [`type: "${this.mapToJsonSchemaType(field.protoType)}"`];
+        const parts = [
+            `type: "${this.mapToJsonSchemaType(
+                field.objectType ? field.objectType : field.protoType,
+            )}"`,
+        ];
 
         if (field.defaultValue !== undefined) {
             parts.push(
@@ -334,6 +380,7 @@ ${this.generateDTOs(contract)}
             text: 'string',
             json: 'object',
             jsonb: 'object',
+            object: 'object',
             uuid: 'string',
             time: 'string',
             simpleArray: 'array',

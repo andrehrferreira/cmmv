@@ -7,15 +7,19 @@
 **/
 
 import * as fastJson from 'fast-json-stringify';
+import * as crypto from 'crypto';
 import { ObjectId } from 'mongodb';
+
 import {
     Expose,
     instanceToPlain,
     plainToClass,
     Transform,
 } from 'class-transformer';
+
 import { IsString, MinLength, MaxLength } from 'class-validator';
-import * as crypto from 'crypto';
+
+import { RolesEntity } from './roles.entity';
 
 export interface IUser {
     _id?: ObjectId;
@@ -23,7 +27,7 @@ export interface IUser {
     password: string;
     googleId: string;
     groups: string;
-    roles: string;
+    roles: object;
     root: boolean;
 }
 
@@ -63,11 +67,7 @@ export class User implements IUser {
     groups: string = '[]';
 
     @Expose()
-    @Transform(({ value }) => JSON.stringify(value), { toClassOnly: true })
-    @Transform(({ value }) => (value ? JSON.parse(value) : []), {
-        toPlainOnly: true,
-    })
-    roles: string = '[]';
+    roles: object = null;
 
     @Expose()
     root: boolean = false;
@@ -102,7 +102,7 @@ export const UserFastSchema = fastJson({
         password: { type: 'string' },
         googleId: { type: 'string' },
         groups: { type: 'string', default: '[]' },
-        roles: { type: 'string', default: '[]' },
+        roles: { type: 'object', default: null },
         root: { type: 'boolean', default: false },
     },
     required: [],

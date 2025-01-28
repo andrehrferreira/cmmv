@@ -7,29 +7,31 @@
 **/
 
 import * as fastJson from 'fast-json-stringify';
+import { ObjectId } from 'mongodb';
 
 import { Expose, instanceToPlain, plainToClass } from 'class-transformer';
 
-export interface IWsCall {
-    contract: number;
-    message: number;
-    data: Uint8Array;
+import { IsString, MinLength, MaxLength } from 'class-validator';
+
+export interface IRoles {
+    _id?: ObjectId;
+    name: string;
 }
 
-export class WsCall implements IWsCall {
+export class Roles implements IRoles {
+    @Expose()
+    _id?: ObjectId;
+
     @Expose({ toClassOnly: true })
     id: string;
 
     @Expose()
-    contract: number;
+    @IsString({ message: 'Invalid name' })
+    @MinLength(3, { message: 'Invalid name' })
+    @MaxLength(40, { message: 'Invalid name' })
+    name: string;
 
-    @Expose()
-    message: number;
-
-    @Expose()
-    data: Uint8Array;
-
-    constructor(partial: Partial<WsCall>) {
+    constructor(partial: Partial<Roles>) {
         Object.assign(this, partial);
     }
 
@@ -37,8 +39,8 @@ export class WsCall implements IWsCall {
         return instanceToPlain(this);
     }
 
-    public static toClass(partial: Partial<WsCall>): WsCall {
-        return plainToClass(WsCall, partial, {
+    public static toClass(partial: Partial<Roles>): Roles {
+        return plainToClass(Roles, partial, {
             exposeUnsetFields: false,
             enableImplicitConversion: true,
             excludeExtraneousValues: true,
@@ -46,18 +48,16 @@ export class WsCall implements IWsCall {
     }
 
     public toString() {
-        return WsCallFastSchema(this);
+        return RolesFastSchema(this);
     }
 }
 
 // Schema for fast-json-stringify
-export const WsCallFastSchema = fastJson({
-    title: 'WsCall Schema',
+export const RolesFastSchema = fastJson({
+    title: 'Roles Schema',
     type: 'object',
     properties: {
-        contract: { type: 'integer' },
-        message: { type: 'integer' },
-        data: { type: 'string' },
+        name: { type: 'string' },
     },
     required: [],
 });
