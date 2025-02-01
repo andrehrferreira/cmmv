@@ -13,11 +13,12 @@ import { ObjectId } from 'mongodb';
 import {
     Expose,
     instanceToPlain,
-    plainToClass,
+    plainToInstance,
     Transform,
 } from 'class-transformer';
 
 import {
+    IsOptional,
     IsString,
     MinLength,
     MaxLength,
@@ -39,9 +40,11 @@ export interface IUser {
 //Model
 export class User implements IUser {
     @Expose()
+    @IsOptional()
     _id?: ObjectId;
 
     @Expose({ toClassOnly: true })
+    @IsOptional()
     id: string;
 
     @Expose()
@@ -87,8 +90,16 @@ export class User implements IUser {
         return instanceToPlain(this);
     }
 
-    public static toClass(partial: Partial<User>): User {
-        return plainToClass(User, partial, {
+    public static fromPartial(partial: Partial<User>): User {
+        return plainToInstance(User, partial, {
+            exposeUnsetFields: false,
+            enableImplicitConversion: true,
+            excludeExtraneousValues: true,
+        });
+    }
+
+    public static fromEntity(entity: any): User {
+        return plainToInstance(this, entity, {
             exposeUnsetFields: false,
             enableImplicitConversion: true,
             excludeExtraneousValues: true,
@@ -158,8 +169,18 @@ export class LoginRequestDTO implements LoginRequest {
         return instanceToPlain(this);
     }
 
-    public static toClass(partial: Partial<LoginRequestDTO>): LoginRequestDTO {
-        return plainToClass(LoginRequestDTO, partial, {
+    public static fromPartial(
+        partial: Partial<LoginRequestDTO>,
+    ): LoginRequestDTO {
+        return plainToInstance(LoginRequestDTO, partial, {
+            exposeUnsetFields: false,
+            enableImplicitConversion: true,
+            excludeExtraneousValues: true,
+        });
+    }
+
+    public static fromEntity(entity: any): LoginRequestDTO {
+        return plainToInstance(LoginRequestDTO, entity, {
             exposeUnsetFields: false,
             enableImplicitConversion: true,
             excludeExtraneousValues: true,
@@ -186,10 +207,18 @@ export class LoginResponseDTO implements LoginResponse {
         return instanceToPlain(this);
     }
 
-    public static toClass(
+    public static fromPartial(
         partial: Partial<LoginResponseDTO>,
     ): LoginResponseDTO {
-        return plainToClass(LoginResponseDTO, partial, {
+        return plainToInstance(LoginResponseDTO, partial, {
+            exposeUnsetFields: false,
+            enableImplicitConversion: true,
+            excludeExtraneousValues: true,
+        });
+    }
+
+    public static fromEntity(entity: any): LoginResponseDTO {
+        return plainToInstance(LoginResponseDTO, entity, {
             exposeUnsetFields: false,
             enableImplicitConversion: true,
             excludeExtraneousValues: true,
@@ -216,10 +245,18 @@ export class RegisterRequestDTO implements RegisterRequest {
         return instanceToPlain(this);
     }
 
-    public static toClass(
+    public static fromPartial(
         partial: Partial<RegisterRequestDTO>,
     ): RegisterRequestDTO {
-        return plainToClass(RegisterRequestDTO, partial, {
+        return plainToInstance(RegisterRequestDTO, partial, {
+            exposeUnsetFields: false,
+            enableImplicitConversion: true,
+            excludeExtraneousValues: true,
+        });
+    }
+
+    public static fromEntity(entity: any): RegisterRequestDTO {
+        return plainToInstance(RegisterRequestDTO, entity, {
             exposeUnsetFields: false,
             enableImplicitConversion: true,
             excludeExtraneousValues: true,
@@ -244,10 +281,18 @@ export class RegisterResponseDTO implements RegisterResponse {
         return instanceToPlain(this);
     }
 
-    public static toClass(
+    public static fromPartial(
         partial: Partial<RegisterResponseDTO>,
     ): RegisterResponseDTO {
-        return plainToClass(RegisterResponseDTO, partial, {
+        return plainToInstance(RegisterResponseDTO, partial, {
+            exposeUnsetFields: false,
+            enableImplicitConversion: true,
+            excludeExtraneousValues: true,
+        });
+    }
+
+    public static fromEntity(entity: any): RegisterResponseDTO {
+        return plainToInstance(RegisterResponseDTO, entity, {
             exposeUnsetFields: false,
             enableImplicitConversion: true,
             excludeExtraneousValues: true,

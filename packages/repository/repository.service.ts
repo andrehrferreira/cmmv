@@ -133,16 +133,16 @@ export class Repository extends Singleton {
     public static async insert<Entity>(
         entity: new () => Entity,
         data: DeepPartial<Entity>,
-    ): Promise<Entity> {
+    ): Promise<{ data?: Entity; success: boolean; message?: string }> {
         try {
             const repository = this.getRepository(entity);
             const newEntity = repository.create(data);
-            return await repository.save(newEntity);
+            return { data: await repository.save(newEntity), success: true };
         } catch (e) {
             if (process.env.NODE_ENV === 'dev')
                 Repository.logger.error(e.message);
 
-            return null;
+            return { success: false, message: e.message };
         }
     }
 
@@ -159,23 +159,23 @@ export class Repository extends Singleton {
             if (process.env.NODE_ENV === 'dev')
                 Repository.logger.error(e.message);
 
-            return null;
+            return 0;
         }
     }
 
     public static async delete<Entity>(
         entity: new () => Entity,
         id: any,
-    ): Promise<DeleteResult> {
+    ): Promise<number | null> {
         try {
             const repository = this.getRepository(entity);
             const result = await repository.delete(id);
-            return result;
+            return result.affected;
         } catch (e) {
             if (process.env.NODE_ENV === 'dev')
                 Repository.logger.error(e.message);
 
-            return null;
+            return 0;
         }
     }
 }

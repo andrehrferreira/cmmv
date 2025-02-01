@@ -6,7 +6,6 @@
     **********************************************
 **/
 
-import { Telemetry } from '@cmmv/core';
 import { Cache, CacheService } from '@cmmv/cache';
 import { Auth } from '@cmmv/auth';
 
@@ -40,10 +39,11 @@ export class I18nCoinsControllerGenerated {
         compress: true,
         schema: I18nCoinsFastSchema,
     })
-    async getAll(@Queries() queries: any, @Req() req) {
-        Telemetry.start('I18nCoinsController::GetAll', req.requestId);
+    async getAll(
+        @Queries() queries: any,
+        @Req() req,
+    ): Promise<I18nCoins[] | null> {
         let result = await this.i18ncoinsservice.getAll(queries, req);
-        Telemetry.end('I18nCoinsController::GetAll', req.requestId);
         return result;
     }
 
@@ -54,31 +54,32 @@ export class I18nCoinsControllerGenerated {
         compress: true,
         schema: I18nCoinsFastSchema,
     })
-    async getById(@Param('id') id: string, @Req() req) {
-        Telemetry.start('I18nCoinsController::GetById', req.requestId);
+    async getById(
+        @Param('id') id: string,
+        @Req() req,
+    ): Promise<I18nCoins | null> {
         let result = await this.i18ncoinsservice.getById(id, req);
-        Telemetry.end('I18nCoinsController::GetById', req.requestId);
         return result;
     }
 
     @Post()
     @Auth('i18ncoins:insert')
-    async add(@Body() item: I18nCoins, @Req() req) {
-        Telemetry.start('I18nCoinsController::Add', req.requestId);
+    async add(@Body() item: I18nCoins, @Req() req): Promise<I18nCoins | null> {
         let result = await this.i18ncoinsservice.add(item, req);
         CacheService.del('coins:getAll');
-        Telemetry.end('I18nCoinsController::Add', req.requestId);
         return result;
     }
 
     @Put(':id')
     @Auth('i18ncoins:update')
-    async update(@Param('id') id: string, @Body() item: I18nCoins, @Req() req) {
-        Telemetry.start('I18nCoinsController::Update', req.requestId);
+    async update(
+        @Param('id') id: string,
+        @Body() item: I18nCoins,
+        @Req() req,
+    ): Promise<{ success: boolean; affected: number }> {
         let result = await this.i18ncoinsservice.update(id, item, req);
         CacheService.del(`coins:${id}`);
         CacheService.del('coins:getAll');
-        Telemetry.end('I18nCoinsController::Update', req.requestId);
         return result;
     }
 
@@ -88,11 +89,9 @@ export class I18nCoinsControllerGenerated {
         @Param('id') id: string,
         @Req() req,
     ): Promise<{ success: boolean; affected: number }> {
-        Telemetry.start('I18nCoinsController::Delete', req.requestId);
         let result = await this.i18ncoinsservice.delete(id, req);
         CacheService.del(`coins:${id}`);
         CacheService.del('coins:getAll');
-        Telemetry.end('I18nCoinsController::Delete', req.requestId);
         return result;
     }
 }

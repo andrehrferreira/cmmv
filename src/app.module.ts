@@ -7,7 +7,8 @@
 **/
 
 import 'reflect-metadata';
-import { Module, ApplicationTranspile } from '@cmmv/core';
+
+import { Module, ApplicationTranspile, ApplicationConfig } from '@cmmv/core';
 
 //Controllers
 import { UserController } from './controllers/auth/user.controller';
@@ -29,6 +30,7 @@ import { AuthService } from './services/auth/auth.service';
 import { AuthGateway } from './gateways/auth/auth.gateway';
 
 export let ApplicationModule = new Module('app', {
+    configs: [ApplicationConfig],
     controllers: [
         UserController,
         RolesController,

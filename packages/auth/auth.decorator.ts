@@ -28,38 +28,41 @@ export function Auth(
                 (err: any, decoded: any) => {
                     if (err) return response.code(401).end('Unauthorized');
 
-                    if (
-                        (rolesOrSettings &&
-                            Array.isArray(rolesOrSettings) &&
-                            (!decoded.roles ||
-                                !rolesOrSettings.some(role =>
-                                    decoded?.roles.includes(role),
-                                ))) ||
-                        (typeof rolesOrSettings == 'string' &&
-                            decoded?.roles.includes(rolesOrSettings))
-                    ) {
-                        return response.code(401).end('Unauthorized');
-                    } else if (rolesOrSettings) {
-                        try {
-                            const settings = rolesOrSettings as IAuthSettings;
-
-                            if (
-                                settings.roles &&
-                                Array.isArray(settings.roles)
-                            ) {
-                                if (
-                                    !decoded.roles ||
-                                    !settings.roles.some(role =>
-                                        decoded.roles.includes(role),
-                                    )
-                                ) {
-                                    return response
-                                        .code(401)
-                                        .end('Unauthorized');
-                                }
-                            }
-                        } catch {
+                    if (decoded.root !== true) {
+                        if (
+                            (rolesOrSettings &&
+                                Array.isArray(rolesOrSettings) &&
+                                (!decoded.roles ||
+                                    !rolesOrSettings.some(role =>
+                                        decoded?.roles.includes(role),
+                                    ))) ||
+                            (typeof rolesOrSettings == 'string' &&
+                                !decoded?.roles.includes(rolesOrSettings))
+                        ) {
                             return response.code(401).end('Unauthorized');
+                        } else if (rolesOrSettings) {
+                            try {
+                                const settings =
+                                    rolesOrSettings as IAuthSettings;
+
+                                if (
+                                    settings.roles &&
+                                    Array.isArray(settings.roles)
+                                ) {
+                                    if (
+                                        !decoded.roles ||
+                                        !settings.roles.some(role =>
+                                            decoded.roles.includes(role),
+                                        )
+                                    ) {
+                                        return response
+                                            .code(401)
+                                            .end('Unauthorized');
+                                    }
+                                }
+                            } catch {
+                                return response.code(401).end('Unauthorized');
+                            }
                         }
                     }
 

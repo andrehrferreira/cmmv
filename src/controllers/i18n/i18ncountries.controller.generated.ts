@@ -6,7 +6,6 @@
     **********************************************
 **/
 
-import { Telemetry } from '@cmmv/core';
 import { Cache, CacheService } from '@cmmv/cache';
 import { Auth } from '@cmmv/auth';
 
@@ -40,10 +39,11 @@ export class I18nCountriesControllerGenerated {
         compress: true,
         schema: I18nCountriesFastSchema,
     })
-    async getAll(@Queries() queries: any, @Req() req) {
-        Telemetry.start('I18nCountriesController::GetAll', req.requestId);
+    async getAll(
+        @Queries() queries: any,
+        @Req() req,
+    ): Promise<I18nCountries[] | null> {
         let result = await this.i18ncountriesservice.getAll(queries, req);
-        Telemetry.end('I18nCountriesController::GetAll', req.requestId);
         return result;
     }
 
@@ -54,20 +54,22 @@ export class I18nCountriesControllerGenerated {
         compress: true,
         schema: I18nCountriesFastSchema,
     })
-    async getById(@Param('id') id: string, @Req() req) {
-        Telemetry.start('I18nCountriesController::GetById', req.requestId);
+    async getById(
+        @Param('id') id: string,
+        @Req() req,
+    ): Promise<I18nCountries | null> {
         let result = await this.i18ncountriesservice.getById(id, req);
-        Telemetry.end('I18nCountriesController::GetById', req.requestId);
         return result;
     }
 
     @Post()
     @Auth('i18ncountries:insert')
-    async add(@Body() item: I18nCountries, @Req() req) {
-        Telemetry.start('I18nCountriesController::Add', req.requestId);
+    async add(
+        @Body() item: I18nCountries,
+        @Req() req,
+    ): Promise<I18nCountries | null> {
         let result = await this.i18ncountriesservice.add(item, req);
         CacheService.del('country:getAll');
-        Telemetry.end('I18nCountriesController::Add', req.requestId);
         return result;
     }
 
@@ -77,12 +79,10 @@ export class I18nCountriesControllerGenerated {
         @Param('id') id: string,
         @Body() item: I18nCountries,
         @Req() req,
-    ) {
-        Telemetry.start('I18nCountriesController::Update', req.requestId);
+    ): Promise<{ success: boolean; affected: number }> {
         let result = await this.i18ncountriesservice.update(id, item, req);
         CacheService.del(`country:${id}`);
         CacheService.del('country:getAll');
-        Telemetry.end('I18nCountriesController::Update', req.requestId);
         return result;
     }
 
@@ -92,11 +92,9 @@ export class I18nCountriesControllerGenerated {
         @Param('id') id: string,
         @Req() req,
     ): Promise<{ success: boolean; affected: number }> {
-        Telemetry.start('I18nCountriesController::Delete', req.requestId);
         let result = await this.i18ncountriesservice.delete(id, req);
         CacheService.del(`country:${id}`);
         CacheService.del('country:getAll');
-        Telemetry.end('I18nCountriesController::Delete', req.requestId);
         return result;
     }
 }

@@ -9,9 +9,14 @@
 import * as fastJson from 'fast-json-stringify';
 import { ObjectId } from 'mongodb';
 
-import { Expose, instanceToPlain, plainToClass } from 'class-transformer';
+import { Expose, instanceToPlain, plainToInstance } from 'class-transformer';
 
-import { IsString, IsNotEmpty, ValidateNested } from 'class-validator';
+import {
+    IsOptional,
+    IsString,
+    IsNotEmpty,
+    ValidateNested,
+} from 'class-validator';
 
 import { I18nCoins, I18nCoinsFastSchemaStructure } from './i18ncoins.model';
 
@@ -25,9 +30,11 @@ export interface II18nCountries {
 //Model
 export class I18nCountries implements II18nCountries {
     @Expose()
+    @IsOptional()
     _id?: ObjectId;
 
     @Expose({ toClassOnly: true })
+    @IsOptional()
     id: string;
 
     @Expose()
@@ -53,8 +60,16 @@ export class I18nCountries implements II18nCountries {
         return instanceToPlain(this);
     }
 
-    public static toClass(partial: Partial<I18nCountries>): I18nCountries {
-        return plainToClass(I18nCountries, partial, {
+    public static fromPartial(partial: Partial<I18nCountries>): I18nCountries {
+        return plainToInstance(I18nCountries, partial, {
+            exposeUnsetFields: false,
+            enableImplicitConversion: true,
+            excludeExtraneousValues: true,
+        });
+    }
+
+    public static fromEntity(entity: any): I18nCountries {
+        return plainToInstance(this, entity, {
             exposeUnsetFields: false,
             enableImplicitConversion: true,
             excludeExtraneousValues: true,

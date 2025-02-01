@@ -8,7 +8,9 @@
 
 import * as fastJson from 'fast-json-stringify';
 
-import { Expose, instanceToPlain, plainToClass } from 'class-transformer';
+import { Expose, instanceToPlain, plainToInstance } from 'class-transformer';
+
+import { IsOptional } from 'class-validator';
 
 export interface IWsError {
     message: string;
@@ -19,6 +21,7 @@ export interface IWsError {
 //Model
 export class WsError implements IWsError {
     @Expose({ toClassOnly: true })
+    @IsOptional()
     id: string;
 
     @Expose()
@@ -38,8 +41,16 @@ export class WsError implements IWsError {
         return instanceToPlain(this);
     }
 
-    public static toClass(partial: Partial<WsError>): WsError {
-        return plainToClass(WsError, partial, {
+    public static fromPartial(partial: Partial<WsError>): WsError {
+        return plainToInstance(WsError, partial, {
+            exposeUnsetFields: false,
+            enableImplicitConversion: true,
+            excludeExtraneousValues: true,
+        });
+    }
+
+    public static fromEntity(entity: any): WsError {
+        return plainToInstance(this, entity, {
             exposeUnsetFields: false,
             enableImplicitConversion: true,
             excludeExtraneousValues: true,

@@ -6,7 +6,6 @@
     **********************************************
 **/
 
-import { Telemetry } from '@cmmv/core';
 import { Auth } from '@cmmv/auth';
 
 import {
@@ -31,37 +30,33 @@ export class RolesControllerGenerated {
 
     @Get()
     @Auth('roles:get')
-    async getAll(@Queries() queries: any, @Req() req) {
-        Telemetry.start('RolesController::GetAll', req.requestId);
+    async getAll(@Queries() queries: any, @Req() req): Promise<Roles[] | null> {
         let result = await this.rolesservice.getAll(queries, req);
-        Telemetry.end('RolesController::GetAll', req.requestId);
         return result;
     }
 
     @Get(':id')
     @Auth('roles:get')
-    async getById(@Param('id') id: string, @Req() req) {
-        Telemetry.start('RolesController::GetById', req.requestId);
+    async getById(@Param('id') id: string, @Req() req): Promise<Roles | null> {
         let result = await this.rolesservice.getById(id, req);
-        Telemetry.end('RolesController::GetById', req.requestId);
         return result;
     }
 
     @Post()
     @Auth('roles:insert')
-    async add(@Body() item: Roles, @Req() req) {
-        Telemetry.start('RolesController::Add', req.requestId);
+    async add(@Body() item: Roles, @Req() req): Promise<Roles | null> {
         let result = await this.rolesservice.add(item, req);
-        Telemetry.end('RolesController::Add', req.requestId);
         return result;
     }
 
     @Put(':id')
     @Auth('roles:update')
-    async update(@Param('id') id: string, @Body() item: Roles, @Req() req) {
-        Telemetry.start('RolesController::Update', req.requestId);
+    async update(
+        @Param('id') id: string,
+        @Body() item: Roles,
+        @Req() req,
+    ): Promise<{ success: boolean; affected: number }> {
         let result = await this.rolesservice.update(id, item, req);
-        Telemetry.end('RolesController::Update', req.requestId);
         return result;
     }
 
@@ -71,9 +66,7 @@ export class RolesControllerGenerated {
         @Param('id') id: string,
         @Req() req,
     ): Promise<{ success: boolean; affected: number }> {
-        Telemetry.start('RolesController::Delete', req.requestId);
         let result = await this.rolesservice.delete(id, req);
-        Telemetry.end('RolesController::Delete', req.requestId);
         return result;
     }
 }

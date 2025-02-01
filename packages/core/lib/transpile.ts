@@ -67,8 +67,13 @@ export abstract class AbstractTranspile {
             .replace(/(\n\s*\n\s*\n)/g, '\n\n');
     }
 
-    public contractImportPath(contractName: string) {
-        const contracts = Scope.getArray<any>('__contracts');
+    public removeTelemetry(code: string): string {
+        const lines = code.split('\n');
+        const filteredLines = lines.filter(
+            line =>
+                !line.includes('Telemetry.') && !line.includes('{ Telemetry }'),
+        );
+        return filteredLines.join('\n');
     }
 }
 

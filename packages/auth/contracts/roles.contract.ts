@@ -11,6 +11,7 @@ export class RolesContract extends AbstractContract {
     @ContractField({
         protoType: 'string',
         unique: true,
+        nullable: false,
         validations: [
             {
                 type: 'IsString',

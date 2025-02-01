@@ -389,7 +389,7 @@ export class DefaultAdapter extends AbstractHttpAdapter<
                                 res.status(200).send(result);
                             }
                         } catch (error) {
-                            console.error(error);
+                            //console.error(error);
                             const processingTime = Date.now() - startTime;
                             Telemetry.end('Request Process', req.requestId);
                             const telemetry = Telemetry.getTelemetry(
@@ -399,8 +399,12 @@ export class DefaultAdapter extends AbstractHttpAdapter<
                             const response = {
                                 status: 500,
                                 processingTime,
-                                message:
-                                    error.message || 'Internal Server Error',
+                                data: {
+                                    message:
+                                        error.message ||
+                                        'Internal Server Error',
+                                    success: false,
+                                },
                             };
 
                             if (req.query.debug) {

@@ -64,6 +64,7 @@ ${contract.fields.map((field: any) => this.generateField(field)).join('\n\n')}${
     }
 
     private generateService(contract: IContract): void {
+        const telemetry = Config.get<boolean>('app.telemetry');
         const serviceName = `${contract.controllerName}Service`;
         const modelName = `${contract.controllerName}`;
         const modelInterfaceName = `I${modelName}`;
@@ -81,7 +82,7 @@ ${contract.fields.map((field: any) => this.generateField(field)).join('\n\n')}${
 
         importsFromModel = [...new Set(importsFromModel)];
 
-        const serviceTemplateGenerated = `/**                                                                               
+        let serviceTemplateGenerated = `/**                                                                               
     **********************************************
     This script was generated automatically by CMMV.
     It is recommended not to modify this file manually, 
@@ -90,7 +91,7 @@ ${contract.fields.map((field: any) => this.generateField(field)).join('\n\n')}${
 **/
 ${Config.get('repository.type') === 'mongodb' ? "\nimport { ObjectId } from 'mongodb';" : ''}
 import { validate } from 'class-validator';
-import { plainToClass } from 'class-transformer';
+import { plainToInstance } from 'class-transformer';
 
 import { 
     Telemetry, AbstractService, 
@@ -113,12 +114,11 @@ export class ${serviceName}Generated extends AbstractService {
         try{
             Telemetry.start('${serviceName}::GetAll', req?.requestId);
             let result = await Repository.findAll(${entityName}, queries);
-            
             ${Config.get('repository.type') === 'mongodb' ? 'result = this.fixIds(result)' : ''}
             Telemetry.end('${serviceName}::GetAll', req?.requestId);
 
             return result && result.length > 0 ? result.map((item) => {
-                return plainToClass(${modelName}, item, {
+                return plainToInstance(${modelName}, item, {
                     exposeUnsetFields: false,
                     enableImplicitConversion: true,
                     excludeExtraneousValues: true
@@ -141,7 +141,7 @@ export class ${serviceName}Generated extends AbstractService {
             if (!item) 
                 throw new Error('Item not found');
             
-            return ${modelName}.toClass(item);
+            return ${modelName}.fromEntity(item);
         }
         catch(e){
             return null;
@@ -153,18 +153,16 @@ export class ${serviceName}Generated extends AbstractService {
             try{
                 Telemetry.start('${serviceName}::Add', req?.requestId);
                         
-                let newItem: any = plainToClass(${modelName}, item, { 
+                let newItem: any = plainToInstance(${modelName}, item, { 
                     exposeUnsetFields: false,
-                    enableImplicitConversion: true
-                });
-
-                newItem = this.removeUndefined(newItem);
-                delete newItem._id;
+                    enableImplicitConversion: true,
+                    excludeExtraneousValues: true
+                });                
 
                 const errors = await validate(newItem, { 
                     forbidUnknownValues: false,
-                    skipMissingProperties: true,
                     stopAtFirstError: true, 
+                    skipMissingProperties: true
                 });
 
                 const userId: string = req.user.id;
@@ -174,19 +172,28 @@ export class ${serviceName}Generated extends AbstractService {
 
                 if (errors.length > 0) {
                     Telemetry.end('TaskService::Add', req?.requestId);
-                    reject(errors);
+                    reject({ success: false, message: Object.values(errors[0].constraints).join(', ') });
                 } 
-                else {                   
-                    let result: any = await Repository.insert<${entityName}>(${entityName}, newItem);
-                    ${Config.get('repository.type') === 'mongodb' ? 'result = this.fixIds(result)' : ''}
-                    Telemetry.end('TaskService::Add', req?.requestId);
-                    resolve(${modelName}.toClass(result));                    
+                else {      
+                    newItem = this.removeUndefined(newItem);
+                    delete newItem._id;
+
+                    const result: any = await Repository.insert<${entityName}>(${entityName}, newItem);
+                    
+                    if(result.success){
+                        ${Config.get('repository.type') === 'mongodb' ? 'let dataFixed = this.fixIds(result.data)' : ''}
+                        Telemetry.end('TaskService::Add', req?.requestId);
+                        resolve(${modelName}.fromEntity(dataFixed)); 
+                    }    
+                    else {
+                        Telemetry.end('TaskService::Add', req?.requestId);
+                        reject(result);
+                    }           
                 }
             }
             catch(e){ 
                 Telemetry.end('TaskService::Add', req?.requestId);
-                console.error(e); 
-                reject(e)
+                reject({ success: false, message: e.message });
             }
         });
     }
@@ -196,13 +203,11 @@ export class ${serviceName}Generated extends AbstractService {
             try{
                 Telemetry.start('${serviceName}::Update', req?.requestId);
 
-                let updateItem: any = plainToClass(${modelName}, item, { 
+                let updateItem: any = plainToInstance(${modelName}, item, { 
                     exposeUnsetFields: false,
-                    enableImplicitConversion: true
+                    enableImplicitConversion: true,
+                    excludeExtraneousValues: true
                 });
-
-                updateItem = this.removeUndefined(updateItem);
-                delete updateItem._id;
 
                 const errors = await validate(updateItem, { 
                     forbidUnknownValues: false,
@@ -215,13 +220,14 @@ export class ${serviceName}Generated extends AbstractService {
                     reject(errors);
                 } 
                 else {  
+                    updateItem = this.removeUndefined(updateItem);
+                    delete updateItem._id;
                     const result = await Repository.update(${entityName}, ${Config.get('repository.type') === 'mongodb' ? 'new ObjectId(id)' : 'id'}, updateItem);                    
                     Telemetry.end('TaskService::Add', req?.requestId);
                     resolve({ success: result > 0, affected: result });       
                 }                
             }
             catch(e){
-                console.log(e);
                 Telemetry.end('${serviceName}::Update', req?.requestId);
                 reject({ success: false, affected: 0 });
             }
@@ -233,7 +239,7 @@ export class ${serviceName}Generated extends AbstractService {
             Telemetry.start('${serviceName}::Delete', req?.requestId);
             const result = await Repository.delete(${entityName}, ${Config.get('repository.type') === 'mongodb' ? 'new ObjectId(id)' : 'id'});
             Telemetry.end('${serviceName}::Delete', req?.requestId);
-            return { success: result.affected > 0, affected: result.affected };
+            return { success: result > 0, affected: result };
         }
         catch(e){
             Telemetry.end('${serviceName}::Delete', req?.requestId);
@@ -250,6 +256,11 @@ ${contract.services
     })
     .join('\n\n')}
 }`;
+
+        if (!telemetry)
+            serviceTemplateGenerated = this.removeTelemetry(
+                serviceTemplateGenerated,
+            );
 
         const outputDir = this.getRootPath(contract, 'services');
         const outputFilePath = path.join(outputDir, serviceFileNameGenerated);

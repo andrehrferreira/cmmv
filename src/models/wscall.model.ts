@@ -8,7 +8,9 @@
 
 import * as fastJson from 'fast-json-stringify';
 
-import { Expose, instanceToPlain, plainToClass } from 'class-transformer';
+import { Expose, instanceToPlain, plainToInstance } from 'class-transformer';
+
+import { IsOptional } from 'class-validator';
 
 export interface IWsCall {
     contract: number;
@@ -19,6 +21,7 @@ export interface IWsCall {
 //Model
 export class WsCall implements IWsCall {
     @Expose({ toClassOnly: true })
+    @IsOptional()
     id: string;
 
     @Expose()
@@ -38,8 +41,16 @@ export class WsCall implements IWsCall {
         return instanceToPlain(this);
     }
 
-    public static toClass(partial: Partial<WsCall>): WsCall {
-        return plainToClass(WsCall, partial, {
+    public static fromPartial(partial: Partial<WsCall>): WsCall {
+        return plainToInstance(WsCall, partial, {
+            exposeUnsetFields: false,
+            enableImplicitConversion: true,
+            excludeExtraneousValues: true,
+        });
+    }
+
+    public static fromEntity(entity: any): WsCall {
+        return plainToInstance(this, entity, {
             exposeUnsetFields: false,
             enableImplicitConversion: true,
             excludeExtraneousValues: true,

@@ -8,7 +8,7 @@
 
 import * as jwt from 'jsonwebtoken';
 import { validate } from 'class-validator';
-import { plainToClass } from 'class-transformer';
+import { plainToInstance } from 'class-transformer';
 
 import { Telemetry, Service, AbstractService, Config } from '@cmmv/core';
 
@@ -57,12 +57,33 @@ export class AuthService extends AbstractService {
             process.env.NODE_ENV !== 'dev',
         );
 
-        const userValidation = plainToClass(User, payload, {
+        const userValidation = plainToInstance(User, payload, {
             exposeUnsetFields: true,
             enableImplicitConversion: true,
+            excludeExtraneousValues: true,
         });
 
-        let user = await Repository.findBy(UserEntity, userValidation);
+        const errors = await validate(userValidation, {
+            forbidUnknownValues: false,
+            skipMissingProperties: true,
+            stopAtFirstError: true,
+        });
+
+        if (errors.length > 0) {
+            return {
+                result: {
+                    success: false,
+                    token: '',
+                    message: JSON.stringify(errors[0].constraints),
+                },
+                user: null,
+            };
+        }
+
+        let user = await Repository.findBy(UserEntity, {
+            username: userValidation.username,
+            password: userValidation.password,
+        });
 
         if (
             !user &&
@@ -77,7 +98,7 @@ export class AuthService extends AbstractService {
             } as UserEntity;
         }
 
-        if (!user)
+        if (!user) {
             return {
                 result: {
                     success: false,
@@ -86,12 +107,13 @@ export class AuthService extends AbstractService {
                 },
                 user: null,
             };
+        }
 
         const token = jwt.sign(
             {
                 id: user._id,
                 username: payload.username,
-                root: user.root,
+                root: user.root || false,
                 roles: user.roles || [],
                 groups: user.groups || [],
             },
@@ -118,8 +140,13 @@ export class AuthService extends AbstractService {
         CacheService.set(`user:${user._id}`, JSON.stringify(user), expiresIn);
 
         Telemetry.end('AuthService::login', req?.requestId);
+
         return {
-            result: { success: true, token, message: 'Login successful' },
+            result: {
+                success: true,
+                token,
+                message: 'Login successful',
+            },
             user,
         };
     }
@@ -130,7 +157,7 @@ export class AuthService extends AbstractService {
     ): Promise<RegisterResponse> {
         Telemetry.start('AuthService::register', req?.requestId);
 
-        const newUser = plainToClass(User, payload, {
+        const newUser = plainToInstance(User, payload, {
             exposeUnsetFields: true,
             enableImplicitConversion: true,
         });

@@ -61,7 +61,8 @@ ${includeId}${contract.fields
 
 //Model
 export class ${modelName} implements ${modelInterfaceName} {
-${includeId ? '    @Expose()\n' + includeId + '\n' : ''}    @Expose({ toClassOnly: true })
+${includeId ? '    @Expose()\n    @IsOptional()\n' + includeId + '\n' : ''}    @Expose({ toClassOnly: true })
+    @IsOptional()
     id: string;
 
 ${contract.fields?.map((field: any) => this.generateClassField(field)).join('\n\n')}
@@ -74,8 +75,16 @@ ${contract.fields?.map((field: any) => this.generateClassField(field)).join('\n\
         return instanceToPlain(this);
     }
 
-    public static toClass(partial: Partial<${modelName}>): ${modelName}{
-        return plainToClass(${modelName}, partial, {
+    public static fromPartial(partial: Partial<${modelName}>): ${modelName}{
+        return plainToInstance(${modelName}, partial, {
+            exposeUnsetFields: false,
+            enableImplicitConversion: true,
+            excludeExtraneousValues: true
+        })
+    }
+
+    public static fromEntity(entity: any) : ${modelName} {
+        return plainToInstance(this, entity, {
             exposeUnsetFields: false,
             enableImplicitConversion: true,
             excludeExtraneousValues: true
@@ -119,7 +128,7 @@ ${this.generateDTOs(contract)}
         modelInterfaceName: string,
         outputFilePath?: string,
     ): string {
-        const importStatements: string[] = [
+        let importStatements: string[] = [
             `import * as fastJson from 'fast-json-stringify';`,
         ];
 
@@ -152,7 +161,7 @@ ${this.generateDTOs(contract)}
             (field: any) => field.protoType === 'date',
         );
 
-        const imports = ['Expose', 'instanceToPlain', 'plainToClass'];
+        const imports = ['Expose', 'instanceToPlain', 'plainToInstance'];
 
         if (hasExclude || hasTransform || hasType) {
             if (hasExclude) imports.push('Exclude');
@@ -167,7 +176,8 @@ import {
 } from 'class-transformer';\n`,
         );
 
-        const validationImports = new Set<string>();
+        const validationImports = new Set<string>(['IsOptional']);
+
         const importEntitiesList = new Array<{
             entityName: string;
             path: string;
@@ -182,6 +192,8 @@ import {
                     validationImports.add(validationName);
                 });
             }
+
+            if (field.nullable === false) validationImports.add('IsNotEmpty');
 
             if (field.link && field.link.length > 0) {
                 validationImports.add('ValidateNested');
@@ -226,6 +238,7 @@ import {
             });
         }
 
+        importStatements = [...new Set(importStatements)];
         return importStatements.length > 0 ? importStatements.join('\n') : '';
     }
 
@@ -239,6 +252,8 @@ import {
         } else {
             decorators.push(`    @Expose()`);
         }
+
+        if (field.nullable === false) decorators.push(`    @IsNotEmpty()`);
 
         if (field.transform) {
             const cleanedTransform = field.transform
@@ -481,8 +496,16 @@ ${Object.entries(contract.messages[key].properties)
         return instanceToPlain(this);
     }
 
-    public static toClass(partial: Partial<${contract.messages[key].name}DTO>): ${contract.messages[key].name}DTO{
-        return plainToClass(${contract.messages[key].name}DTO, partial, {
+    public static fromPartial(partial: Partial<${contract.messages[key].name}DTO>): ${contract.messages[key].name}DTO{
+        return plainToInstance(${contract.messages[key].name}DTO, partial, {
+            exposeUnsetFields: false,
+            enableImplicitConversion: true,
+            excludeExtraneousValues: true
+        })
+    }
+
+    public static fromEntity(entity: any): ${contract.messages[key].name}DTO {
+        return plainToInstance(${contract.messages[key].name}DTO, entity, {
             exposeUnsetFields: false,
             enableImplicitConversion: true,
             excludeExtraneousValues: true

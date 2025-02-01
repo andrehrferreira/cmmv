@@ -6,9 +6,7 @@ import * as Terser from 'terser';
 //import { build } from 'esbuild';
 
 import { IHTTPSettings, ConfigSchema } from './interfaces';
-
 import { ITranspile, Logger, Scope, Transpile, Module, Config } from '.';
-
 import { AbstractHttpAdapter, AbstractWSAdapter } from './abstracts';
 
 import {
@@ -248,7 +246,7 @@ export class Application {
                 beautify: false,
             },
             sourceMap: {
-                url: 'inline', // Gera o sourcemap diretamente embutido no arquivo
+                url: 'inline',
             },
         });
 
@@ -428,7 +426,11 @@ export class Application {
 **/
 
 import 'reflect-metadata';
-import { Module, ApplicationTranspile } from '@cmmv/core';
+
+import { 
+    Module, ApplicationTranspile,
+    ApplicationConfig 
+} from '@cmmv/core';
 
 //Controllers
 ${Application.appModule.controllers.map(controller => `import { ${controller.name} } from '${controller.path}';`).join('\n')}
@@ -437,6 +439,7 @@ ${Application.appModule.controllers.map(controller => `import { ${controller.nam
 ${Application.appModule.providers.map(provider => `import { ${provider.name} } from '${provider.path}';`).join('\n')}
 
 export let ApplicationModule = new Module("app", {
+    configs: [ApplicationConfig],
     controllers: [
         ${Application.appModule.controllers.map(controller => controller.name).join(', \n\t\t')}
     ],

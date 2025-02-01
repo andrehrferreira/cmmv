@@ -108,7 +108,7 @@ export class AuthController {
     
 import * as jwt from 'jsonwebtoken';
 import { validate } from 'class-validator';
-import { plainToClass } from 'class-transformer';
+import { plainToInstance } from 'class-transformer';
 
 import { 
     Telemetry, Service, 
@@ -153,14 +153,35 @@ export class AuthService extends AbstractService {
             process.env.NODE_ENV !== 'dev'
         );
 
-        const userValidation = plainToClass(User, payload, { 
+        const userValidation = plainToInstance(User, payload, { 
             exposeUnsetFields: true,
-            enableImplicitConversion: true
+            enableImplicitConversion: true,
+            excludeExtraneousValues: true
         }); 
 
+        const errors = await validate(userValidation, { 
+            forbidUnknownValues: false,
+            skipMissingProperties: true,
+            stopAtFirstError: true, 
+        });
+
+        if (errors.length > 0) {
+            return { 
+                result: { 
+                    success: false, 
+                    token: "", 
+                    message: JSON.stringify(errors[0].constraints) 
+                }, 
+                user: null 
+            };
+        }
+        
         ${
             hasRepository
-                ? `let user = await Repository.findBy(UserEntity, userValidation);
+                ? `let user = await Repository.findBy(UserEntity, {
+            username: userValidation.username,
+            password: userValidation.password
+        });
 
         if(
             !user && env === "dev" && 
@@ -174,17 +195,33 @@ export class AuthService extends AbstractService {
             } as UserEntity;
         }
 
-        if (!user) 
-            return { result: { success: false, token: "", message: "Invalid credentials" }, user: null  };`
+        if (!user) {
+            return { 
+                result: { 
+                    success: false, 
+                    token: "", 
+                    message: "Invalid credentials" 
+                }, 
+                user: null  
+            };
+        }`
                 : `const user = { id: 0, username: "dummyUsername", password: "dummyPasswordHash" };
-        if (userValidation.password !== "dummyPasswordHash") 
-            return { result: { success: false, token: "", message: "Invalid credentials" }, user: null };`
+
+        if (userValidation.password !== "dummyPasswordHash") {
+            return { 
+                result: { 
+                    success: false, 
+                    token: "", 
+                    message: "Invalid credentials" 
+                }, user: null };
+            }
+        }`
         }
 
         const token = jwt.sign({ 
             id: ${Config.get('repository.type') === 'mongodb' ? `user._id` : `user.id`},
             username: payload.username,
-            root: user.root,
+            root: user.root || false,
             roles: user.roles || [],
             groups: user.groups || []
         }, jwtToken, { expiresIn });
@@ -206,8 +243,16 @@ export class AuthService extends AbstractService {
         }
 
         ${hasCache ? `CacheService.set(\`user:\${${Config.get('repository.type') === 'mongodb' ? `user._id` : `user.id`}}\`, JSON.stringify(user), expiresIn);\n` : ''}        
-        Telemetry.end('AuthService::login', req?.requestId);        
-        return { result: { success: true, token, message: "Login successful" }, user };
+        Telemetry.end('AuthService::login', req?.requestId);
+
+        return { 
+            result: { 
+                success: true, 
+                token, 
+                message: "Login successful" 
+            }, 
+            user 
+        };
     }
 
 ${
@@ -215,7 +260,7 @@ ${
         ? `    public async register(payload: RegisterRequest, req?: any): Promise<RegisterResponse> {
         Telemetry.start('AuthService::register', req?.requestId);
 
-        const newUser = plainToClass(User, payload, { 
+        const newUser = plainToInstance(User, payload, { 
             exposeUnsetFields: true,
             enableImplicitConversion: true
         }); 

@@ -9,9 +9,9 @@
 import * as fastJson from 'fast-json-stringify';
 import { ObjectId } from 'mongodb';
 
-import { Expose, instanceToPlain, plainToClass } from 'class-transformer';
+import { Expose, instanceToPlain, plainToInstance } from 'class-transformer';
 
-import { IsString, IsNotEmpty } from 'class-validator';
+import { IsOptional, IsString, IsNotEmpty } from 'class-validator';
 
 export interface II18nCoins {
     _id?: ObjectId;
@@ -23,9 +23,11 @@ export interface II18nCoins {
 //Model
 export class I18nCoins implements II18nCoins {
     @Expose()
+    @IsOptional()
     _id?: ObjectId;
 
     @Expose({ toClassOnly: true })
+    @IsOptional()
     id: string;
 
     @Expose()
@@ -50,8 +52,16 @@ export class I18nCoins implements II18nCoins {
         return instanceToPlain(this);
     }
 
-    public static toClass(partial: Partial<I18nCoins>): I18nCoins {
-        return plainToClass(I18nCoins, partial, {
+    public static fromPartial(partial: Partial<I18nCoins>): I18nCoins {
+        return plainToInstance(I18nCoins, partial, {
+            exposeUnsetFields: false,
+            enableImplicitConversion: true,
+            excludeExtraneousValues: true,
+        });
+    }
+
+    public static fromEntity(entity: any): I18nCoins {
+        return plainToInstance(this, entity, {
             exposeUnsetFields: false,
             enableImplicitConversion: true,
             excludeExtraneousValues: true,

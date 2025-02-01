@@ -5,7 +5,6 @@ import {
     Application,
     Config,
     ITranspile,
-    Logger,
     Scope,
     AbstractTranspile,
     IContract,
@@ -214,6 +213,7 @@ ${contract.services
     }
 
     private generateController(contract: IContract): void {
+        const telemetry = Config.get<boolean>('app.telemetry');
         const controllerName = `${contract.controllerName}Controller`;
         const serviceName = `${contract.controllerName}Service`;
         const controllerFileNameGenerated = `${contract.controllerName.toLowerCase()}.controller.generated.ts`;
@@ -241,7 +241,7 @@ ${contract.services
 
         importsFromModel = [...new Set(importsFromModel)];
 
-        const controllerTemplateGenerated = `/**                                                                               
+        let controllerTemplateGenerated = `/**                                                                               
     **********************************************
     This script was generated automatically by CMMV.
     It is recommended not to modify this file manually, 
@@ -271,7 +271,7 @@ export class ${controllerName}Generated {
     constructor(private readonly ${serviceName.toLowerCase()}: ${serviceName}) {}
 
     @Get()${this.getControllerDecorators({ authRouter, hasCache, contract }, { cacheKeyPrefix, cacheTtl, cacheCompress }, 'get')}
-    async getAll(@Queries() queries: any, @Req() req) {
+    async getAll(@Queries() queries: any, @Req() req): Promise<${contract.controllerName}[] | null> {
         Telemetry.start('${controllerName}::GetAll', req.requestId);
         let result = await this.${serviceName.toLowerCase()}.getAll(queries, req);
         Telemetry.end('${controllerName}::GetAll', req.requestId);
@@ -279,7 +279,7 @@ export class ${controllerName}Generated {
     }
 
     @Get(':id')${this.getControllerDecorators({ authRouter, hasCache, contract }, { cacheKeyPrefix, cacheTtl, cacheCompress }, 'get')}
-    async getById(@Param('id') id: string, @Req() req) {
+    async getById(@Param('id') id: string, @Req() req): Promise<${contract.controllerName} | null> {
         Telemetry.start('${controllerName}::GetById', req.requestId);
         let result = await this.${serviceName.toLowerCase()}.getById(id, req);
         Telemetry.end('${controllerName}::GetById', req.requestId);
@@ -287,7 +287,7 @@ export class ${controllerName}Generated {
     }
 
     @Post()${this.getControllerDecorators({ authRouter, hasCache: false, contract }, { cacheKeyPrefix, cacheTtl, cacheCompress }, 'insert')}
-    async add(@Body() item: ${contract.controllerName}, @Req() req) {
+    async add(@Body() item: ${contract.controllerName}, @Req() req): Promise<${contract.controllerName} | null> {
         Telemetry.start('${controllerName}::Add', req.requestId);
         let result = await this.${serviceName.toLowerCase()}.add(item, req);${hasCache ? `\n        CacheService.del("${cacheKeyPrefix}getAll");` : ''}
         Telemetry.end('${controllerName}::Add', req.requestId);
@@ -295,7 +295,7 @@ export class ${controllerName}Generated {
     }
 
     @Put(':id')${this.getControllerDecorators({ authRouter, hasCache: false, contract }, { cacheKeyPrefix, cacheTtl, cacheCompress }, 'update')}
-    async update(@Param('id') id: string, @Body() item: ${contract.controllerName}, @Req() req) {
+    async update(@Param('id') id: string, @Body() item: ${contract.controllerName}, @Req() req): Promise<{ success: boolean, affected: number }> {
         Telemetry.start('${controllerName}::Update', req.requestId);
         let result = await this.${serviceName.toLowerCase()}.update(id, item, req);${hasCache ? `\n        CacheService.del(\`${cacheKeyPrefix}\${id}\`);\n        CacheService.del("${cacheKeyPrefix}getAll");` : ''}
         Telemetry.end('${controllerName}::Update', req.requestId);
@@ -322,6 +322,11 @@ ${contract.services
     })
     .join('\n\n')}
 }`;
+
+        if (!telemetry)
+            controllerTemplateGenerated = this.removeTelemetry(
+                controllerTemplateGenerated,
+            );
 
         const outputDir = this.getRootPath(contract, 'controllers');
 
