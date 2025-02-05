@@ -1,8 +1,16 @@
-// Generated automatically by CMMV
+/**                                                                               
+    **********************************************
+    This script was generated automatically by CMMV.
+    It is recommended not to modify this file manually, 
+    as it may be overwritten by the application.
+    **********************************************
+**/
 
 import * as fastJson from 'fast-json-stringify';
-import { ObjectId } from 'mongodb';
-import { Expose, instanceToPlain } from 'class-transformer';
+
+import { Expose, instanceToPlain, plainToInstance } from 'class-transformer';
+
+import { IsOptional } from 'class-validator';
 
 export interface IWsError {
     message: string;
@@ -10,7 +18,12 @@ export interface IWsError {
     context: string;
 }
 
+//Model
 export class WsError implements IWsError {
+    @Expose({ toClassOnly: true })
+    @IsOptional()
+    id: string;
+
     @Expose()
     message: string;
 
@@ -28,19 +41,46 @@ export class WsError implements IWsError {
         return instanceToPlain(this);
     }
 
+    public static fromPartial(partial: Partial<WsError>): WsError {
+        return plainToInstance(WsError, partial, {
+            exposeUnsetFields: false,
+            enableImplicitConversion: true,
+            excludeExtraneousValues: true,
+        });
+    }
+
+    public static fromEntity(entity: any): WsError {
+        return plainToInstance(this, entity, {
+            exposeUnsetFields: false,
+            enableImplicitConversion: true,
+            excludeExtraneousValues: true,
+        });
+    }
+
     public toString() {
         return WsErrorFastSchema(this);
     }
 }
 
 // Schema for fast-json-stringify
-export const WsErrorFastSchema = fastJson({
+export const WsErrorFastSchemaStructure = {
     title: 'WsError Schema',
     type: 'object',
     properties: {
-        message: { type: 'string' },
-        code: { type: 'integer' },
-        context: { type: 'string' },
+        message: {
+            type: 'string',
+            nullable: false,
+        },
+        code: {
+            type: 'integer',
+            nullable: false,
+        },
+        context: {
+            type: 'string',
+            nullable: false,
+        },
     },
-    required: [],
-});
+    required: ['message', 'code', 'context'],
+};
+
+export const WsErrorFastSchema = fastJson(WsErrorFastSchemaStructure);

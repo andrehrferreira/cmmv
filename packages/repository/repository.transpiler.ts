@@ -1,161 +1,213 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { Config, ITranspile, Logger, Scope } from '@cmmv/core';
+import {
+    AbstractTranspile,
+    Config,
+    ITranspile,
+    Logger,
+    Scope,
+    IContract,
+    CONTROLLER_NAME_METADATA,
+} from '@cmmv/core';
 
-export class RepositoryTranspile implements ITranspile {
-    private logger: Logger = new Logger('RepositoryTranspile');
-
+export class RepositoryTranspile
+    extends AbstractTranspile
+    implements ITranspile
+{
     run(): void {
         const contracts = Scope.getArray<any>('__contracts');
 
-        contracts?.forEach((contract: any) => {
+        contracts?.forEach((contract: IContract) => {
             if (contract.generateEntities) this.generateEntity(contract);
             if (contract.generateController) this.generateService(contract);
         });
     }
 
-    private generateEntity(contract: any): void {
-        const outputPath = path.resolve(contract.protoPath);
-        const outputDir = path.dirname(outputPath);
+    private generateEntity(contract: IContract): void {
         const entityName = contract.controllerName;
         const modelName = `${entityName}.Model`;
         const entityFileName = `${entityName.toLowerCase()}.entity.ts`;
+        const schemaName = contract.options?.databaseSchemaName
+            ? contract.options?.databaseSchemaName
+            : entityName.toLowerCase();
 
-        const entityTemplate = `// Generated automatically by CMMV
+        const extraFields = this.generateExtraFields(contract);
+        const extraEntitiesImport = this.generateExtraImport(contract);
+
+        const entityTemplate = `/**                                                                               
+    **********************************************
+    This script was generated automatically by CMMV.
+    It is recommended not to modify this file manually, 
+    as it may be overwritten by the application.
+    **********************************************
+**/
         
 import { 
-    Entity, PrimaryGeneratedColumn, 
-    Column, Index, ObjectIdColumn, ObjectId
-} from 'typeorm';
+    ${this.generateTypeORMImports(contract)}
+} from "typeorm";
 
-import { I${entityName} } from '../models/${modelName.toLowerCase()}';
+import { I${entityName} } from "${this.getImportPath(contract, 'models', modelName.toLowerCase())}";${this.generateEntitiesImport(contract, extraEntitiesImport)}
 
-@Entity('${entityName.toLowerCase()}')
-${this.generateIndexes(entityName, contract.fields)}
+@Entity("${schemaName}")
+${this.generateIndexes(entityName, contract.fields, contract)}
 export class ${entityName}Entity implements I${entityName} {
     ${Config.get('repository.type') === 'mongodb' ? '@ObjectIdColumn()' : "@PrimaryGeneratedColumn('uuid')"}
     ${Config.get('repository.type') === 'mongodb' ? '_id: ObjectId' : 'id: string'};
 
-${contract.fields.map((field: any) => this.generateField(field)).join('\n\n')}
-}
-`;
+${contract.fields.map((field: any) => this.generateField(field)).join('\n\n')}${extraFields}
+}`;
 
-        const dirname = path.resolve(outputDir, '../entities');
-
-        if (!fs.existsSync(dirname)) fs.mkdirSync(dirname, { recursive: true });
-
-        const outputFilePath = path.join(
-            outputDir,
-            '../entities',
-            entityFileName,
-        );
-
+        const outputDir = this.getRootPath(contract, 'entities');
+        const outputFilePath = path.join(outputDir, entityFileName);
         fs.writeFileSync(outputFilePath, entityTemplate, 'utf8');
     }
 
-    private generateService(contract: any): void {
-        const outputPath = path.resolve(contract.protoPath);
-        const outputDir = path.dirname(outputPath);
+    private generateService(contract: IContract): void {
+        const telemetry = Config.get<boolean>('app.telemetry');
         const serviceName = `${contract.controllerName}Service`;
         const modelName = `${contract.controllerName}`;
         const modelInterfaceName = `I${modelName}`;
         const entityName = `${contract.controllerName}Entity`;
-        const serviceFileName = `${contract.controllerName.toLowerCase()}.service.ts`;
+        const serviceFileNameGenerated = `${contract.controllerName.toLowerCase()}.service.generated.ts`;
 
-        const serviceTemplate = `// Generated automatically by CMMV
+        let importsFromModel = [];
+
+        contract.services
+            .filter(service => service.createBoilerplate === true)
+            .map(service => {
+                importsFromModel.push(service.request);
+                importsFromModel.push(service.response);
+            });
+
+        importsFromModel = [...new Set(importsFromModel)];
+
+        let serviceTemplateGenerated = `/**                                                                               
+    **********************************************
+    This script was generated automatically by CMMV.
+    It is recommended not to modify this file manually, 
+    as it may be overwritten by the application.
+    **********************************************
+**/
 ${Config.get('repository.type') === 'mongodb' ? "\nimport { ObjectId } from 'mongodb';" : ''}
 import { validate } from 'class-validator';
-import { plainToClass } from 'class-transformer';
-import { Telemetry, AbstractService, Service } from "@cmmv/core";
+import { plainToInstance } from 'class-transformer';
+
+import { 
+    Telemetry, AbstractService, 
+    Logger 
+} from "@cmmv/core";
+
 import { Repository } from '@cmmv/repository';
-import { ${modelName}, ${modelInterfaceName} } from '../models/${modelName.toLowerCase()}.model';
-import { ${entityName} } from '../entities/${modelName.toLowerCase()}.entity';
 
-@Service("${contract.controllerName.toLowerCase()}")
-export class ${serviceName} extends AbstractService {
-    public override name = "${contract.controllerName.toLowerCase()}";
+import { 
+   ${modelName}, 
+   ${modelInterfaceName},${importsFromModel.join(', \n   ')}
+} from "${this.getImportPath(contract, 'models', modelName.toLowerCase())}.model";
 
-    async getAll(queries?: any, req?: any): Promise<${entityName}[] | null> {
+import { ${entityName} } from "${this.getImportPath(contract, 'entities', modelName.toLowerCase())}.entity";
+
+export class ${serviceName}Generated extends AbstractService {
+    protected logger: Logger = new Logger("${serviceName}Generated");
+
+    async getAll(queries?: any, req?: any): Promise<${modelName}[] | null> {
         try{
             Telemetry.start('${serviceName}::GetAll', req?.requestId);
             let result = await Repository.findAll(${entityName}, queries);
-            ${Config.get('repository.type') === 'mongodb' ? 'result = this.fixId(result)' : ''}
+            ${Config.get('repository.type') === 'mongodb' ? 'result = this.fixIds(result)' : ''}
             Telemetry.end('${serviceName}::GetAll', req?.requestId);
-            return result;
+
+            return result && result.length > 0 ? result.map((item) => {
+                return plainToInstance(${modelName}, item, {
+                    exposeUnsetFields: false,
+                    enableImplicitConversion: true,
+                    excludeExtraneousValues: true
+                });
+            }) : null;
         }
         catch(e){
+            this.logger.error(e);
             return null;
         }
     }
 
-    async getById(id: string, req?: any): Promise<${entityName} | null> {
+    async getById(id: string, req?: any): Promise<${modelName} | null> {
         try{
             Telemetry.start('${serviceName}::GetById', req?.requestId);
             let item = await Repository.findBy(${entityName}, { ${Config.get('repository.type') === 'mongodb' ? '_id: new ObjectId(id)' : 'id'} });
-            ${Config.get('repository.type') === 'mongodb' ? 'item = this.fixId(item)' : ''}
+            ${Config.get('repository.type') === 'mongodb' ? 'item = this.fixIds(item)' : ''}
             Telemetry.end('${serviceName}::GetById', req?.requestId);
 
             if (!item) 
                 throw new Error('Item not found');
             
-            return item;
+            return ${modelName}.fromEntity(item);
         }
         catch(e){
             return null;
         }
     }
 
-    async add(item: ${modelInterfaceName}, req?: any): Promise<${entityName}> {
+    async add(item: ${modelInterfaceName}, req?: any): Promise<${modelName}> {
         return new Promise(async (resolve, reject) => {
             try{
                 Telemetry.start('${serviceName}::Add', req?.requestId);
                         
-                let newItem: any = plainToClass(${modelName}, item, { 
+                let newItem: any = plainToInstance(${modelName}, item, { 
                     exposeUnsetFields: false,
-                    enableImplicitConversion: true
-                });
-
-                newItem = this.removeUndefined(newItem);
-                delete newItem._id;
+                    enableImplicitConversion: true,
+                    excludeExtraneousValues: true
+                });                
 
                 const errors = await validate(newItem, { 
                     forbidUnknownValues: false,
-                    skipMissingProperties: true,
                     stopAtFirstError: true, 
+                    skipMissingProperties: true
                 });
+
+                const userId: string = req.user.id;
+
+                if(typeof userId === "string")
+                    newItem.userCreator = ${Config.get('repository.type') === 'mongodb' ? 'new ObjectId(userId)' : 'userId'};
 
                 if (errors.length > 0) {
                     Telemetry.end('TaskService::Add', req?.requestId);
-                    reject(errors);
+                    reject({ success: false, message: Object.values(errors[0].constraints).join(', ') });
                 } 
-                else {                   
-                    let result: any = await Repository.insert<${entityName}>(${entityName}, newItem);
-                    ${Config.get('repository.type') === 'mongodb' ? 'result = this.fixId(result)' : ''}
-                    Telemetry.end('TaskService::Add', req?.requestId);
-                    resolve(result);                    
+                else {      
+                    newItem = this.removeUndefined(newItem);
+                    delete newItem._id;
+
+                    const result: any = await Repository.insert<${entityName}>(${entityName}, newItem);
+                    
+                    if(result.success){
+                        ${Config.get('repository.type') === 'mongodb' ? 'let dataFixed = this.fixIds(result.data)' : ''}
+                        Telemetry.end('TaskService::Add', req?.requestId);
+                        resolve(${modelName}.fromEntity(dataFixed)); 
+                    }    
+                    else {
+                        Telemetry.end('TaskService::Add', req?.requestId);
+                        reject(result);
+                    }           
                 }
             }
             catch(e){ 
                 Telemetry.end('TaskService::Add', req?.requestId);
-                console.log(e); 
-                reject(e)
+                reject({ success: false, message: e.message });
             }
         });
     }
 
-    async update(id: string, item: ${modelInterfaceName}, req?: any): Promise<${entityName}> {
+    async update(id: string, item: ${modelInterfaceName}, req?: any): Promise<{ success: boolean, affected: number }> {
         return new Promise(async (resolve, reject) => {
             try{
                 Telemetry.start('${serviceName}::Update', req?.requestId);
 
-                let updateItem: any = plainToClass(${modelName}, item, { 
+                let updateItem: any = plainToInstance(${modelName}, item, { 
                     exposeUnsetFields: false,
-                    enableImplicitConversion: true
+                    enableImplicitConversion: true,
+                    excludeExtraneousValues: true
                 });
-
-                updateItem = this.removeUndefined(updateItem);
-                delete updateItem._id;
 
                 const errors = await validate(updateItem, { 
                     forbidUnknownValues: false,
@@ -168,15 +220,16 @@ export class ${serviceName} extends AbstractService {
                     reject(errors);
                 } 
                 else {  
+                    updateItem = this.removeUndefined(updateItem);
+                    delete updateItem._id;
                     const result = await Repository.update(${entityName}, ${Config.get('repository.type') === 'mongodb' ? 'new ObjectId(id)' : 'id'}, updateItem);                    
                     Telemetry.end('TaskService::Add', req?.requestId);
-                    resolve(result);        
+                    resolve({ success: result > 0, affected: result });       
                 }                
             }
             catch(e){
                 Telemetry.end('${serviceName}::Update', req?.requestId);
-                console.log(e); 
-                reject(e)
+                reject({ success: false, affected: 0 });
             }
         });
     }
@@ -186,29 +239,44 @@ export class ${serviceName} extends AbstractService {
             Telemetry.start('${serviceName}::Delete', req?.requestId);
             const result = await Repository.delete(${entityName}, ${Config.get('repository.type') === 'mongodb' ? 'new ObjectId(id)' : 'id'});
             Telemetry.end('${serviceName}::Delete', req?.requestId);
-            return { success: result.affected > 0, affected: result.affected };
+            return { success: result > 0, affected: result };
         }
         catch(e){
+            Telemetry.end('${serviceName}::Delete', req?.requestId);
             return { success: false, affected: 0 };
         }
     }
+
+${contract.services
+    .filter(service => service.createBoilerplate === true)
+    .map(service => {
+        return `    async ${service.functionName}(payload: ${service.request}): Promise<${service.response}> {
+        throw new Error("Function ${service.functionName} not implemented");
+    }`;
+    })
+    .join('\n\n')}
 }`;
 
-        const dirname = path.resolve(outputDir, '../services');
+        if (!telemetry)
+            serviceTemplateGenerated = this.removeTelemetry(
+                serviceTemplateGenerated,
+            );
 
-        if (!fs.existsSync(dirname)) fs.mkdirSync(dirname, { recursive: true });
-
-        const outputFilePath = path.join(
-            outputDir,
-            '../services',
-            serviceFileName,
+        const outputDir = this.getRootPath(contract, 'services');
+        const outputFilePath = path.join(outputDir, serviceFileNameGenerated);
+        fs.writeFileSync(
+            outputFilePath,
+            this.removeExtraSpaces(serviceTemplateGenerated),
+            'utf8',
         );
-
-        fs.writeFileSync(outputFilePath, serviceTemplate, 'utf8');
     }
 
-    private generateIndexes(entityName: string, fields: any[]): string {
-        const indexDecorators = fields
+    private generateIndexes(
+        entityName: string,
+        fields: any[],
+        contract: IContract,
+    ): string {
+        let indexDecorators: any = fields
             .filter(field => field.index || field.unique)
             .map(field => {
                 const indexName = `idx_${entityName.toLowerCase()}_${field.propertyKey}`;
@@ -217,26 +285,63 @@ export class ${serviceName} extends AbstractService {
                 return `@Index("${indexName}", ${columns}${uniqueOption ? `, ${uniqueOption}` : ''})`;
             });
 
+        if (
+            contract.indexs &&
+            Array.isArray(contract.indexs) &&
+            contract.indexs.length > 0
+        ) {
+            indexDecorators = [
+                ...indexDecorators,
+                contract.indexs.map(index => {
+                    return `@Index("${index.name}", ${JSON.stringify(index.fields)}${index.options ? `, ${JSON.stringify(index.options)}` : ''})`;
+                }),
+            ];
+        }
+
         return indexDecorators.join('\n');
     }
 
     private generateField(field: any): string {
-        const tsType = this.mapToTsType(field.protoType);
-        const typeormType = this.mapToTypeORMType(field.protoType);
-
+        let tsType = this.mapToTsType(field.protoType);
         const columnOptions = this.generateColumnOptions(field);
-        const decorators = [`@Column({ ${columnOptions} })`];
+        let decorators = [`@Column({ ${columnOptions} })`];
+        let optional = field.nullable ? '?' : '';
 
-        return `    ${decorators.join(' ')}\n    ${field.propertyKey}: ${tsType};`;
+        if (field.link) {
+            decorators = [];
+
+            field.link.map(link => {
+                const contractInstance = new link.contract();
+                const controllerName = Reflect.getMetadata(
+                    CONTROLLER_NAME_METADATA,
+                    contractInstance.constructor,
+                );
+                const entityName = controllerName;
+
+                decorators.push(
+                    `@ManyToOne(() => ${entityName}Entity, (${link.entityName}) => ${link.entityName}.${link.field}, { nullable: ${link?.entityNullable === true || false ? 'true' : 'false'} })`,
+                );
+            });
+
+            tsType =
+                `${field.entityType}${field.protoRepeated ? '[]' : ''}` ||
+                'object';
+        }
+
+        return `    ${decorators.join(' ')}\n    ${field.propertyKey}${optional}: ${tsType};`;
     }
 
     private generateColumnOptions(field: any): string {
         const options = [];
         options.push(`type: '${this.mapToTypeORMType(field.protoType)}'`);
+
         if (field.defaultValue !== undefined)
-            options.push(`default: ${JSON.stringify(field.defaultValue)}`);
+            options.push(
+                `default: ${typeof field.defaultValue === 'object' ? JSON.stringify(field.defaultValue) : field.defaultValue}`,
+            );
         if (field.nullable && field.nullable === true)
             options.push(`nullable: true`);
+
         return options.join(', ');
     }
 
@@ -286,5 +391,126 @@ export class ${serviceName} extends AbstractService {
         };
 
         return typeMapping[type] || 'varchar';
+    }
+
+    private generateTypeORMImports(contract: IContract) {
+        let extraImport = [];
+
+        if (contract.options?.databaseTimestamps)
+            extraImport.push('CreateDateColumn', 'UpdateDateColumn');
+
+        if (contract.options?.databaseUserAction)
+            extraImport.push('ManyToOne', 'BeforeInsert');
+
+        contract.fields.map(field => {
+            if (field.link && field.link.length > 0)
+                extraImport.push('ManyToOne');
+        });
+
+        extraImport = [...new Set(extraImport)];
+
+        return `Entity, ${Config.get('repository.type') === 'mongodb' ? 'ObjectIdColumn' : 'PrimaryGeneratedColumn'}, 
+    Column, Index, ${Config.get('repository.type') === 'mongodb' ? 'ObjectId,' : ''} ${extraImport.length > 0 ? `\n\t${extraImport.join(', ')}` : ''}`;
+    }
+
+    private generateExtraFields(contract: IContract) {
+        let extraFields = '';
+
+        if (contract.options?.databaseTimestamps) {
+            extraFields += `
+    @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+    createdAt: Date;
+
+    @UpdateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
+    updatedAt: Date;`;
+        }
+
+        if (contract.options?.databaseUserAction) {
+            if (extraFields) extraFields += '\n';
+
+            extraFields += `
+    @ManyToOne(() => UserEntity, { nullable: false })
+    ${Config.get('repository.type') === 'mongodb' ? '@ObjectIdColumn({ nullable: false })' : "@Column({ type: 'varchar', nullable: false })"}
+    userCreator: ${Config.get('repository.type') === 'mongodb' ? 'ObjectId' : 'string'};
+
+    @ManyToOne(() => UserEntity, { nullable: true })
+    ${Config.get('repository.type') === 'mongodb' ? '@ObjectIdColumn({ nullable: true })' : "@Column({ type: 'varchar', nullable: true })"}
+    userLastUpdate: ${Config.get('repository.type') === 'mongodb' ? 'ObjectId' : 'string'};
+    
+    @BeforeInsert()
+    checkUserCreator() {
+        if (!this.userCreator) 
+            throw new Error("userCreator is required");
+    }`;
+        }
+
+        return extraFields ? `\n${extraFields}` : '';
+    }
+
+    private generateExtraImport(contract: IContract) {
+        let imports: Array<{ name: string; path: string }> = [];
+        const importEntitiesList = new Array<{
+            entityName: string;
+            path: string;
+        }>();
+
+        contract.fields?.forEach((field: any) => {
+            if (field.link && field.link.length > 0) {
+                field.link.map(link => {
+                    const contractInstance = new link.contract();
+                    const controllerName = Reflect.getMetadata(
+                        CONTROLLER_NAME_METADATA,
+                        contractInstance.constructor,
+                    );
+                    const entityName = controllerName;
+                    const entityFileName = `${entityName.toLowerCase()}.entity`;
+
+                    importEntitiesList.push({
+                        entityName: `${entityName}Entity`,
+                        path: this.getImportPathRelative(
+                            contractInstance,
+                            contract,
+                            'entities',
+                            entityFileName,
+                        ),
+                    });
+                });
+            }
+        });
+
+        if (contract.options?.databaseUserAction) {
+            imports.push({
+                name: 'UserEntity',
+                path: this.getImportPathWithoutSubPath(
+                    contract,
+                    'entities',
+                    'auth/user.entity',
+                ),
+            });
+        }
+
+        if (importEntitiesList.length > 0) {
+            importEntitiesList.map(importEntity => {
+                imports.push({
+                    name: importEntity.entityName,
+                    path: importEntity.path,
+                });
+            });
+        }
+
+        return imports;
+    }
+
+    private generateEntitiesImport(
+        contract: IContract,
+        extraImports: Array<{ name: string; path: string }>,
+    ) {
+        return extraImports.length > 0
+            ? extraImports
+                  .map(value => {
+                      return `\nimport { ${value.name} } from "${value.path}";`;
+                  })
+                  .join('')
+            : '';
     }
 }

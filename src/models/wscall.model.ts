@@ -1,8 +1,16 @@
-// Generated automatically by CMMV
+/**                                                                               
+    **********************************************
+    This script was generated automatically by CMMV.
+    It is recommended not to modify this file manually, 
+    as it may be overwritten by the application.
+    **********************************************
+**/
 
 import * as fastJson from 'fast-json-stringify';
-import { ObjectId } from 'mongodb';
-import { Expose, instanceToPlain } from 'class-transformer';
+
+import { Expose, instanceToPlain, plainToInstance } from 'class-transformer';
+
+import { IsOptional } from 'class-validator';
 
 export interface IWsCall {
     contract: number;
@@ -10,7 +18,12 @@ export interface IWsCall {
     data: Uint8Array;
 }
 
+//Model
 export class WsCall implements IWsCall {
+    @Expose({ toClassOnly: true })
+    @IsOptional()
+    id: string;
+
     @Expose()
     contract: number;
 
@@ -28,19 +41,46 @@ export class WsCall implements IWsCall {
         return instanceToPlain(this);
     }
 
+    public static fromPartial(partial: Partial<WsCall>): WsCall {
+        return plainToInstance(WsCall, partial, {
+            exposeUnsetFields: false,
+            enableImplicitConversion: true,
+            excludeExtraneousValues: true,
+        });
+    }
+
+    public static fromEntity(entity: any): WsCall {
+        return plainToInstance(this, entity, {
+            exposeUnsetFields: false,
+            enableImplicitConversion: true,
+            excludeExtraneousValues: true,
+        });
+    }
+
     public toString() {
         return WsCallFastSchema(this);
     }
 }
 
 // Schema for fast-json-stringify
-export const WsCallFastSchema = fastJson({
+export const WsCallFastSchemaStructure = {
     title: 'WsCall Schema',
     type: 'object',
     properties: {
-        contract: { type: 'integer' },
-        message: { type: 'integer' },
-        data: { type: 'string' },
+        contract: {
+            type: 'integer',
+            nullable: false,
+        },
+        message: {
+            type: 'integer',
+            nullable: false,
+        },
+        data: {
+            type: 'string',
+            nullable: false,
+        },
     },
-    required: [],
-});
+    required: ['contract', 'message', 'data'],
+};
+
+export const WsCallFastSchema = fastJson(WsCallFastSchemaStructure);

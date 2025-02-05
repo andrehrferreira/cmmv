@@ -1,0 +1,131 @@
+{
+    "options": {
+        "syntax": "proto3"
+    },
+    "nested": {
+        "i18n": {
+            "nested": {
+                "I18nCoins": {
+                    "fields": {
+                        "code": {
+                            "type": "string",
+                            "id": 1
+                        },
+                        "name": {
+                            "type": "string",
+                            "id": 2
+                        },
+                        "format": {
+                            "type": "string",
+                            "id": 3
+                        }
+                    }
+                },
+                "I18nCoinsList": {
+                    "fields": {
+                        "items": {
+                            "rule": "repeated",
+                            "type": "I18nCoins",
+                            "id": 1
+                        }
+                    }
+                },
+                "AddI18nCoinsRequest": {
+                    "fields": {
+                        "item": {
+                            "type": "I18nCoins",
+                            "id": 1
+                        }
+                    }
+                },
+                "AddI18nCoinsResponse": {
+                    "fields": {
+                        "id": {
+                            "type": "string",
+                            "id": 1
+                        },
+                        "item": {
+                            "type": "I18nCoins",
+                            "id": 2
+                        }
+                    }
+                },
+                "UpdateI18nCoinsRequest": {
+                    "fields": {
+                        "id": {
+                            "type": "string",
+                            "id": 1
+                        },
+                        "item": {
+                            "type": "I18nCoins",
+                            "id": 2
+                        }
+                    }
+                },
+                "UpdateI18nCoinsResponse": {
+                    "fields": {
+                        "success": {
+                            "type": "bool",
+                            "id": 1
+                        },
+                        "affected": {
+                            "type": "int32",
+                            "id": 2
+                        }
+                    }
+                },
+                "DeleteI18nCoinsRequest": {
+                    "fields": {
+                        "id": {
+                            "type": "string",
+                            "id": 1
+                        }
+                    }
+                },
+                "DeleteI18nCoinsResponse": {
+                    "fields": {
+                        "success": {
+                            "type": "bool",
+                            "id": 1
+                        },
+                        "affected": {
+                            "type": "int32",
+                            "id": 2
+                        }
+                    }
+                },
+                "GetAllI18nCoinsRequest": {
+                    "fields": {}
+                },
+                "GetAllI18nCoinsResponse": {
+                    "fields": {
+                        "items": {
+                            "type": "I18nCoinsList",
+                            "id": 1
+                        }
+                    }
+                },
+                "I18nCoinsService": {
+                    "methods": {
+                        "AddI18nCoins": {
+                            "requestType": "AddI18nCoinsRequest",
+                            "responseType": "AddI18nCoinsResponse"
+                        },
+                        "UpdateI18nCoins": {
+                            "requestType": "UpdateI18nCoinsRequest",
+                            "responseType": "UpdateI18nCoinsResponse"
+                        },
+                        "DeleteI18nCoins": {
+                            "requestType": "DeleteI18nCoinsRequest",
+                            "responseType": "DeleteI18nCoinsResponse"
+                        },
+                        "GetAllI18nCoins": {
+                            "requestType": "GetAllI18nCoinsRequest",
+                            "responseType": "GetAllI18nCoinsResponse"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

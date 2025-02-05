@@ -25,7 +25,7 @@ export const execute = (scope: any, exp: string, el?: Node) => {
     try {
         return fn(scope, el);
     } catch (e) {
-        console.error(e);
+        //console.error(e);
     }
 };
 

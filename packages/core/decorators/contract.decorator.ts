@@ -24,31 +24,106 @@ export interface ContractFieldOptions {
     toClassOnly?: boolean;
     transform?: Function;
     toObject?: Function;
+    toPlain?: Function;
     objectType?: string;
+    entityType?: string;
+    entityNullable?: boolean;
     validations?: ValidationOption[];
+    link?: ContractLink[];
+}
+
+export interface ContractIndex {
+    name: string;
+    fields: string[];
+    options?: ContractIndexOptions;
+}
+
+export interface ContractIndexOptions {
+    unique?: boolean;
+    spatial?: boolean;
+    fulltext?: boolean;
+    nullFiltered?: boolean;
+    parser?: string;
+    where?: string;
+    sparse?: boolean;
+    background?: boolean;
+    concurrent?: boolean;
+    expireAfterSeconds?: number;
+}
+
+export interface ContractExtraOptions {
+    databaseSchemaName?: string;
+    databaseTimestamps?: boolean;
+    databaseUserAction?: boolean;
 }
 
 export interface ContractOptions {
     controllerName: string;
     controllerCustomPath?: string;
-    protoPath: string;
-    protoPackage?: string;
+    subPath?: string;
+    protoPath?: string;
+    protoPackage?: string; //deprecated
     directMessage?: boolean;
     generateController?: boolean;
     generateEntities?: boolean;
     auth?: boolean;
     imports?: Array<string>;
     cache?: CacheOptions;
+    index?: ContractIndex[];
+    options?: ContractExtraOptions;
     viewForm?: new () => any;
     viewPage?: new () => any;
 }
 
+export interface ContractLink {
+    contract: new () => any;
+    entityName: string;
+    field: string;
+    array?: boolean;
+}
+
+export interface ContractMessageProperty {
+    type:
+        | 'string'
+        | 'bool'
+        | 'int'
+        | 'float'
+        | 'bytes'
+        | 'date'
+        | 'timestamp'
+        | 'json'
+        | 'simpleArray'
+        | 'bigint'
+        | 'any';
+    required: boolean;
+    default?: string;
+}
+
+export interface ContractOptionsMessage {
+    name: string;
+    properties: Record<string, ContractMessageProperty>;
+}
+
+export interface ContractOptionsService {
+    path: string;
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE';
+    name: string;
+    request: string;
+    response: string;
+    auth?: boolean;
+    createBoilerplate?: boolean;
+    functionName: string;
+}
+
 export const CONTRACT_WATERMARK = Symbol('contract_watermark');
 export const CONTROLLER_NAME_METADATA = Symbol('controller_name_metadata');
+export const SUB_PATH_METADATA = Symbol('sub_path_metadata');
 export const PROTO_PATH_METADATA = Symbol('proto_path_metadata');
 export const PROTO_PACKAGE_METADATA = Symbol('proto_package_metadata');
 export const DATABASE_TYPE_METADATA = Symbol('database_type_metadata');
 export const FIELD_METADATA = Symbol('contract_field_metadata');
+export const MESSAGE_METADATA = Symbol('contract_message_metadata');
+export const SERVICE_METADATA = Symbol('contract_service_metadata');
 export const DIRECTMESSAGE_METADATA = Symbol('contract_directmessage_metadata');
 export const GENERATE_CONTROLLER_METADATA = Symbol(
     'generate_controller_metadata',
@@ -59,7 +134,9 @@ export const CONTROLLER_CUSTOM_PATH_METADATA = Symbol(
     'controller_custom_path_metadata',
 );
 export const CONTROLLER_IMPORTS = Symbol('contract_imports');
+export const CONTROLLER_INDEXS = Symbol('contract_indexs');
 export const CONTROLLER_CACHE = Symbol('contract_cache');
+export const CONTROLLER_OPTIONS = Symbol('contract_options');
 export const CONTROLLER_VIEWFORM = Symbol('contract_viewform');
 export const CONTROLLER_VIEWPAGE = Symbol('contract_viewpage');
 
@@ -77,6 +154,7 @@ export function Contract(options?: ContractOptions): ClassDecorator {
     }
 
     const defaultControllerName = 'DefaultContract';
+    const defaultSubPath = '';
     const defaultProtoPath = 'contract.proto';
     const defaultProtoPackage = '';
     const defaultDirectMessage = false;
@@ -85,12 +163,15 @@ export function Contract(options?: ContractOptions): ClassDecorator {
     const defaultAuth = true;
     const defaultControllerCustomPath = '';
     const defaultImports = [];
+    const defaultIndexs = [];
     const defaultCache = null;
+    const defaultOptions = null;
     const defaultViewForm = null;
     const defaultViewPage = null;
 
     const [
         controllerName,
+        subPath,
         protoPath,
         directMessage,
         protoPackage,
@@ -99,12 +180,15 @@ export function Contract(options?: ContractOptions): ClassDecorator {
         auth,
         controllerCustomPath,
         imports,
+        indexs,
         cache,
+        optionsExtra,
         viewForm,
         viewPage,
     ] = !options
         ? [
               defaultControllerName,
+              defaultSubPath,
               defaultProtoPath,
               defaultDirectMessage,
               defaultProtoPackage,
@@ -113,12 +197,15 @@ export function Contract(options?: ContractOptions): ClassDecorator {
               defaultAuth,
               defaultControllerCustomPath,
               defaultImports,
+              defaultIndexs,
               defaultCache,
+              defaultOptions,
               defaultViewForm,
               defaultViewPage,
           ]
         : [
               options.controllerName || defaultControllerName,
+              options.subPath || defaultSubPath,
               options.protoPath || defaultProtoPath,
               options.directMessage || defaultDirectMessage,
               options.protoPackage || defaultProtoPackage,
@@ -127,7 +214,9 @@ export function Contract(options?: ContractOptions): ClassDecorator {
               options.auth ?? defaultAuth,
               options.controllerCustomPath || defaultControllerCustomPath,
               options.imports || defaultImports,
+              options.index || defaultIndexs,
               options.cache || defaultCache,
+              options.options || defaultOptions,
               options.viewForm || defaultViewForm,
               options.viewPage || defaultViewPage,
           ];
@@ -139,6 +228,7 @@ export function Contract(options?: ContractOptions): ClassDecorator {
             controllerName,
             target,
         );
+        Reflect.defineMetadata(SUB_PATH_METADATA, subPath, target);
         Reflect.defineMetadata(PROTO_PATH_METADATA, protoPath, target);
         Reflect.defineMetadata(PROTO_PACKAGE_METADATA, protoPackage, target);
         Reflect.defineMetadata(DIRECTMESSAGE_METADATA, directMessage, target);
@@ -159,7 +249,9 @@ export function Contract(options?: ContractOptions): ClassDecorator {
             target,
         );
         Reflect.defineMetadata(CONTROLLER_IMPORTS, imports, target);
+        Reflect.defineMetadata(CONTROLLER_INDEXS, indexs, target);
         Reflect.defineMetadata(CONTROLLER_CACHE, cache, target);
+        Reflect.defineMetadata(CONTROLLER_OPTIONS, optionsExtra, target);
         Reflect.defineMetadata(CONTROLLER_VIEWFORM, viewForm, target);
         Reflect.defineMetadata(CONTROLLER_VIEWPAGE, viewPage, target);
     };
@@ -176,5 +268,33 @@ export function ContractField(
         existingFields.push(newField);
 
         Reflect.defineMetadata(FIELD_METADATA, existingFields, target);
+    };
+}
+
+export function ContractMessage(
+    options?: ContractOptionsMessage,
+): PropertyDecorator {
+    return (target: object, propertyKey: string | symbol) => {
+        const existingFields =
+            Reflect.getMetadata(MESSAGE_METADATA, target) || [];
+
+        const newField = { propertyKey, ...options };
+        existingFields.push(newField);
+
+        Reflect.defineMetadata(MESSAGE_METADATA, existingFields, target);
+    };
+}
+
+export function ContractService(
+    options?: ContractOptionsService,
+): PropertyDecorator {
+    return (target: object, propertyKey: string | symbol) => {
+        const existingFields =
+            Reflect.getMetadata(SERVICE_METADATA, target) || [];
+
+        const newField = { propertyKey, ...options };
+        existingFields.push(newField);
+
+        Reflect.defineMetadata(SERVICE_METADATA, existingFields, target);
     };
 }

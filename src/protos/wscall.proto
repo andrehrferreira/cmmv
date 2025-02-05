@@ -1,0 +1,16 @@
+/**                                                                               
+    **********************************************
+    This script was generated automatically by CMMV.
+    It is recommended not to modify this file manually, 
+    as it may be overwritten by the application.
+    **********************************************
+**/
+
+syntax = "proto3";
+package ws;
+
+message WsCall {
+   int32 contract = 1;
+   int32 message = 2;
+   bytes data = 3;
+}

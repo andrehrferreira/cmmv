@@ -61,24 +61,10 @@ export class Repository extends Singleton {
         }
     }
 
-    public static async findOneBy<Entity>(
-        entity: new () => Entity,
-        criteria: FindOptionsWhere<Entity>,
-    ): Promise<Entity | null> {
-        try {
-            const repository = this.getRepository(entity);
-            return await repository.findOne({ where: criteria });
-        } catch (e) {
-            if (process.env.NODE_ENV === 'dev')
-                Repository.logger.error(e.message);
-
-            return null;
-        }
-    }
-
     public static async findAll<Entity>(
         entity: new () => Entity,
         queries?: any,
+        relations?: [],
     ): Promise<Entity[]> {
         try {
             const isMongoDB = Config.get('repository.type') === 'mongodb';
@@ -97,10 +83,11 @@ export class Repository extends Singleton {
             if (isMongoDB) {
                 const mongoQuery: any = {};
 
-                if (search && searchField)
+                if (search && searchField) {
                     mongoQuery[searchField] = {
                         $regex: new RegExp(search, 'i'),
                     }; // Case-insensitive search
+                }
 
                 Object.assign(mongoQuery, filters);
 
@@ -146,16 +133,16 @@ export class Repository extends Singleton {
     public static async insert<Entity>(
         entity: new () => Entity,
         data: DeepPartial<Entity>,
-    ): Promise<Entity> {
+    ): Promise<{ data?: Entity; success: boolean; message?: string }> {
         try {
             const repository = this.getRepository(entity);
             const newEntity = repository.create(data);
-            return await repository.save(newEntity);
+            return { data: await repository.save(newEntity), success: true };
         } catch (e) {
             if (process.env.NODE_ENV === 'dev')
                 Repository.logger.error(e.message);
 
-            return null;
+            return { success: false, message: e.message };
         }
     }
 
@@ -163,34 +150,32 @@ export class Repository extends Singleton {
         entity: new () => Entity,
         id: any,
         data: any,
-    ): Promise<Entity | null> {
+    ): Promise<number | null> {
         try {
             const repository = this.getRepository(entity);
-            await repository.update(id, data);
-            return await this.findOneBy(entity, {
-                id,
-            } as FindOptionsWhere<Entity>);
+            const result = await repository.update(id, data);
+            return result.affected;
         } catch (e) {
             if (process.env.NODE_ENV === 'dev')
                 Repository.logger.error(e.message);
 
-            return null;
+            return 0;
         }
     }
 
     public static async delete<Entity>(
         entity: new () => Entity,
         id: any,
-    ): Promise<DeleteResult> {
+    ): Promise<number | null> {
         try {
             const repository = this.getRepository(entity);
             const result = await repository.delete(id);
-            return result;
+            return result.affected;
         } catch (e) {
             if (process.env.NODE_ENV === 'dev')
                 Repository.logger.error(e.message);
 
-            return null;
+            return 0;
         }
     }
 }

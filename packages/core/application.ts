@@ -6,19 +6,14 @@ import * as Terser from 'terser';
 //import { build } from 'esbuild';
 
 import { IHTTPSettings, ConfigSchema } from './interfaces';
-
 import { ITranspile, Logger, Scope, Transpile, Module, Config } from '.';
-
-import {
-    AbstractContract,
-    AbstractHttpAdapter,
-    AbstractWSAdapter,
-} from './abstracts';
+import { AbstractHttpAdapter, AbstractWSAdapter } from './abstracts';
 
 import {
     CONTROLLER_NAME_METADATA,
-    DATABASE_TYPE_METADATA,
     FIELD_METADATA,
+    MESSAGE_METADATA,
+    SERVICE_METADATA,
     PROTO_PATH_METADATA,
     DIRECTMESSAGE_METADATA,
     PROTO_PACKAGE_METADATA,
@@ -26,10 +21,13 @@ import {
     AUTH_METADATA,
     CONTROLLER_CUSTOM_PATH_METADATA,
     CONTROLLER_IMPORTS,
+    CONTROLLER_INDEXS,
     CONTROLLER_CACHE,
     GENERATE_ENTITIES_METADATA,
+    CONTROLLER_OPTIONS,
     CONTROLLER_VIEWFORM,
     CONTROLLER_VIEWPAGE,
+    SUB_PATH_METADATA,
 } from './decorators';
 
 import { ApplicationTranspile } from './transpilers';
@@ -220,7 +218,13 @@ export class Application {
         });
 
         const lines: string[] = [];
-        lines.push('// Generated automatically by CMMV');
+        lines.push(`/**                                                                               
+    **********************************************
+    This script was generated automatically by CMMV.
+    It is recommended not to modify this file manually, 
+    as it may be overwritten by the application.
+    **********************************************
+**/`);
 
         files.forEach(file => {
             lines.push(fs.readFileSync(file, 'utf-8'));
@@ -242,7 +246,7 @@ export class Application {
                 beautify: false,
             },
             sourceMap: {
-                url: 'inline', // Gera o sourcemap diretamente embutido no arquivo
+                url: 'inline',
             },
         });
 
@@ -300,6 +304,10 @@ export class Application {
                 CONTROLLER_NAME_METADATA,
                 contract.constructor,
             );
+            const subPath = Reflect.getMetadata(
+                SUB_PATH_METADATA,
+                contract.constructor,
+            );
             const protoPath = Reflect.getMetadata(
                 PROTO_PATH_METADATA,
                 contract.constructor,
@@ -308,7 +316,11 @@ export class Application {
                 PROTO_PACKAGE_METADATA,
                 contract.constructor,
             );
-            const fields = Reflect.getMetadata(FIELD_METADATA, prototype);
+            const fields = Reflect.getMetadata(FIELD_METADATA, prototype) || [];
+            const messages =
+                Reflect.getMetadata(MESSAGE_METADATA, prototype) || [];
+            const services =
+                Reflect.getMetadata(SERVICE_METADATA, prototype) || [];
             const directMessage = Reflect.getMetadata(
                 DIRECTMESSAGE_METADATA,
                 contract.constructor,
@@ -333,8 +345,16 @@ export class Application {
                 CONTROLLER_IMPORTS,
                 contract.constructor,
             );
+            const indexs = Reflect.getMetadata(
+                CONTROLLER_INDEXS,
+                contract.constructor,
+            );
             const cache = Reflect.getMetadata(
                 CONTROLLER_CACHE,
+                contract.constructor,
+            );
+            const options = Reflect.getMetadata(
+                CONTROLLER_OPTIONS,
                 contract.constructor,
             );
             const viewForm = Reflect.getMetadata(
@@ -348,18 +368,23 @@ export class Application {
 
             const contractStructure = {
                 controllerName,
+                subPath,
                 protoPath,
                 protoPackage,
                 fields,
+                messages,
+                services,
                 directMessage,
                 generateController,
                 generateEntities,
                 auth,
                 controllerCustomPath,
                 imports,
+                indexs,
                 cache,
                 customProto: contract.customProto,
                 customTypes: contract.customTypes,
+                options,
                 viewForm,
                 viewPage,
             };
@@ -392,14 +417,29 @@ export class Application {
         try {
             const outputPath = path.resolve('src', `app.module.ts`);
 
-            const moduleTemplate = `// Generated automatically by CMMV
+            const moduleTemplate = `/**                                                                               
+    **********************************************
+    This script was generated automatically by CMMV.
+    It is recommended not to modify this file manually, 
+    as it may be overwritten by the application.
+    **********************************************
+**/
 
 import 'reflect-metadata';
-import { Module, ApplicationTranspile } from '@cmmv/core';
+
+import { 
+    Module, ApplicationTranspile,
+    ApplicationConfig 
+} from '@cmmv/core';
+
+//Controllers
 ${Application.appModule.controllers.map(controller => `import { ${controller.name} } from '${controller.path}';`).join('\n')}
+
+//Providers
 ${Application.appModule.providers.map(provider => `import { ${provider.name} } from '${provider.path}';`).join('\n')}
 
 export let ApplicationModule = new Module("app", {
+    configs: [ApplicationConfig],
     controllers: [
         ${Application.appModule.controllers.map(controller => controller.name).join(', \n\t\t')}
     ],

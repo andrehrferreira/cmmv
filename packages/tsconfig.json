@@ -11,7 +11,6 @@
         { "path": "./scheduling/tsconfig.build.json" },
         { "path": "./testing/tsconfig.build.json" },
         { "path": "./view/tsconfig.build.json" },
-        { "path": "./vite/tsconfig.build.json" },
         { "path": "./ws/tsconfig.build.json" }
     ]
 }

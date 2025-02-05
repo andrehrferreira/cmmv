@@ -4,14 +4,10 @@ import { ProtobufModule } from '@cmmv/protobuf';
 import { WSModule, WSAdapter } from '@cmmv/ws';
 import { ViewModule } from '@cmmv/view';
 import { RepositoryModule, Repository } from '@cmmv/repository';
-import { CacheModule, CacheService } from '@cmmv/cache';
 import { SchedulingModule, SchedulingService } from '@cmmv/scheduling';
 import { AuthModule } from '@cmmv/auth';
-import { ViteModule } from '@cmmv/vite';
 import { IndexModule } from './modules/index.module';
-
-//Contracts
-import { TasksContract } from './contracts/tasks.contract';
+import { MainModule } from './modules/main.module';
 
 Application.create({
     httpAdapter: DefaultAdapter,
@@ -22,12 +18,10 @@ Application.create({
         WSModule,
         ViewModule,
         RepositoryModule,
-        CacheModule,
         SchedulingModule,
         AuthModule,
-        ViteModule,
         IndexModule,
+        MainModule,
     ],
-    services: [Repository, CacheService, SchedulingService],
-    contracts: [TasksContract],
+    services: [Repository, SchedulingService],
 });

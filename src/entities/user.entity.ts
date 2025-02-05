@@ -1,19 +1,19 @@
-// Generated automatically by CMMV
+/**                                                                               
+    **********************************************
+    This script was generated automatically by CMMV.
+    It is recommended not to modify this file manually, 
+    as it may be overwritten by the application.
+    **********************************************
+**/
 
-import {
-    Entity,
-    PrimaryGeneratedColumn,
-    Column,
-    Index,
-    ObjectIdColumn,
-    ObjectId,
-} from 'typeorm';
+import { Entity, ObjectIdColumn, Column, Index, ObjectId } from 'typeorm';
 
 import { IUser } from '../models/user.model';
 
 @Entity('user')
 @Index('idx_user_username', ['username'], { unique: true })
 @Index('idx_user_googleId', ['googleId'])
+@Index('idx_user_login', ['username', 'password'])
 export class UserEntity implements IUser {
     @ObjectIdColumn()
     _id: ObjectId;

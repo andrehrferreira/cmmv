@@ -16,13 +16,19 @@ export class AuthTranspile implements ITranspile {
     }
 
     async generateController() {
-        const outputDir = path.resolve(process.cwd(), './src/controllers');
+        const outputDir = path.resolve(process.cwd(), './src/controllers/auth');
         const controllerFileName = `auth.controller.ts`;
         const localLogin = Config.get('auth.localLogin', false);
         const localRegister = Config.get('auth.localRegister', false);
         const hasRepository = Module.hasModule('repository');
 
-        const controllerTemplate = `// Generated automatically by CMMV
+        const controllerTemplate = `/**                                                                               
+    **********************************************
+    This script was generated automatically by CMMV.
+    It is recommended not to modify this file manually, 
+    as it may be overwritten by the application.
+    **********************************************
+**/
     
 import { Config } from "@cmmv/core";
 import { Auth } from "@cmmv/auth";
@@ -32,12 +38,12 @@ import {
     Response, Get, User, Session
 } from "@cmmv/http";
 
-import { AuthService } from '../services/auth.service';
+import { AuthService } from "../../services/auth/auth.service";
 
 import { 
     LoginRequest, LoginResponse, 
     RegisterRequest, RegisterResponse 
-} from '../protos/auth';
+} from "../../models/auth/user.model";
 
 @Controller("auth")
 export class AuthController {
@@ -80,42 +86,46 @@ export class AuthController {
 
         Application.appModule.controllers.push({
             name: 'AuthController',
-            path: `./controllers/auth.controller`,
+            path: `./controllers/auth/auth.controller`,
         });
     }
 
     async generateService() {
         const config = Config.get('auth');
-        const outputDir = path.resolve(process.cwd(), './src/services');
+        const outputDir = path.resolve(process.cwd(), './src/services/auth');
         const serviceFileName = `auth.service.ts`;
 
         const hasRepository = Module.hasModule('repository');
         const hasCache = Module.hasModule('cache');
 
-        const serviceTemplate = `// Generated automatically by CMMV
+        const serviceTemplate = `/**                                                                               
+    **********************************************
+    This script was generated automatically by CMMV.
+    It is recommended not to modify this file manually, 
+    as it may be overwritten by the application.
+    **********************************************
+**/
     
-import * as jwt from 'jsonwebtoken';
-import { validate } from 'class-validator';
-import { plainToClass } from 'class-transformer';
+import * as jwt from "jsonwebtoken";
+import { validate } from "class-validator";
+import { plainToInstance } from "class-transformer";
 
 import { 
     Telemetry, Service, 
     AbstractService, Config
 } from "@cmmv/core";
 
-${hasRepository ? "import { Repository } from '@cmmv/repository';" : ''}
-${hasCache ? "import { CacheService } from '@cmmv/cache';" : ''}
-
-import { User } from '../models/user.model';
+${hasRepository ? 'import { Repository } from "@cmmv/repository";' : ''}
+${hasCache ? 'import { CacheService } from "@cmmv/cache";' : ''}
 
 import { 
-    LoginRequest, LoginResponse, 
+    User, LoginRequest, LoginResponse, 
     RegisterRequest, RegisterResponse 
-} from '../protos/auth';
+} from "../../models/auth/user.model";
 
-${hasRepository ? "import { UserEntity } from '../entities/user.entity';" : ''}
+${hasRepository ? 'import { UserEntity } from "../../entities/auth/user.entity";' : ''}
 
-${Config.get('repository.type') === 'mongodb' ? "import { ObjectId } from 'mongodb';" : ''} 
+${Config.get('repository.type') === 'mongodb' ? 'import { ObjectId } from "mongodb";' : ''} 
 
 @Service("auth")
 export class AuthService extends AbstractService {
@@ -124,7 +134,7 @@ export class AuthService extends AbstractService {
         req?: any, res?: any, 
         session?: any
     ): Promise<{ result: LoginResponse, user: any }> {
-        Telemetry.start('AuthService::login', req?.requestId);
+        Telemetry.start(\"AuthService::login\", req?.requestId);
 
         const env = Config.get<string>("env", process.env.NODE_ENV);
         const jwtToken = Config.get<string>("auth.jwtSecret");
@@ -140,17 +150,38 @@ export class AuthService extends AbstractService {
         );
         const cookieSecure = Config.get<boolean>(
             "server.session.options.cookie.secure", 
-            process.env.NODE_ENV !== 'dev'
+            process.env.NODE_ENV !== \"dev\"
         );
 
-        const userValidation = plainToClass(User, payload, { 
+        const userValidation = plainToInstance(User, payload, { 
             exposeUnsetFields: true,
-            enableImplicitConversion: true
+            enableImplicitConversion: true,
+            excludeExtraneousValues: true
         }); 
 
+        const errors = await validate(userValidation, { 
+            forbidUnknownValues: false,
+            skipMissingProperties: true,
+            stopAtFirstError: true, 
+        });
+
+        if (errors.length > 0) {
+            return { 
+                result: { 
+                    success: false, 
+                    token: "", 
+                    message: JSON.stringify(errors[0].constraints) 
+                }, 
+                user: null 
+            };
+        }
+        
         ${
             hasRepository
-                ? `let user = await Repository.findBy(UserEntity, userValidation);
+                ? `let user = await Repository.findBy(UserEntity, {
+            username: userValidation.username,
+            password: userValidation.password
+        });
 
         if(
             !user && env === "dev" && 
@@ -164,17 +195,33 @@ export class AuthService extends AbstractService {
             } as UserEntity;
         }
 
-        if (!user) 
-            return { result: { success: false, token: "", message: "Invalid credentials" }, user: null  };`
+        if (!user) {
+            return { 
+                result: { 
+                    success: false, 
+                    token: "", 
+                    message: "Invalid credentials" 
+                }, 
+                user: null  
+            };
+        }`
                 : `const user = { id: 0, username: "dummyUsername", password: "dummyPasswordHash" };
-        if (userValidation.password !== "dummyPasswordHash") 
-            return { result: { success: false, token: "", message: "Invalid credentials" }, user: null };`
+
+        if (userValidation.password !== "dummyPasswordHash") {
+            return { 
+                result: { 
+                    success: false, 
+                    token: "", 
+                    message: "Invalid credentials" 
+                }, user: null };
+            }
+        }`
         }
 
         const token = jwt.sign({ 
             id: ${Config.get('repository.type') === 'mongodb' ? `user._id` : `user.id`},
             username: payload.username,
-            root: user.root,
+            root: user.root || false,
             roles: user.roles || [],
             groups: user.groups || []
         }, jwtToken, { expiresIn });
@@ -182,7 +229,7 @@ export class AuthService extends AbstractService {
         res.cookie(cookieName, \`Bearer \${token}\`, {
             httpOnly: true,
             secure: cookieSecure,
-            sameSite: 'strict',
+            sameSite: "strict",
             maxAge: cookieTTL
         });
 
@@ -196,16 +243,24 @@ export class AuthService extends AbstractService {
         }
 
         ${hasCache ? `CacheService.set(\`user:\${${Config.get('repository.type') === 'mongodb' ? `user._id` : `user.id`}}\`, JSON.stringify(user), expiresIn);\n` : ''}        
-        Telemetry.end('AuthService::login', req?.requestId);        
-        return { result: { success: true, token, message: "Login successful" }, user };
+        Telemetry.end("AuthService::login", req?.requestId);
+
+        return { 
+            result: { 
+                success: true, 
+                token, 
+                message: "Login successful" 
+            }, 
+            user 
+        };
     }
 
 ${
     hasRepository
         ? `    public async register(payload: RegisterRequest, req?: any): Promise<RegisterResponse> {
-        Telemetry.start('AuthService::register', req?.requestId);
+        Telemetry.start("AuthService::register", req?.requestId);
 
-        const newUser = plainToClass(User, payload, { 
+        const newUser = plainToInstance(User, payload, { 
             exposeUnsetFields: true,
             enableImplicitConversion: true
         }); 
@@ -214,13 +269,13 @@ ${
         
         if (errors.length > 0) {
             console.error(errors);
-            Telemetry.end('AuthService::register', req?.requestId);
+            Telemetry.end("AuthService::register", req?.requestId);
             return { success: false, message: JSON.stringify(errors[0].constraints) };
         } 
         else {    
             try{
                 const result = await Repository.insert<UserEntity>(UserEntity, newUser);
-                Telemetry.end('AuthService::register', req?.requestId);
+                Telemetry.end("AuthService::register", req?.requestId);
 
                 return (result) ? 
                     { success: true, message: "User registered successfully!" } : 
@@ -228,7 +283,7 @@ ${
             }   
             catch(e){
                 console.error(e);
-                Telemetry.end('AuthService::register', req?.requestId);
+                Telemetry.end("AuthService::register", req?.requestId);
                 return { success: false, message: e.message };
             }                                                    
         }
@@ -245,23 +300,29 @@ ${
 
         Application.appModule.providers.push({
             name: 'AuthService',
-            path: `./services/auth.service`,
+            path: `./services/auth/auth.service`,
         });
     }
 
     async generateWebSocketIntegration() {
-        const outputDir = path.resolve(process.cwd(), './src/gateways');
+        const outputDir = path.resolve(process.cwd(), './src/gateways/auth');
         const wsFileName = `auth.gateway.ts`;
 
-        const wsTemplate = `// Generated automatically by CMMV
+        const wsTemplate = `/**                                                                               
+    **********************************************
+    This script was generated automatically by CMMV.
+    It is recommended not to modify this file manually, 
+    as it may be overwritten by the application.
+    **********************************************
+**/
 
 import { Rpc, Message, Data, Socket, RpcUtils } from "@cmmv/ws";
-import { AuthService } from '../services/auth.service';
+import { AuthService } from "../../services/auth/auth.service";
 
 import { 
     LoginRequest,
     RegisterRequest  
-} from "../protos/auth";
+} from "../../models/auth/user.model";
 
 @Rpc("auth")
 export class AuthGateway {
@@ -304,7 +365,7 @@ export class AuthGateway {
 
         Application.appModule.providers.push({
             name: 'AuthGateway',
-            path: `./gateways/auth.gateway`,
+            path: `./gateways/auth/auth.gateway`,
         });
     }
 }

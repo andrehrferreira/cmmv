@@ -16,7 +16,17 @@ export class ViewTranspile implements ITranspile {
         );
 
         const outputFile = path.resolve('public/core/1-cmmv.min.js');
+        const currentDate = new Date().toUTCString();
         const minifiedJsContent = UglifyJS.minify(content).code;
-        fs.writeFileSync(outputFile, minifiedJsContent, 'utf8');
+        fs.writeFileSync(
+            outputFile,
+            `/*!
+ * cmmv.io (c) 2024, Andre Ferreira
+ * compiled ${currentDate}
+ * licensed under the MIT license
+ * see: https://github.com/cmmvio/cmmv for details
+ */\n ${minifiedJsContent}`,
+            'utf8',
+        );
     }
 }
