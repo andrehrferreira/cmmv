@@ -4,7 +4,6 @@ import { ProtobufModule } from '@cmmv/protobuf';
 import { WSModule, WSAdapter } from '@cmmv/ws';
 import { ViewModule } from '@cmmv/view';
 import { RepositoryModule, Repository } from '@cmmv/repository';
-import { CacheModule, CacheService } from '@cmmv/cache';
 import { SchedulingModule, SchedulingService } from '@cmmv/scheduling';
 import { AuthModule } from '@cmmv/auth';
 import { IndexModule } from './modules/index.module';
@@ -19,11 +18,10 @@ Application.create({
         WSModule,
         ViewModule,
         RepositoryModule,
-        CacheModule,
         SchedulingModule,
         AuthModule,
         IndexModule,
         MainModule,
     ],
-    services: [Repository, CacheService, SchedulingService],
+    services: [Repository, SchedulingService],
 });

@@ -16,7 +16,6 @@ import helmet from '@cmmv/helmet';
 import {
     AbstractHttpAdapter,
     IHTTPSettings,
-    Logger,
     Application,
     Telemetry,
     Config,
@@ -45,7 +44,6 @@ export class DefaultAdapter extends AbstractHttpAdapter<
             publicDirs = publicDirs.map(dir => path.join(process.cwd(), dir));
 
         this.application = application;
-
         this.instance = this.instance || cmmv();
 
         if (!Config.get<boolean>('server.poweredBy', false))
@@ -224,7 +222,7 @@ export class DefaultAdapter extends AbstractHttpAdapter<
                 return null;
             }
 
-            const possiblePaths = [
+            /*const possiblePaths = [
                 path.join(publicDir, `${requestPath}.html`),
                 path.join(publicDir, requestPath, 'index.html'),
                 path.join(publicDir, `${requestPath}`),
@@ -234,12 +232,13 @@ export class DefaultAdapter extends AbstractHttpAdapter<
 
             let fileFound = false;
 
-            for (const filePath of possiblePaths) {
+            for (const filePath of possiblePaths) { 
                 if (fs.existsSync(filePath)) {
                     fileFound = true;
                     const config = Config.getAll();
 
-                    try {
+                    try {           
+                                    
                         res.render(filePath, {
                             nonce: res.locals.nonce,
                             services: ServiceRegistry.getServicesArr(),
@@ -248,11 +247,13 @@ export class DefaultAdapter extends AbstractHttpAdapter<
                         });
 
                         return false;
-                    } catch {}
+                    } catch(e) {
+                        console.error(e);
+                    }
                 }
-            }
+            }*/
 
-            if (!fileFound) res.code(404).end('Page not found');
+            //if (!fileFound) res.code(404).end('Page not found');
 
             if (typeof done === 'function') done(req, res, payload);
         });
@@ -386,10 +387,10 @@ export class DefaultAdapter extends AbstractHttpAdapter<
                                     }
                                 }
 
-                                res.status(200).send(result);
+                                res.send(result);
                             }
                         } catch (error) {
-                            //console.error(error);
+                            console.error(error);
                             const processingTime = Date.now() - startTime;
                             Telemetry.end('Request Process', req.requestId);
                             const telemetry = Telemetry.getTelemetry(

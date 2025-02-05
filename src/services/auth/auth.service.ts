@@ -13,7 +13,6 @@ import { plainToInstance } from 'class-transformer';
 import { Telemetry, Service, AbstractService, Config } from '@cmmv/core';
 
 import { Repository } from '@cmmv/repository';
-import { CacheService } from '@cmmv/cache';
 
 import {
     User,
@@ -136,8 +135,6 @@ export class AuthService extends AbstractService {
 
             session.save();
         }
-
-        CacheService.set(`user:${user._id}`, JSON.stringify(user), expiresIn);
 
         Telemetry.end('AuthService::login', req?.requestId);
 

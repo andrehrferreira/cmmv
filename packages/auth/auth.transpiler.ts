@@ -38,12 +38,12 @@ import {
     Response, Get, User, Session
 } from "@cmmv/http";
 
-import { AuthService } from '../../services/auth/auth.service';
+import { AuthService } from "../../services/auth/auth.service";
 
 import { 
     LoginRequest, LoginResponse, 
     RegisterRequest, RegisterResponse 
-} from '../../models/auth/user.model';
+} from "../../models/auth/user.model";
 
 @Controller("auth")
 export class AuthController {
@@ -106,26 +106,26 @@ export class AuthController {
     **********************************************
 **/
     
-import * as jwt from 'jsonwebtoken';
-import { validate } from 'class-validator';
-import { plainToInstance } from 'class-transformer';
+import * as jwt from "jsonwebtoken";
+import { validate } from "class-validator";
+import { plainToInstance } from "class-transformer";
 
 import { 
     Telemetry, Service, 
     AbstractService, Config
 } from "@cmmv/core";
 
-${hasRepository ? "import { Repository } from '@cmmv/repository';" : ''}
-${hasCache ? "import { CacheService } from '@cmmv/cache';" : ''}
+${hasRepository ? 'import { Repository } from "@cmmv/repository";' : ''}
+${hasCache ? 'import { CacheService } from "@cmmv/cache";' : ''}
 
 import { 
     User, LoginRequest, LoginResponse, 
     RegisterRequest, RegisterResponse 
-} from '../../models/auth/user.model';
+} from "../../models/auth/user.model";
 
-${hasRepository ? "import { UserEntity } from '../../entities/auth/user.entity';" : ''}
+${hasRepository ? 'import { UserEntity } from "../../entities/auth/user.entity";' : ''}
 
-${Config.get('repository.type') === 'mongodb' ? "import { ObjectId } from 'mongodb';" : ''} 
+${Config.get('repository.type') === 'mongodb' ? 'import { ObjectId } from "mongodb";' : ''} 
 
 @Service("auth")
 export class AuthService extends AbstractService {
@@ -134,7 +134,7 @@ export class AuthService extends AbstractService {
         req?: any, res?: any, 
         session?: any
     ): Promise<{ result: LoginResponse, user: any }> {
-        Telemetry.start('AuthService::login', req?.requestId);
+        Telemetry.start(\"AuthService::login\", req?.requestId);
 
         const env = Config.get<string>("env", process.env.NODE_ENV);
         const jwtToken = Config.get<string>("auth.jwtSecret");
@@ -150,7 +150,7 @@ export class AuthService extends AbstractService {
         );
         const cookieSecure = Config.get<boolean>(
             "server.session.options.cookie.secure", 
-            process.env.NODE_ENV !== 'dev'
+            process.env.NODE_ENV !== \"dev\"
         );
 
         const userValidation = plainToInstance(User, payload, { 
@@ -229,7 +229,7 @@ export class AuthService extends AbstractService {
         res.cookie(cookieName, \`Bearer \${token}\`, {
             httpOnly: true,
             secure: cookieSecure,
-            sameSite: 'strict',
+            sameSite: "strict",
             maxAge: cookieTTL
         });
 
@@ -243,7 +243,7 @@ export class AuthService extends AbstractService {
         }
 
         ${hasCache ? `CacheService.set(\`user:\${${Config.get('repository.type') === 'mongodb' ? `user._id` : `user.id`}}\`, JSON.stringify(user), expiresIn);\n` : ''}        
-        Telemetry.end('AuthService::login', req?.requestId);
+        Telemetry.end("AuthService::login", req?.requestId);
 
         return { 
             result: { 
@@ -258,7 +258,7 @@ export class AuthService extends AbstractService {
 ${
     hasRepository
         ? `    public async register(payload: RegisterRequest, req?: any): Promise<RegisterResponse> {
-        Telemetry.start('AuthService::register', req?.requestId);
+        Telemetry.start("AuthService::register", req?.requestId);
 
         const newUser = plainToInstance(User, payload, { 
             exposeUnsetFields: true,
@@ -269,13 +269,13 @@ ${
         
         if (errors.length > 0) {
             console.error(errors);
-            Telemetry.end('AuthService::register', req?.requestId);
+            Telemetry.end("AuthService::register", req?.requestId);
             return { success: false, message: JSON.stringify(errors[0].constraints) };
         } 
         else {    
             try{
                 const result = await Repository.insert<UserEntity>(UserEntity, newUser);
-                Telemetry.end('AuthService::register', req?.requestId);
+                Telemetry.end("AuthService::register", req?.requestId);
 
                 return (result) ? 
                     { success: true, message: "User registered successfully!" } : 
@@ -283,7 +283,7 @@ ${
             }   
             catch(e){
                 console.error(e);
-                Telemetry.end('AuthService::register', req?.requestId);
+                Telemetry.end("AuthService::register", req?.requestId);
                 return { success: false, message: e.message };
             }                                                    
         }
@@ -317,7 +317,7 @@ ${
 **/
 
 import { Rpc, Message, Data, Socket, RpcUtils } from "@cmmv/ws";
-import { AuthService } from '../../services/auth/auth.service';
+import { AuthService } from "../../services/auth/auth.service";
 
 import { 
     LoginRequest,

@@ -8,9 +8,6 @@ import { CacheModule, CacheService } from '@cmmv/cache';
 import { SchedulingModule, SchedulingService } from '@cmmv/scheduling';
 import { AuthModule } from '@cmmv/auth';
 
-//Contracts
-import { TasksContract } from './contracts/tasks.contract';
-
 Application.compile({
     modules: [
         DefaultHTTPModule,
@@ -23,5 +20,4 @@ Application.compile({
         AuthModule,
     ],
     services: [Repository, CacheService, SchedulingService],
-    contracts: [TasksContract],
 });

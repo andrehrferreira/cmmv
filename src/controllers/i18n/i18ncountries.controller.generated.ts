@@ -7,7 +7,6 @@
 **/
 
 import { Cache, CacheService } from '@cmmv/cache';
-import { Auth } from '@cmmv/auth';
 
 import {
     Controller,
@@ -33,7 +32,6 @@ export class I18nCountriesControllerGenerated {
     constructor(private readonly i18ncountriesservice: I18nCountriesService) {}
 
     @Get()
-    @Auth('i18ncountries:get')
     @Cache('country:getAll', {
         ttl: 600,
         compress: true,
@@ -48,7 +46,6 @@ export class I18nCountriesControllerGenerated {
     }
 
     @Get(':id')
-    @Auth('i18ncountries:get')
     @Cache('country:getAll', {
         ttl: 600,
         compress: true,
@@ -63,7 +60,6 @@ export class I18nCountriesControllerGenerated {
     }
 
     @Post()
-    @Auth('i18ncountries:insert')
     async add(
         @Body() item: I18nCountries,
         @Req() req,
@@ -74,7 +70,6 @@ export class I18nCountriesControllerGenerated {
     }
 
     @Put(':id')
-    @Auth('i18ncountries:update')
     async update(
         @Param('id') id: string,
         @Body() item: I18nCountries,
@@ -87,7 +82,6 @@ export class I18nCountriesControllerGenerated {
     }
 
     @Delete(':id')
-    @Auth('i18ncountries:delete')
     async delete(
         @Param('id') id: string,
         @Req() req,

@@ -7,7 +7,7 @@ import { I18nCoinsContract } from './coins.contract';
     controllerCustomPath: '/i18n/countries',
     subPath: '/i18n',
     protoPackage: 'i18n',
-    auth: true,
+    auth: false,
     options: {
         databaseSchemaName: 'i18n_countries',
         databaseTimestamps: true,
