@@ -199,10 +199,6 @@ export class DefaultAdapter extends AbstractHttpAdapter<
             }
 
             Telemetry.start('Request Process', req.requestId);
-            const publicDir = path.join(process.cwd(), 'public/views');
-            const requestPath =
-                req.path === '/' ? 'index' : req.path.substring(1);
-            const ext = path.extname(req.path);
 
             if (
                 (req.path.indexOf('.html') === -1 &&
@@ -220,39 +216,6 @@ export class DefaultAdapter extends AbstractHttpAdapter<
             ) {
                 return null;
             }
-
-            /*const possiblePaths = [
-                path.join(publicDir, `${requestPath}.html`),
-                path.join(publicDir, requestPath, "index.html"),
-                path.join(publicDir, `${requestPath}`),
-                path.join(publicDir, requestPath, "index.html"),
-                path.join(publicDir, requestPath, "views", "index.html"),
-            ];
-
-            let fileFound = false;
-
-            for (const filePath of possiblePaths) { 
-                if (fs.existsSync(filePath)) {
-                    fileFound = true;
-                    const config = Config.getAll();
-
-                    try {           
-                                    
-                        res.render(filePath, {
-                            nonce: res.locals.nonce,
-                            services: ServiceRegistry.getServicesArr(),
-                            requestId: req.requestId,
-                            config,
-                        });
-
-                        return false;
-                    } catch(e) {
-                        console.error(e);
-                    }
-                }
-            }*/
-
-            //if (!fileFound) res.code(404).end("Page not found");
 
             if (typeof done === 'function') done(req, res, payload);
         });
