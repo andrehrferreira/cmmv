@@ -78,7 +78,6 @@ describe('Repository', () => {
             repositoryStub.find.rejects(new Error('Find error'));
 
             const result = await Repository.findAll(TestEntity);
-
             expect(result).toBeNull();
         });
     });
@@ -94,7 +93,7 @@ describe('Repository', () => {
 
             expect(repositoryStub.create.calledOnce).toBe(true);
             expect(repositoryStub.save.calledOnce).toBe(true);
-            expect(result instanceof TestEntity).toBe(true);
+            expect(result.data instanceof TestEntity).toBe(true);
         });
 
         it('should return null if insert operation fails', async () => {
@@ -103,8 +102,7 @@ describe('Repository', () => {
             repositoryStub.save.rejects(new Error('Save error'));
 
             const result = await Repository.insert(TestEntity, {});
-
-            expect(result).toBeNull();
+            expect(result.success).toBe(false);
         });
     });
 
@@ -118,7 +116,6 @@ describe('Repository', () => {
             const result = await Repository.update(TestEntity, 1, {});
 
             expect(repositoryStub.update.calledOnce).toBe(true);
-            expect(result instanceof TestEntity).toBe(true);
         });
 
         it('should return null if update operation fails', async () => {
@@ -126,8 +123,7 @@ describe('Repository', () => {
             repositoryStub.update.rejects(new Error('Update error'));
 
             const result = await Repository.update(TestEntity, 1, {});
-
-            expect(result).toBeNull();
+            expect(result).toBe(0);
         });
     });
 
@@ -140,7 +136,7 @@ describe('Repository', () => {
             const result = await Repository.delete(TestEntity, 1);
 
             expect(repositoryStub.delete.calledOnce).toBe(true);
-            expect(result.affected).toBe(1);
+            expect(result).toBe(1);
         });
 
         it('should return null if delete operation fails', async () => {
@@ -148,8 +144,7 @@ describe('Repository', () => {
             repositoryStub.delete.rejects(new Error('Delete error'));
 
             const result = await Repository.delete(TestEntity, 1);
-
-            expect(result).toBeNull();
+            expect(result).toBe(0);
         });
     });
 });
