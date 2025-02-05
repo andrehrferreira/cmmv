@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { ControllerRegistry } from '../../controller.registry';
+import { ControllerRegistry } from './controller.registry';
 
 class TestController {
     testMethod() {}

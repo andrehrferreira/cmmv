@@ -24,7 +24,7 @@ export interface II18nCountries {
     _id?: ObjectId;
     code: string;
     name: string;
-    currency: object;
+    currency?: object;
 }
 
 //Model
@@ -50,7 +50,7 @@ export class I18nCountries implements II18nCountries {
     @Expose()
     @IsString({ message: 'Invalid currency code' })
     @ValidateNested()
-    currency: I18nCoins;
+    currency?: I18nCoins;
 
     constructor(partial: Partial<I18nCountries>) {
         Object.assign(this, partial);
@@ -81,11 +81,15 @@ export class I18nCountries implements II18nCountries {
     }
 }
 
-// Schema for fast-json-stringify
+// Schema
 export const I18nCountriesFastSchemaStructure = {
     title: 'I18nCountries Schema',
     type: 'object',
     properties: {
+        id: {
+            type: 'string',
+            nullable: false,
+        },
         code: {
             type: 'string',
             nullable: false,
@@ -96,10 +100,10 @@ export const I18nCountriesFastSchemaStructure = {
         },
         currency: {
             type: 'object',
-            nullable: false,
+            nullable: true,
         },
     },
-    required: ['code', 'name', 'currency'],
+    required: ['id', 'code', 'name'],
 };
 
 export const I18nCountriesFastSchema = fastJson(

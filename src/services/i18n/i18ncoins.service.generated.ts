@@ -12,7 +12,7 @@ import { plainToInstance } from 'class-transformer';
 
 import { Telemetry, AbstractService, Logger } from '@cmmv/core';
 
-import { Repository } from '@cmmv/repository';
+import { Repository, IFindResponse } from '@cmmv/repository';
 
 import { I18nCoins, II18nCoins } from '../../models/i18n/i18ncoins.model';
 
@@ -21,27 +21,26 @@ import { I18nCoinsEntity } from '../../entities/i18n/i18ncoins.entity';
 export class I18nCoinsServiceGenerated extends AbstractService {
     protected logger: Logger = new Logger('I18nCoinsServiceGenerated');
 
-    async getAll(queries?: any, req?: any): Promise<I18nCoins[] | null> {
+    async getAll(queries?: any, req?: any): Promise<IFindResponse> {
         try {
             let result = await Repository.findAll(I18nCoinsEntity, queries);
             result = this.fixIds(result);
 
-            return result && result.length > 0
-                ? result.map(item => {
-                      return plainToInstance(I18nCoins, item, {
-                          exposeUnsetFields: false,
-                          enableImplicitConversion: true,
-                          excludeExtraneousValues: true,
-                      });
-                  })
-                : null;
+            return {
+                count: result.count,
+                pagination: result.pagination,
+                data:
+                    result && result.data.length > 0
+                        ? result.data.map(item => I18nCoins.fromEntity(item))
+                        : [],
+            };
         } catch (e) {
             this.logger.error(e);
             return null;
         }
     }
 
-    async getById(id: string, req?: any): Promise<I18nCoins | null> {
+    async getById(id: string, req?: any): Promise<IFindResponse> {
         try {
             let item = await Repository.findBy(I18nCoinsEntity, {
                 _id: new ObjectId(id),
@@ -50,7 +49,19 @@ export class I18nCoinsServiceGenerated extends AbstractService {
 
             if (!item) throw new Error('Item not found');
 
-            return I18nCoins.fromEntity(item);
+            return {
+                count: 1,
+                pagination: {
+                    limit: 1,
+                    offset: 0,
+                    search: id,
+                    searchField: 'id',
+                    sortBy: 'id',
+                    sort: 'asc',
+                    filters: {},
+                },
+                data: I18nCoins.fromEntity(item.data),
+            };
         } catch (e) {
             return null;
         }

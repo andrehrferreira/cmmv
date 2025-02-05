@@ -73,7 +73,7 @@ export class User implements IUser {
     @Transform(({ value }) => (value ? JSON.parse(value) : []), {
         toPlainOnly: true,
     })
-    groups?: string = '[]';
+    groups?: string;
 
     @Expose()
     @ValidateNested()
@@ -111,11 +111,15 @@ export class User implements IUser {
     }
 }
 
-// Schema for fast-json-stringify
+// Schema
 export const UserFastSchemaStructure = {
     title: 'User Schema',
     type: 'object',
     properties: {
+        id: {
+            type: 'string',
+            nullable: false,
+        },
         username: {
             type: 'string',
             nullable: false,
@@ -146,7 +150,7 @@ export const UserFastSchemaStructure = {
             default: false,
         },
     },
-    required: ['username', 'password', 'root'],
+    required: ['id', 'username', 'password', 'root'],
 };
 
 export const UserFastSchema = fastJson(UserFastSchemaStructure);

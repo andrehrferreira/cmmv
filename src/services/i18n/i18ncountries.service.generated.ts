@@ -12,7 +12,7 @@ import { plainToInstance } from 'class-transformer';
 
 import { Telemetry, AbstractService, Logger } from '@cmmv/core';
 
-import { Repository } from '@cmmv/repository';
+import { Repository, IFindResponse } from '@cmmv/repository';
 
 import {
     I18nCountries,
@@ -24,27 +24,28 @@ import { I18nCountriesEntity } from '../../entities/i18n/i18ncountries.entity';
 export class I18nCountriesServiceGenerated extends AbstractService {
     protected logger: Logger = new Logger('I18nCountriesServiceGenerated');
 
-    async getAll(queries?: any, req?: any): Promise<I18nCountries[] | null> {
+    async getAll(queries?: any, req?: any): Promise<IFindResponse> {
         try {
             let result = await Repository.findAll(I18nCountriesEntity, queries);
             result = this.fixIds(result);
 
-            return result && result.length > 0
-                ? result.map(item => {
-                      return plainToInstance(I18nCountries, item, {
-                          exposeUnsetFields: false,
-                          enableImplicitConversion: true,
-                          excludeExtraneousValues: true,
-                      });
-                  })
-                : null;
+            return {
+                count: result.count,
+                pagination: result.pagination,
+                data:
+                    result && result.data.length > 0
+                        ? result.data.map(item =>
+                              I18nCountries.fromEntity(item),
+                          )
+                        : [],
+            };
         } catch (e) {
             this.logger.error(e);
             return null;
         }
     }
 
-    async getById(id: string, req?: any): Promise<I18nCountries | null> {
+    async getById(id: string, req?: any): Promise<IFindResponse> {
         try {
             let item = await Repository.findBy(I18nCountriesEntity, {
                 _id: new ObjectId(id),
@@ -53,7 +54,19 @@ export class I18nCountriesServiceGenerated extends AbstractService {
 
             if (!item) throw new Error('Item not found');
 
-            return I18nCountries.fromEntity(item);
+            return {
+                count: 1,
+                pagination: {
+                    limit: 1,
+                    offset: 0,
+                    search: id,
+                    searchField: 'id',
+                    sortBy: 'id',
+                    sort: 'asc',
+                    filters: {},
+                },
+                data: I18nCountries.fromEntity(item.data),
+            };
         } catch (e) {
             return null;
         }

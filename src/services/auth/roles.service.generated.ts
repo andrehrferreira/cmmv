@@ -12,7 +12,7 @@ import { plainToInstance } from 'class-transformer';
 
 import { Telemetry, AbstractService, Logger } from '@cmmv/core';
 
-import { Repository } from '@cmmv/repository';
+import { Repository, IFindResponse } from '@cmmv/repository';
 
 import { Roles, IRoles } from '../../models/auth/roles.model';
 
@@ -21,27 +21,26 @@ import { RolesEntity } from '../../entities/auth/roles.entity';
 export class RolesServiceGenerated extends AbstractService {
     protected logger: Logger = new Logger('RolesServiceGenerated');
 
-    async getAll(queries?: any, req?: any): Promise<Roles[] | null> {
+    async getAll(queries?: any, req?: any): Promise<IFindResponse> {
         try {
             let result = await Repository.findAll(RolesEntity, queries);
             result = this.fixIds(result);
 
-            return result && result.length > 0
-                ? result.map(item => {
-                      return plainToInstance(Roles, item, {
-                          exposeUnsetFields: false,
-                          enableImplicitConversion: true,
-                          excludeExtraneousValues: true,
-                      });
-                  })
-                : null;
+            return {
+                count: result.count,
+                pagination: result.pagination,
+                data:
+                    result && result.data.length > 0
+                        ? result.data.map(item => Roles.fromEntity(item))
+                        : [],
+            };
         } catch (e) {
             this.logger.error(e);
             return null;
         }
     }
 
-    async getById(id: string, req?: any): Promise<Roles | null> {
+    async getById(id: string, req?: any): Promise<IFindResponse> {
         try {
             let item = await Repository.findBy(RolesEntity, {
                 _id: new ObjectId(id),
@@ -50,7 +49,19 @@ export class RolesServiceGenerated extends AbstractService {
 
             if (!item) throw new Error('Item not found');
 
-            return Roles.fromEntity(item);
+            return {
+                count: 1,
+                pagination: {
+                    limit: 1,
+                    offset: 0,
+                    search: id,
+                    searchField: 'id',
+                    sortBy: 'id',
+                    sort: 'asc',
+                    filters: {},
+                },
+                data: Roles.fromEntity(item.data),
+            };
         } catch (e) {
             return null;
         }

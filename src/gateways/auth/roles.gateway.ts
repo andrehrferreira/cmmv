@@ -26,10 +26,11 @@ export class RolesGateway {
     async getAll(@Socket() socket) {
         try {
             const items = await this.rolesservice.getAll();
+
             const response = await RpcUtils.pack(
                 'roles',
                 'GetAllRolesResponse',
-                items,
+                items.data,
             );
 
             if (response) socket.send(response);

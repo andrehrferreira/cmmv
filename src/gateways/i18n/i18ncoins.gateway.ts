@@ -24,14 +24,14 @@ export class I18nCoinsGateway {
     constructor(private readonly i18ncoinsservice: I18nCoinsService) {}
 
     @Message('GetAllI18nCoinsRequest')
-    @Cache('coins:getAll', { ttl: 3000, compress: true })
     async getAll(@Socket() socket) {
         try {
             const items = await this.i18ncoinsservice.getAll();
+
             const response = await RpcUtils.pack(
                 'i18ncoins',
                 'GetAllI18nCoinsResponse',
-                items,
+                items.data,
             );
 
             if (response) socket.send(response);
@@ -73,11 +73,8 @@ export class I18nCoinsGateway {
                     affected: result.affected,
                 },
             );
-            CacheService.set(
-                `coins:${result._id}`,
-                JSON.stringify(result),
-                3000,
-            );
+
+            CacheService.set(`coins:${data.id}`, JSON.stringify(result), 3000);
             CacheService.del('coins:getAll');
 
             if (response) socket.send(response);
@@ -96,6 +93,7 @@ export class I18nCoinsGateway {
                     affected: result.affected,
                 },
             );
+
             CacheService.del(`coins:${data.id}`);
             CacheService.del('coins:getAll');
 

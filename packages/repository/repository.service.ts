@@ -7,11 +7,13 @@ import {
     Repository as TypeORMRepository,
     FindOptionsWhere,
     DeepPartial,
-    DeleteResult,
     Like,
+    FindManyOptions,
 } from 'typeorm';
 
 import { Config, Logger, Singleton } from '@cmmv/core';
+
+import { IFindResponse, IInsertResponse } from './repository.interface';
 
 export class Repository extends Singleton {
     public static logger: Logger = new Logger('Repository');
@@ -49,15 +51,15 @@ export class Repository extends Singleton {
     public static async findBy<Entity>(
         entity: new () => Entity,
         criteria: FindOptionsWhere<Entity>,
-    ): Promise<Entity | null> {
+    ): Promise<IFindResponse> {
         try {
             const repository = this.getRepository(entity);
-            return await repository.findOne({ where: criteria });
+            return { data: await repository.findOne({ where: criteria }) };
         } catch (e) {
             if (process.env.NODE_ENV === 'dev')
                 Repository.logger.error(e.message);
 
-            return null;
+            return { data: [] };
         }
     }
 
@@ -65,7 +67,7 @@ export class Repository extends Singleton {
         entity: new () => Entity,
         queries?: any,
         relations?: [],
-    ): Promise<Entity[]> {
+    ): Promise<IFindResponse> {
         try {
             const isMongoDB = Config.get('repository.type') === 'mongodb';
             const repository = this.getRepository(entity);
@@ -91,16 +93,31 @@ export class Repository extends Singleton {
 
                 Object.assign(mongoQuery, filters);
 
-                const results = await repository.find({
+                const filter = {
                     where: mongoQuery,
                     skip: parseInt(offset),
                     take: parseInt(limit), //@ts-ignore
                     order: {
                         [sortBy]: sort.toLowerCase() === 'desc' ? -1 : 1,
                     },
-                });
+                } as FindManyOptions<Entity>;
 
-                return results;
+                const results = await repository.find(filter);
+                const total = await repository.count();
+
+                return {
+                    data: results,
+                    count: total,
+                    pagination: {
+                        limit,
+                        offset,
+                        sortBy,
+                        sort,
+                        search,
+                        searchField,
+                        filters,
+                    },
+                };
             } else {
                 const where: FindOptionsWhere<Entity> = {};
 
@@ -110,7 +127,7 @@ export class Repository extends Singleton {
                 for (const [key, value] of Object.entries(filters)) //@ts-ignore
                     where[key as keyof Entity] = value;
 
-                const results = await repository.find({
+                const filter = {
                     where,
                     take: parseInt(limit),
                     skip: parseInt(offset), //@ts-ignore
@@ -118,14 +135,26 @@ export class Repository extends Singleton {
                         [sortBy]:
                             sort.toUpperCase() === 'DESC' ? 'DESC' : 'ASC',
                     },
-                });
+                } as FindManyOptions<Entity>;
 
-                return results;
+                const results = await repository.find(filter);
+                const total = await repository.count(filter);
+
+                return {
+                    data: results,
+                    count: total,
+                    pagination: {
+                        limit,
+                        offset,
+                        sortBy,
+                        sort,
+                        search,
+                        searchField,
+                        filters,
+                    },
+                };
             }
         } catch (e) {
-            if (process.env.NODE_ENV === 'dev')
-                Repository.logger.error(e.message);
-
             return null;
         }
     }
@@ -133,15 +162,12 @@ export class Repository extends Singleton {
     public static async insert<Entity>(
         entity: new () => Entity,
         data: DeepPartial<Entity>,
-    ): Promise<{ data?: Entity; success: boolean; message?: string }> {
+    ): Promise<IInsertResponse> {
         try {
             const repository = this.getRepository(entity);
             const newEntity = repository.create(data);
             return { data: await repository.save(newEntity), success: true };
         } catch (e) {
-            if (process.env.NODE_ENV === 'dev')
-                Repository.logger.error(e.message);
-
             return { success: false, message: e.message };
         }
     }
@@ -150,15 +176,12 @@ export class Repository extends Singleton {
         entity: new () => Entity,
         id: any,
         data: any,
-    ): Promise<number | null> {
+    ): Promise<number> {
         try {
             const repository = this.getRepository(entity);
             const result = await repository.update(id, data);
             return result.affected;
         } catch (e) {
-            if (process.env.NODE_ENV === 'dev')
-                Repository.logger.error(e.message);
-
             return 0;
         }
     }
@@ -166,15 +189,12 @@ export class Repository extends Singleton {
     public static async delete<Entity>(
         entity: new () => Entity,
         id: any,
-    ): Promise<number | null> {
+    ): Promise<number> {
         try {
             const repository = this.getRepository(entity);
             const result = await repository.delete(id);
             return result.affected;
         } catch (e) {
-            if (process.env.NODE_ENV === 'dev')
-                Repository.logger.error(e.message);
-
             return 0;
         }
     }

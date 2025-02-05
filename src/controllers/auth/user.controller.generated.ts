@@ -37,42 +37,42 @@ export class UserControllerGenerated {
 
     @Get()
     @Auth('user:get')
-    async getAll(@Queries() queries: any, @Req() req): Promise<User[] | null> {
+    async getAll(@Queries() queries: any, @Req() req) {
         let result = await this.userservice.getAll(queries, req);
         return result;
     }
 
     @Get(':id')
     @Auth('user:get')
-    async getById(@Param('id') id: string, @Req() req): Promise<User | null> {
+    async getById(@Param('id') id: string, @Req() req) {
         let result = await this.userservice.getById(id, req);
         return result;
     }
 
+    @Get(':id/raw')
+    @Auth('user:get')
+    async getByIdRaw(@Param('id') id: string, @Req() req) {
+        let result = await this.userservice.getById(id, req);
+        return UserFastSchema(result.data);
+    }
+
     @Post()
     @Auth('user:insert')
-    async add(@Body() item: User, @Req() req): Promise<User | null> {
+    async add(@Body() item: User, @Req() req) {
         let result = await this.userservice.add(item, req);
         return result;
     }
 
     @Put(':id')
     @Auth('user:update')
-    async update(
-        @Param('id') id: string,
-        @Body() item: User,
-        @Req() req,
-    ): Promise<{ success: boolean; affected: number }> {
+    async update(@Param('id') id: string, @Body() item: User, @Req() req) {
         let result = await this.userservice.update(id, item, req);
         return result;
     }
 
     @Delete(':id')
     @Auth('user:delete')
-    async delete(
-        @Param('id') id: string,
-        @Req() req,
-    ): Promise<{ success: boolean; affected: number }> {
+    async delete(@Param('id') id: string, @Req() req) {
         let result = await this.userservice.delete(id, req);
         return result;
     }

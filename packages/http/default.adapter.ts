@@ -1,4 +1,3 @@
-import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as http from 'node:http';
 import * as https from 'node:https';
@@ -19,11 +18,11 @@ import {
     Application,
     Telemetry,
     Config,
-    ServiceRegistry,
-    Module,
 } from '@cmmv/core';
 
 import { ControllerRegistry } from './controller.registry';
+
+import { ResponseSchema } from './http.schema';
 
 export class DefaultAdapter extends AbstractHttpAdapter<
     http.Server | https.Server
@@ -156,7 +155,7 @@ export class DefaultAdapter extends AbstractHttpAdapter<
                         .map(value => {
                             if (headerName === 'Content-Security-Policy')
                                 return value.indexOf('style-src') == -1
-                                    ? `${value} 'nonce-${res.locals.nonce}'`
+                                    ? `${value} "nonce-${res.locals.nonce}"`
                                     : value;
 
                             return value;
@@ -166,7 +165,7 @@ export class DefaultAdapter extends AbstractHttpAdapter<
                     if (headerName === 'Content-Security-Policy')
                         headerValue =
                             headerValue.indexOf('style-src') == -1
-                                ? `${headerValue} 'nonce-${res.locals.nonce}'`
+                                ? `${headerValue} "nonce-${res.locals.nonce}"`
                                 : headerValue;
                 }
 
@@ -224,10 +223,10 @@ export class DefaultAdapter extends AbstractHttpAdapter<
 
             /*const possiblePaths = [
                 path.join(publicDir, `${requestPath}.html`),
-                path.join(publicDir, requestPath, 'index.html'),
+                path.join(publicDir, requestPath, "index.html"),
                 path.join(publicDir, `${requestPath}`),
-                path.join(publicDir, requestPath, 'index.html'),
-                path.join(publicDir, requestPath, 'views', 'index.html'),
+                path.join(publicDir, requestPath, "index.html"),
+                path.join(publicDir, requestPath, "views", "index.html"),
             ];
 
             let fileFound = false;
@@ -253,7 +252,7 @@ export class DefaultAdapter extends AbstractHttpAdapter<
                 }
             }*/
 
-            //if (!fileFound) res.code(404).end('Page not found');
+            //if (!fileFound) res.code(404).end("Page not found");
 
             if (typeof done === 'function') done(req, res, payload);
         });
@@ -334,15 +333,18 @@ export class DefaultAdapter extends AbstractHttpAdapter<
                             );
 
                             if (this.isJson(result)) {
-                                const response = {
+                                const raw = {
                                     status: 200,
                                     processingTime,
-                                    data: result,
+                                    result: {
+                                        success: true,
+                                        ...result,
+                                    },
                                 };
 
                                 if (req.query.debug) {
-                                    response['requestId'] = req.requestId;
-                                    response['telemetry'] = telemetry;
+                                    raw['requestId'] = req.requestId;
+                                    raw['telemetry'] = telemetry;
                                 }
 
                                 if (
@@ -359,13 +361,14 @@ export class DefaultAdapter extends AbstractHttpAdapter<
                                                 next,
                                                 handler:
                                                     instance[route.handlerName],
-                                                content: response,
+                                                content: raw,
                                             },
                                         );
                                     }
                                 }
 
-                                res.json(response);
+                                if (typeof result === 'object') res.json(raw);
+                                else res.send(result);
                             } else if (result) {
                                 if (
                                     Application.appModule.httpAfterRender
@@ -397,7 +400,7 @@ export class DefaultAdapter extends AbstractHttpAdapter<
                                 req.requestId,
                             );
 
-                            const response = {
+                            const response = ResponseSchema({
                                 status: 500,
                                 processingTime,
                                 data: {
@@ -406,14 +409,14 @@ export class DefaultAdapter extends AbstractHttpAdapter<
                                         'Internal Server Error',
                                     success: false,
                                 },
-                            };
+                            });
 
                             if (req.query.debug) {
                                 response['requestId'] = req.requestId;
                                 response['telemetry'] = telemetry;
                             }
 
-                            res.code(500).json(response);
+                            res.code(500).text(response);
                         }
 
                         Telemetry.clearTelemetry(req.requestId);

@@ -1,9 +1,9 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-//import * as os from 'os';
+//import * as os from "os";
 import * as fg from 'fast-glob';
 import * as Terser from 'terser';
-//import { build } from 'esbuild';
+//import { build } from "esbuild";
 
 import { IHTTPSettings, ConfigSchema } from './interfaces';
 import { ITranspile, Logger, Scope, Transpile, Module, Config } from '.';
@@ -425,18 +425,18 @@ export class Application {
     **********************************************
 **/
 
-import 'reflect-metadata';
+import "reflect-metadata";
 
 import { 
     Module, ApplicationTranspile,
     ApplicationConfig 
-} from '@cmmv/core';
+} from "@cmmv/core";
 
 //Controllers
-${Application.appModule.controllers.map(controller => `import { ${controller.name} } from '${controller.path}';`).join('\n')}
+${Application.appModule.controllers.map(controller => `import { ${controller.name} } from "${controller.path}";`).join('\n')}
 
 //Providers
-${Application.appModule.providers.map(provider => `import { ${provider.name} } from '${provider.path}';`).join('\n')}
+${Application.appModule.providers.map(provider => `import { ${provider.name} } from "${provider.path}";`).join('\n')}
 
 export let ApplicationModule = new Module("app", {
     configs: [ApplicationConfig],

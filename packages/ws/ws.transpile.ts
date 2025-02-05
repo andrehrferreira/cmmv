@@ -44,7 +44,7 @@ export class WSTranspile extends AbstractTranspile implements ITranspile {
 **/
     
 import { Rpc, Message, Data, Socket, RpcUtils } from "@cmmv/ws";
-import { plainToClass } from 'class-transformer';
+import { plainToClass } from "class-transformer";
 import { ${contract.controllerName}Entity } from "${this.getImportPath(contract, 'entities', contract.controllerName.toLowerCase() + '.entity')}";${hasCache ? `\nimport { Cache, CacheService } from "@cmmv/cache";` : ''}
 
 import { 
@@ -59,14 +59,15 @@ import { ${serviceName} } from "${this.getImportPath(contract, 'services', contr
 export class ${gatewayName} {
     constructor(private readonly ${serviceName.toLowerCase()}: ${serviceName}) {}
 
-    @Message("GetAll${contract.controllerName}Request")${hasCache ? `@Cache("${cacheKeyPrefix}getAll", { ttl: ${cacheTtl}, compress: ${cacheCompress} })` : ''}
+    @Message("GetAll${contract.controllerName}Request")
     async getAll(@Socket() socket){
         try{
             const items = await this.${serviceName.toLowerCase()}.getAll();
+
             const response = await RpcUtils.pack(
                 "${contract.controllerName.toLowerCase()}", 
                 "GetAll${contract.controllerName}Response", 
-                items
+                items.data
             );
 
             if(response)
@@ -86,7 +87,7 @@ export class ${gatewayName} {
                 { item: result, id: ${Config.get('repository.type') === 'mongodb' ? `result._id` : `result.id`} }
             );
 
-            ${hasCache ? `CacheService.set(\`${cacheKeyPrefix}\${${Config.get('repository.type') === 'mongodb' ? `result._id` : `result.id`}}\`, JSON.stringify(result), ${cacheTtl});` : ''}
+            ${hasCache ? `\n            CacheService.set(\`${cacheKeyPrefix}\${${Config.get('repository.type') === 'mongodb' ? `result._id` : `result.id`}}\`, JSON.stringify(result), ${cacheTtl});` : ''}
             ${hasCache ? `CacheService.del("${cacheKeyPrefix}getAll");` : ''}
 
             if(response)
@@ -108,7 +109,7 @@ export class ${gatewayName} {
                     affected: result.affected 
                 }
             );
-            ${hasCache ? `CacheService.set(\`${cacheKeyPrefix}\${${Config.get('repository.type') === 'mongodb' ? `result._id` : `result.id`}}\`, JSON.stringify(result), ${cacheTtl});` : ''}
+            ${hasCache ? `\n            CacheService.set(\`${cacheKeyPrefix}\${data.id}\`, JSON.stringify(result), ${cacheTtl});` : ''}
             ${hasCache ? `CacheService.del("${cacheKeyPrefix}getAll");` : ''}
 
             if(response)
@@ -129,7 +130,7 @@ export class ${gatewayName} {
                     affected: result.affected
                 }
             );
-            ${hasCache ? `CacheService.del(\`${cacheKeyPrefix}\${data.id}\`);` : ''}
+            ${hasCache ? `\n            CacheService.del(\`${cacheKeyPrefix}\${data.id}\`);` : ''}
             ${hasCache ? `CacheService.del("${cacheKeyPrefix}getAll");` : ''}
             
             if(response)

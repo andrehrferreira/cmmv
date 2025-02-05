@@ -24,14 +24,14 @@ export class I18nCountriesGateway {
     constructor(private readonly i18ncountriesservice: I18nCountriesService) {}
 
     @Message('GetAllI18nCountriesRequest')
-    @Cache('country:getAll', { ttl: 600, compress: true })
     async getAll(@Socket() socket) {
         try {
             const items = await this.i18ncountriesservice.getAll();
+
             const response = await RpcUtils.pack(
                 'i18ncountries',
                 'GetAllI18nCountriesResponse',
-                items,
+                items.data,
             );
 
             if (response) socket.send(response);
@@ -76,11 +76,8 @@ export class I18nCountriesGateway {
                     affected: result.affected,
                 },
             );
-            CacheService.set(
-                `country:${result._id}`,
-                JSON.stringify(result),
-                600,
-            );
+
+            CacheService.set(`country:${data.id}`, JSON.stringify(result), 600);
             CacheService.del('country:getAll');
 
             if (response) socket.send(response);
@@ -99,6 +96,7 @@ export class I18nCountriesGateway {
                     affected: result.affected,
                 },
             );
+
             CacheService.del(`country:${data.id}`);
             CacheService.del('country:getAll');
 

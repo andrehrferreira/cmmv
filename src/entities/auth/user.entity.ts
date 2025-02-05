@@ -35,7 +35,7 @@ export class UserEntity implements IUser {
     @Column({ type: 'varchar', nullable: true })
     googleId?: string;
 
-    @Column({ type: 'varchar', default: '[]', nullable: true })
+    @Column({ type: 'varchar', nullable: true })
     groups?: string;
 
     @ManyToOne(() => RolesEntity, roles => roles._id, { nullable: false })

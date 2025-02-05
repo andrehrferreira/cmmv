@@ -23,13 +23,11 @@ export class Telemetry extends Singleton {
             if (!telemetry.records.has(requestId))
                 telemetry.records.set(requestId, []);
 
-            telemetry.records
-                .get(requestId)
-                ?.push({
-                    id: telemetry.generateId(),
-                    label,
-                    startTime: Date.now(),
-                });
+            telemetry.records.get(requestId)?.push({
+                id: telemetry.generateId(),
+                label,
+                startTime: Date.now(),
+            });
         }
     }
 

@@ -73,27 +73,27 @@
             methods: {},
 
             initialize(context, styles, components, vuePlugins, methods) {
-                this.telemetry.start('Initialize Frontend');
+                this.telemetry.start("Initialize Frontend");
                 this.methods = methods;
 
                 try {
                     if (context.config && context.config.rpc && context.config.rpc.enabled && !window.Vue) {
-                        this.telemetry.start('WebSocket Initialization');
+                        this.telemetry.start("WebSocket Initialization");
                         this.connectWebSocket();
-                        this.telemetry.end('WebSocket Initialization');
+                        this.telemetry.end("WebSocket Initialization");
                     }
                 } catch (e) {
                     console.error(e);
                 }
 
-                if (typeof context === 'object') 
+                if (typeof context === "object") 
                     this.context = Object.assign(this.context, context);
 
                 let stylesObj = {};
                 const themeSufix = ((this.theme !== "default") ? "." + this.theme : "");
                 const protectedNames = ["get", "load", "refresh", "theme", "switch"];
                 
-                if (typeof styles === 'object') {
+                if (typeof styles === "object") {
                     this.styleSettings = Object.assign(this.styleSettings, styles);
 
                     for(const index in this.styleSettings){
@@ -139,22 +139,22 @@
                 if(vuePlugins && Array.isArray(vuePlugins)) 
                     this.vuePlugins = vuePlugins;
                                 
-                document.addEventListener('DOMContentLoaded', () => {
+                document.addEventListener("DOMContentLoaded", () => {
                     this.processExpressions();
                     this.telemetry.log();
                 });
 
-                this.telemetry.end('Initialize Frontend');
+                this.telemetry.end("Initialize Frontend");
             },
 
             connectWebSocket() {
                 const socketUrl = window.location.href.replace("https", "wss").replace("http", "ws");
                 this.socket = new WebSocket(socketUrl);
-                this.socket.binaryType = 'arraybuffer';
+                this.socket.binaryType = "arraybuffer";
 
                 this.socket.addEventListener("message", this.parseMessage.bind(this));
                 this.socket.addEventListener("open", () => {
-                    this.telemetry.end('WebSocket Initialization');
+                    this.telemetry.end("WebSocket Initialization");
                 });
 
                 this.socket.addEventListener("close", () => {
@@ -170,7 +170,7 @@
             },
 
             addContracts(jsonContracts) {
-                this.telemetry.start('Load Contracts');
+                this.telemetry.start("Load Contracts");
 
                 try {
                     this.contractIndex = jsonContracts.index;
@@ -187,7 +187,7 @@
                     console.error("Error loading contracts:", e);
                 }
 
-                this.telemetry.end('Load Contracts');
+                this.telemetry.end("Load Contracts");
             },
 
             getContract(contractName) {
@@ -195,7 +195,7 @@
             },
 
             parseMessage(event) {
-                this.telemetry.start('Parse Message');
+                this.telemetry.start("Parse Message");
 
                 try {
                     const buffer = event.data instanceof ArrayBuffer ? new Uint8Array(event.data) : event.data;
@@ -226,7 +226,7 @@
                     console.error(error);
                 }
                 
-                this.telemetry.end('Parse Message');
+                this.telemetry.end("Parse Message");
             },
 
             pack(contractName, messageName, data) {
@@ -297,9 +297,9 @@
             },
 
             async processExpressions() {
-                this.telemetry.start('Process Expressions');
+                this.telemetry.start("Process Expressions");
      
-                this.telemetry.start('CreateApp');
+                this.telemetry.start("CreateApp");
 
                 this.styles.load();
 
@@ -309,7 +309,7 @@
                 };
 
                 if(window.Vue){
-                    const { createApp } = (Vue) ? Vue : await import('/node_modules/vue/dist/vue.esm-bundler.js');
+                    const { createApp } = (Vue) ? Vue : await import("/node_modules/vue/dist/vue.esm-bundler.js");
                     const data = Object.assign({}, this.context);
 
                     let methods = {};
@@ -322,7 +322,7 @@
 
                     try {
                         if(this.context.config.rpc.enabled){
-                            const { default: CMMVMixin } = await import('/assets/rpc-mixins.js');
+                            const { default: CMMVMixin } = await import("/assets/rpc-mixins.js");
                         
                             appConfig = {
                                 data() {
@@ -335,12 +335,12 @@
                                 styles: styles,
                                 $style: styles,
                                 mounted() {
-                                    if (typeof this.mounted === 'function') this.mounted();
-                                    if (typeof CMMVMixin.mounted === 'function') CMMVMixin.mounted.call(this);
+                                    if (typeof this.mounted === "function") this.mounted();
+                                    if (typeof CMMVMixin.mounted === "function") CMMVMixin.mounted.call(this);
                                 },
                                 created() {
-                                    if (typeof this.created === 'function') this.created();
-                                    if (typeof CMMVMixin.created === 'function') CMMVMixin.created.call(this);
+                                    if (typeof this.created === "function") this.created();
+                                    if (typeof CMMVMixin.created === "function") CMMVMixin.created.call(this);
                                 },
                                 methods: {
                                     ...methods,
@@ -370,10 +370,10 @@
                             styles: styles,
                             $style: styles,
                             mounted() {
-                                if (typeof this.mounted === 'function') this.mounted();
+                                if (typeof this.mounted === "function") this.mounted();
                             },
                             created() {
-                                if (typeof this.created === 'function') this.created();
+                                if (typeof this.created === "function") this.created();
                             },
                             methods: { ...methods },
                             ...this.context,
@@ -397,7 +397,7 @@
                         }
                     }
 
-                    app.mount('#app')
+                    app.mount("#app")
                 }
                 else{
                     this.contextApp = this.reactive({
@@ -417,26 +417,26 @@
                     this.contextApp.styles.load();
     
                     const app = this.createApp(this.contextApp);
-                    this.telemetry.end('CreateApp');
+                    this.telemetry.end("CreateApp");
     
                     if (typeof this.contextApp?.created === "function") {
-                        this.telemetry.start('Created Hook');
+                        this.telemetry.start("Created Hook");
                         this.contextApp?.created();
-                        this.telemetry.end('Created Hook');
+                        this.telemetry.end("Created Hook");
                     }
     
-                    this.telemetry.start('Mount App');
+                    this.telemetry.start("Mount App");
                     this.app = app.mount("#app");
-                    this.telemetry.end('Mount App');
+                    this.telemetry.end("Mount App");
                 }
 
                 if (typeof this.contextApp?.mounted === "function") {
-                    this.telemetry.start('Mounted Hook');
+                    this.telemetry.start("Mounted Hook");
                     this.contextApp?.mounted();
-                    this.telemetry.end('Mounted Hook');
+                    this.telemetry.end("Mounted Hook");
                 }
 
-                this.telemetry.end('Process Expressions');
+                this.telemetry.end("Process Expressions");
             },
 
             rpc: {

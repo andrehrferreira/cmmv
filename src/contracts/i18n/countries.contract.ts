@@ -43,7 +43,8 @@ export class I18nCountryContract extends AbstractContract {
         protoType: 'string',
         objectType: 'object',
         entityType: 'I18nCoinsEntity',
-        entityNullable: false,
+        entityNullable: true,
+        nullable: true,
         validations: [
             {
                 type: 'IsString',

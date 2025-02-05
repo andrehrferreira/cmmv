@@ -37,33 +37,25 @@ export class I18nCountriesControllerGenerated {
         compress: true,
         schema: I18nCountriesFastSchema,
     })
-    async getAll(
-        @Queries() queries: any,
-        @Req() req,
-    ): Promise<I18nCountries[] | null> {
+    async getAll(@Queries() queries: any, @Req() req) {
         let result = await this.i18ncountriesservice.getAll(queries, req);
         return result;
     }
 
     @Get(':id')
-    @Cache('country:getAll', {
-        ttl: 600,
-        compress: true,
-        schema: I18nCountriesFastSchema,
-    })
-    async getById(
-        @Param('id') id: string,
-        @Req() req,
-    ): Promise<I18nCountries | null> {
+    async getById(@Param('id') id: string, @Req() req) {
         let result = await this.i18ncountriesservice.getById(id, req);
         return result;
     }
 
+    @Get(':id/raw')
+    async getByIdRaw(@Param('id') id: string, @Req() req) {
+        let result = await this.i18ncountriesservice.getById(id, req);
+        return I18nCountriesFastSchema(result.data);
+    }
+
     @Post()
-    async add(
-        @Body() item: I18nCountries,
-        @Req() req,
-    ): Promise<I18nCountries | null> {
+    async add(@Body() item: I18nCountries, @Req() req) {
         let result = await this.i18ncountriesservice.add(item, req);
         CacheService.del('country:getAll');
         return result;
@@ -74,7 +66,7 @@ export class I18nCountriesControllerGenerated {
         @Param('id') id: string,
         @Body() item: I18nCountries,
         @Req() req,
-    ): Promise<{ success: boolean; affected: number }> {
+    ) {
         let result = await this.i18ncountriesservice.update(id, item, req);
         CacheService.del(`country:${id}`);
         CacheService.del('country:getAll');
@@ -82,10 +74,7 @@ export class I18nCountriesControllerGenerated {
     }
 
     @Delete(':id')
-    async delete(
-        @Param('id') id: string,
-        @Req() req,
-    ): Promise<{ success: boolean; affected: number }> {
+    async delete(@Param('id') id: string, @Req() req) {
         let result = await this.i18ncountriesservice.delete(id, req);
         CacheService.del(`country:${id}`);
         CacheService.del('country:getAll');

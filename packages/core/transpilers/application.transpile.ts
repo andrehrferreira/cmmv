@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { AbstractTranspile, Config, ITranspile, Logger, Scope } from '../lib';
+import { AbstractTranspile, Config, ITranspile, Scope } from '../lib';
 
 import { IContract } from '../interfaces/contract.interface';
 import { CONTROLLER_NAME_METADATA } from '../decorators';
@@ -10,8 +10,6 @@ export class ApplicationTranspile
     extends AbstractTranspile
     implements ITranspile
 {
-    private logger: Logger = new Logger('ExpressTranspile');
-
     run(): void {
         const contracts = Scope.getArray<any>('__contracts');
         contracts?.forEach((contract: any) => this.generateModel(contract));
@@ -96,14 +94,18 @@ ${contract.fields?.map((field: any) => this.generateClassField(field)).join('\n\
     }
 }
 
-// Schema for fast-json-stringify
+// Schema
 export const ${modelName}FastSchemaStructure = {
-    title: '${modelName} Schema',
-    type: 'object',
+    title: "${modelName} Schema",
+    type: "object",
     properties: {
+        id: { 
+            type: "string",
+            nullable: false 
+        },
 ${contract.fields?.map((field: any) => `        ${field.propertyKey}: ${this.generateJsonSchemaField(field)}`).join(',\n')}
     },
-    required: [${contract.fields
+    required: ["id", ${contract.fields
         .filter((field: any) =>
             field.nullable ? field.nullable !== true : true,
         )
@@ -129,13 +131,13 @@ ${this.generateDTOs(contract)}
         outputFilePath?: string,
     ): string {
         let importStatements: string[] = [
-            `import * as fastJson from 'fast-json-stringify';`,
+            `import * as fastJson from "fast-json-stringify";`,
         ];
 
         if (contract.imports && contract.imports.length > 0) {
             for (const module of contract.imports) {
                 importStatements.push(
-                    `import * as ${module} from '${module}';`,
+                    `import * as ${module} from "${module}";`,
                 );
             }
         }
@@ -145,7 +147,7 @@ ${this.generateDTOs(contract)}
             modelInterfaceName !== 'IWsError'
         ) {
             if (Config.get('repository.type') === 'mongodb') {
-                importStatements.push(`import { ObjectId } from 'mongodb';`);
+                importStatements.push(`import { ObjectId } from "mongodb";`);
             }
         }
 
@@ -173,7 +175,7 @@ ${this.generateDTOs(contract)}
             `
 import { 
     ${imports.join(', ')} 
-} from 'class-transformer';\n`,
+} from "class-transformer";\n`,
         );
 
         const validationImports = new Set<string>(['IsOptional']);
@@ -226,7 +228,7 @@ import {
                 `
 import { 
     ${Array.from(validationImports).join(', ')} 
-} from 'class-validator'; \n`,
+} from "class-validator"; \n`,
             );
         }
 

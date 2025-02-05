@@ -12,7 +12,7 @@ import { plainToInstance } from 'class-transformer';
 
 import { Telemetry, AbstractService, Logger } from '@cmmv/core';
 
-import { Repository } from '@cmmv/repository';
+import { Repository, IFindResponse } from '@cmmv/repository';
 
 import { User, IUser } from '../../models/auth/user.model';
 
@@ -21,27 +21,26 @@ import { UserEntity } from '../../entities/auth/user.entity';
 export class UserServiceGenerated extends AbstractService {
     protected logger: Logger = new Logger('UserServiceGenerated');
 
-    async getAll(queries?: any, req?: any): Promise<User[] | null> {
+    async getAll(queries?: any, req?: any): Promise<IFindResponse> {
         try {
             let result = await Repository.findAll(UserEntity, queries);
             result = this.fixIds(result);
 
-            return result && result.length > 0
-                ? result.map(item => {
-                      return plainToInstance(User, item, {
-                          exposeUnsetFields: false,
-                          enableImplicitConversion: true,
-                          excludeExtraneousValues: true,
-                      });
-                  })
-                : null;
+            return {
+                count: result.count,
+                pagination: result.pagination,
+                data:
+                    result && result.data.length > 0
+                        ? result.data.map(item => User.fromEntity(item))
+                        : [],
+            };
         } catch (e) {
             this.logger.error(e);
             return null;
         }
     }
 
-    async getById(id: string, req?: any): Promise<User | null> {
+    async getById(id: string, req?: any): Promise<IFindResponse> {
         try {
             let item = await Repository.findBy(UserEntity, {
                 _id: new ObjectId(id),
@@ -50,7 +49,19 @@ export class UserServiceGenerated extends AbstractService {
 
             if (!item) throw new Error('Item not found');
 
-            return User.fromEntity(item);
+            return {
+                count: 1,
+                pagination: {
+                    limit: 1,
+                    offset: 0,
+                    search: id,
+                    searchField: 'id',
+                    sortBy: 'id',
+                    sort: 'asc',
+                    filters: {},
+                },
+                data: User.fromEntity(item.data),
+            };
         } catch (e) {
             return null;
         }

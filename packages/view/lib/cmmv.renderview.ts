@@ -1,4 +1,4 @@
-import * as fs from 'fs';
+import * as fs from 'node:fs';
 
 import { Config } from '@cmmv/core';
 import { Template } from './cmmv.template';

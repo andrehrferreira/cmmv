@@ -7,3 +7,4 @@ export * from './default.module';
 
 export * from './http.config';
 export * from './http.service';
+export * from './http.interface';

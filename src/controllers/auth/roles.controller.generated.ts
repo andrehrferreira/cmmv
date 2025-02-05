@@ -30,42 +30,42 @@ export class RolesControllerGenerated {
 
     @Get()
     @Auth('roles:get')
-    async getAll(@Queries() queries: any, @Req() req): Promise<Roles[] | null> {
+    async getAll(@Queries() queries: any, @Req() req) {
         let result = await this.rolesservice.getAll(queries, req);
         return result;
     }
 
     @Get(':id')
     @Auth('roles:get')
-    async getById(@Param('id') id: string, @Req() req): Promise<Roles | null> {
+    async getById(@Param('id') id: string, @Req() req) {
         let result = await this.rolesservice.getById(id, req);
         return result;
     }
 
+    @Get(':id/raw')
+    @Auth('roles:get')
+    async getByIdRaw(@Param('id') id: string, @Req() req) {
+        let result = await this.rolesservice.getById(id, req);
+        return RolesFastSchema(result.data);
+    }
+
     @Post()
     @Auth('roles:insert')
-    async add(@Body() item: Roles, @Req() req): Promise<Roles | null> {
+    async add(@Body() item: Roles, @Req() req) {
         let result = await this.rolesservice.add(item, req);
         return result;
     }
 
     @Put(':id')
     @Auth('roles:update')
-    async update(
-        @Param('id') id: string,
-        @Body() item: Roles,
-        @Req() req,
-    ): Promise<{ success: boolean; affected: number }> {
+    async update(@Param('id') id: string, @Body() item: Roles, @Req() req) {
         let result = await this.rolesservice.update(id, item, req);
         return result;
     }
 
     @Delete(':id')
     @Auth('roles:delete')
-    async delete(
-        @Param('id') id: string,
-        @Req() req,
-    ): Promise<{ success: boolean; affected: number }> {
+    async delete(@Param('id') id: string, @Req() req) {
         let result = await this.rolesservice.delete(id, req);
         return result;
     }

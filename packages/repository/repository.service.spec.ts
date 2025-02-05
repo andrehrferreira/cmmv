@@ -69,7 +69,7 @@ describe('Repository', () => {
             const result = await Repository.findAll(TestEntity);
 
             expect(repositoryStub.find.calledOnce).toBe(true);
-            expect(result.length).toBe(2);
+            expect(result.data.length).toBe(2);
             expect(result[0] instanceof TestEntity).toBe(true);
         });
 

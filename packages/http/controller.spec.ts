@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
+
 import {
     Controller,
     Get,
@@ -12,8 +13,9 @@ import {
     Header,
     Request,
     Response,
-} from '../../controller.decorator';
-import { ControllerRegistry } from '../../controller.registry';
+} from './controller.decorator';
+
+import { ControllerRegistry } from './controller.registry';
 
 describe('Controller Decorators', () => {
     beforeEach(() => {

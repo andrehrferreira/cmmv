@@ -35,7 +35,7 @@ export class I18nCountriesEntity implements II18nCountries {
     name: string;
 
     @ManyToOne(() => I18nCoinsEntity, coins => coins._id, { nullable: false })
-    currency: I18nCoinsEntity;
+    currency?: I18nCoinsEntity;
 
     @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
     createdAt: Date;

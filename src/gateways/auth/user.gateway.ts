@@ -26,10 +26,11 @@ export class UserGateway {
     async getAll(@Socket() socket) {
         try {
             const items = await this.userservice.getAll();
+
             const response = await RpcUtils.pack(
                 'user',
                 'GetAllUserResponse',
-                items,
+                items.data,
             );
 
             if (response) socket.send(response);

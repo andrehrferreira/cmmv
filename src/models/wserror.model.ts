@@ -62,11 +62,15 @@ export class WsError implements IWsError {
     }
 }
 
-// Schema for fast-json-stringify
+// Schema
 export const WsErrorFastSchemaStructure = {
     title: 'WsError Schema',
     type: 'object',
     properties: {
+        id: {
+            type: 'string',
+            nullable: false,
+        },
         message: {
             type: 'string',
             nullable: false,
@@ -80,7 +84,7 @@ export const WsErrorFastSchemaStructure = {
             nullable: false,
         },
     },
-    required: ['message', 'code', 'context'],
+    required: ['id', 'message', 'code', 'context'],
 };
 
 export const WsErrorFastSchema = fastJson(WsErrorFastSchemaStructure);

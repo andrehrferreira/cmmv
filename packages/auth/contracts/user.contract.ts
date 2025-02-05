@@ -71,7 +71,6 @@ export class AuthContract extends AbstractContract {
 
     @ContractField({
         protoType: 'string',
-        defaultValue: '"[]"',
         objectType: 'string',
         protoRepeated: true,
         nullable: true,

@@ -5,7 +5,6 @@ import {
     AbstractTranspile,
     Config,
     ITranspile,
-    Logger,
     Scope,
     IContract,
     CONTROLLER_NAME_METADATA,
@@ -52,7 +51,7 @@ import { I${entityName} } from "${this.getImportPath(contract, 'models', modelNa
 @Entity("${schemaName}")
 ${this.generateIndexes(entityName, contract.fields, contract)}
 export class ${entityName}Entity implements I${entityName} {
-    ${Config.get('repository.type') === 'mongodb' ? '@ObjectIdColumn()' : "@PrimaryGeneratedColumn('uuid')"}
+    ${Config.get('repository.type') === 'mongodb' ? '@ObjectIdColumn()' : '@PrimaryGeneratedColumn("uuid")'}
     ${Config.get('repository.type') === 'mongodb' ? '_id: ObjectId' : 'id: string'};
 
 ${contract.fields.map((field: any) => this.generateField(field)).join('\n\n')}${extraFields}
@@ -89,20 +88,24 @@ ${contract.fields.map((field: any) => this.generateField(field)).join('\n\n')}${
     as it may be overwritten by the application.
     **********************************************
 **/
-${Config.get('repository.type') === 'mongodb' ? "\nimport { ObjectId } from 'mongodb';" : ''}
-import { validate } from 'class-validator';
-import { plainToInstance } from 'class-transformer';
+${Config.get('repository.type') === 'mongodb' ? '\nimport { ObjectId } from "mongodb";' : ''}
+import { validate } from "class-validator";
+import { plainToInstance } from "class-transformer";
 
 import { 
     Telemetry, AbstractService, 
     Logger 
 } from "@cmmv/core";
 
-import { Repository } from '@cmmv/repository';
+import { 
+    Repository,
+    IFindResponse 
+} from "@cmmv/repository";
 
 import { 
    ${modelName}, 
-   ${modelInterfaceName},${importsFromModel.join(', \n   ')}
+   ${modelInterfaceName},
+   ${importsFromModel.join(', \n   ')}
 } from "${this.getImportPath(contract, 'models', modelName.toLowerCase())}.model";
 
 import { ${entityName} } from "${this.getImportPath(contract, 'entities', modelName.toLowerCase())}.entity";
@@ -110,20 +113,19 @@ import { ${entityName} } from "${this.getImportPath(contract, 'entities', modelN
 export class ${serviceName}Generated extends AbstractService {
     protected logger: Logger = new Logger("${serviceName}Generated");
 
-    async getAll(queries?: any, req?: any): Promise<${modelName}[] | null> {
+    async getAll(queries?: any, req?: any): Promise<IFindResponse> {
         try{
-            Telemetry.start('${serviceName}::GetAll', req?.requestId);
+            Telemetry.start("${serviceName}::GetAll", req?.requestId);
             let result = await Repository.findAll(${entityName}, queries);
             ${Config.get('repository.type') === 'mongodb' ? 'result = this.fixIds(result)' : ''}
-            Telemetry.end('${serviceName}::GetAll', req?.requestId);
+            Telemetry.end("${serviceName}::GetAll", req?.requestId);
 
-            return result && result.length > 0 ? result.map((item) => {
-                return plainToInstance(${modelName}, item, {
-                    exposeUnsetFields: false,
-                    enableImplicitConversion: true,
-                    excludeExtraneousValues: true
-                });
-            }) : null;
+            return {
+                count: result.count,
+                pagination: result.pagination,
+                data: result && result.data.length > 0 ? result.data.
+                    map((item) => ${modelName}.fromEntity(item)) : []
+            };
         }
         catch(e){
             this.logger.error(e);
@@ -131,17 +133,29 @@ export class ${serviceName}Generated extends AbstractService {
         }
     }
 
-    async getById(id: string, req?: any): Promise<${modelName} | null> {
+    async getById(id: string, req?: any): Promise<IFindResponse> {
         try{
-            Telemetry.start('${serviceName}::GetById', req?.requestId);
+            Telemetry.start("${serviceName}::GetById", req?.requestId);
             let item = await Repository.findBy(${entityName}, { ${Config.get('repository.type') === 'mongodb' ? '_id: new ObjectId(id)' : 'id'} });
             ${Config.get('repository.type') === 'mongodb' ? 'item = this.fixIds(item)' : ''}
-            Telemetry.end('${serviceName}::GetById', req?.requestId);
+            Telemetry.end("${serviceName}::GetById", req?.requestId);
 
             if (!item) 
-                throw new Error('Item not found');
+                throw new Error("Item not found");
             
-            return ${modelName}.fromEntity(item);
+            return {
+                count: 1,
+                pagination: {
+                    limit: 1,
+                    offset: 0,
+                    search: id,
+                    searchField: "id",
+                    "sortBy": "id",
+                    "sort": "asc",
+                    "filters": {}
+                },
+                data: ${modelName}.fromEntity(item.data)
+            };
         }
         catch(e){
             return null;
@@ -151,7 +165,7 @@ export class ${serviceName}Generated extends AbstractService {
     async add(item: ${modelInterfaceName}, req?: any): Promise<${modelName}> {
         return new Promise(async (resolve, reject) => {
             try{
-                Telemetry.start('${serviceName}::Add', req?.requestId);
+                Telemetry.start("${serviceName}::Add", req?.requestId);
                         
                 let newItem: any = plainToInstance(${modelName}, item, { 
                     exposeUnsetFields: false,
@@ -171,8 +185,8 @@ export class ${serviceName}Generated extends AbstractService {
                     newItem.userCreator = ${Config.get('repository.type') === 'mongodb' ? 'new ObjectId(userId)' : 'userId'};
 
                 if (errors.length > 0) {
-                    Telemetry.end('TaskService::Add', req?.requestId);
-                    reject({ success: false, message: Object.values(errors[0].constraints).join(', ') });
+                    Telemetry.end("TaskService::Add", req?.requestId);
+                    reject({ success: false, message: Object.values(errors[0].constraints).join(", ") });
                 } 
                 else {      
                     newItem = this.removeUndefined(newItem);
@@ -182,17 +196,17 @@ export class ${serviceName}Generated extends AbstractService {
                     
                     if(result.success){
                         ${Config.get('repository.type') === 'mongodb' ? 'let dataFixed = this.fixIds(result.data)' : ''}
-                        Telemetry.end('TaskService::Add', req?.requestId);
+                        Telemetry.end("TaskService::Add", req?.requestId);
                         resolve(${modelName}.fromEntity(dataFixed)); 
                     }    
                     else {
-                        Telemetry.end('TaskService::Add', req?.requestId);
+                        Telemetry.end("TaskService::Add", req?.requestId);
                         reject(result);
                     }           
                 }
             }
             catch(e){ 
-                Telemetry.end('TaskService::Add', req?.requestId);
+                Telemetry.end("TaskService::Add", req?.requestId);
                 reject({ success: false, message: e.message });
             }
         });
@@ -201,7 +215,7 @@ export class ${serviceName}Generated extends AbstractService {
     async update(id: string, item: ${modelInterfaceName}, req?: any): Promise<{ success: boolean, affected: number }> {
         return new Promise(async (resolve, reject) => {
             try{
-                Telemetry.start('${serviceName}::Update', req?.requestId);
+                Telemetry.start("${serviceName}::Update", req?.requestId);
 
                 let updateItem: any = plainToInstance(${modelName}, item, { 
                     exposeUnsetFields: false,
@@ -216,19 +230,19 @@ export class ${serviceName}Generated extends AbstractService {
                 });
            
                 if (errors.length > 0) {
-                    Telemetry.end('TaskService::Add', req?.requestId);
+                    Telemetry.end("TaskService::Add", req?.requestId);
                     reject(errors);
                 } 
                 else {  
                     updateItem = this.removeUndefined(updateItem);
                     delete updateItem._id;
                     const result = await Repository.update(${entityName}, ${Config.get('repository.type') === 'mongodb' ? 'new ObjectId(id)' : 'id'}, updateItem);                    
-                    Telemetry.end('TaskService::Add', req?.requestId);
+                    Telemetry.end("TaskService::Add", req?.requestId);
                     resolve({ success: result > 0, affected: result });       
                 }                
             }
             catch(e){
-                Telemetry.end('${serviceName}::Update', req?.requestId);
+                Telemetry.end("${serviceName}::Update", req?.requestId);
                 reject({ success: false, affected: 0 });
             }
         });
@@ -236,13 +250,13 @@ export class ${serviceName}Generated extends AbstractService {
 
     async delete(id: string, req?: any): Promise<{ success: boolean, affected: number }> {
         try{
-            Telemetry.start('${serviceName}::Delete', req?.requestId);
+            Telemetry.start("${serviceName}::Delete", req?.requestId);
             const result = await Repository.delete(${entityName}, ${Config.get('repository.type') === 'mongodb' ? 'new ObjectId(id)' : 'id'});
-            Telemetry.end('${serviceName}::Delete', req?.requestId);
+            Telemetry.end("${serviceName}::Delete", req?.requestId);
             return { success: result > 0, affected: result };
         }
         catch(e){
-            Telemetry.end('${serviceName}::Delete', req?.requestId);
+            Telemetry.end("${serviceName}::Delete", req?.requestId);
             return { success: false, affected: 0 };
         }
     }
@@ -333,7 +347,7 @@ ${contract.services
 
     private generateColumnOptions(field: any): string {
         const options = [];
-        options.push(`type: '${this.mapToTypeORMType(field.protoType)}'`);
+        options.push(`type: "${this.mapToTypeORMType(field.protoType)}"`);
 
         if (field.defaultValue !== undefined)
             options.push(
@@ -418,10 +432,10 @@ ${contract.services
 
         if (contract.options?.databaseTimestamps) {
             extraFields += `
-    @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+    @CreateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
     createdAt: Date;
 
-    @UpdateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
+    @UpdateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP", onUpdate: "CURRENT_TIMESTAMP" })
     updatedAt: Date;`;
         }
 
@@ -430,11 +444,11 @@ ${contract.services
 
             extraFields += `
     @ManyToOne(() => UserEntity, { nullable: false })
-    ${Config.get('repository.type') === 'mongodb' ? '@ObjectIdColumn({ nullable: false })' : "@Column({ type: 'varchar', nullable: false })"}
+    ${Config.get('repository.type') === 'mongodb' ? '@ObjectIdColumn({ nullable: false })' : '@Column({ type: "varchar", nullable: false })'}
     userCreator: ${Config.get('repository.type') === 'mongodb' ? 'ObjectId' : 'string'};
 
     @ManyToOne(() => UserEntity, { nullable: true })
-    ${Config.get('repository.type') === 'mongodb' ? '@ObjectIdColumn({ nullable: true })' : "@Column({ type: 'varchar', nullable: true })"}
+    ${Config.get('repository.type') === 'mongodb' ? '@ObjectIdColumn({ nullable: true })' : '@Column({ type: "varchar", nullable: true })'}
     userLastUpdate: ${Config.get('repository.type') === 'mongodb' ? 'ObjectId' : 'string'};
     
     @BeforeInsert()
