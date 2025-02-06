@@ -8,17 +8,20 @@
 
 import { ObjectId } from 'mongodb';
 import { validate } from 'class-validator';
-import { plainToInstance } from 'class-transformer';
 
-import { Telemetry, AbstractService, Logger } from '@cmmv/core';
+import { Telemetry, Logger } from '@cmmv/core';
 
-import { Repository, IFindResponse } from '@cmmv/repository';
+import {
+    Repository,
+    IFindResponse,
+    AbstractRepositoryService,
+} from '@cmmv/repository';
 
 import { Roles, IRoles } from '../../models/auth/roles.model';
 
 import { RolesEntity } from '../../entities/auth/roles.entity';
 
-export class RolesServiceGenerated extends AbstractService {
+export class RolesServiceGenerated extends AbstractRepositoryService {
     protected logger: Logger = new Logger('RolesServiceGenerated');
 
     async getAll(queries?: any, req?: any): Promise<IFindResponse> {
@@ -35,6 +38,7 @@ export class RolesServiceGenerated extends AbstractService {
                         : [],
             };
         } catch (e) {
+            console.log(e);
             this.logger.error(e);
             return null;
         }
@@ -67,49 +71,36 @@ export class RolesServiceGenerated extends AbstractService {
         }
     }
 
-    async add(item: IRoles, req?: any): Promise<Roles> {
+    async add(item: Partial<Roles>, req?: any): Promise<Roles> {
         return new Promise(async (resolve, reject) => {
             try {
-                let newItem: any = plainToInstance(Roles, item, {
-                    exposeUnsetFields: false,
-                    enableImplicitConversion: true,
-                    excludeExtraneousValues: true,
-                });
+                let newItem: any = Roles.fromPartial(item);
+                const userId: string = req.user?.id;
 
-                const errors = await validate(newItem, {
-                    forbidUnknownValues: false,
-                    stopAtFirstError: true,
-                    skipMissingProperties: true,
-                });
-
-                const userId: string = req.user.id;
-
-                if (typeof userId === 'string')
-                    newItem.userCreator = new ObjectId(userId);
-
-                if (errors.length > 0) {
-                    reject({
-                        success: false,
-                        message: Object.values(errors[0].constraints).join(
-                            ', ',
-                        ),
-                    });
-                } else {
-                    newItem = this.removeUndefined(newItem);
-                    delete newItem._id;
-
-                    const result: any = await Repository.insert<RolesEntity>(
-                        RolesEntity,
-                        newItem,
-                    );
-
-                    if (result.success) {
-                        let dataFixed = this.fixIds(result.data);
-                        resolve(Roles.fromEntity(dataFixed));
-                    } else {
-                        reject(result);
-                    }
+                if (typeof userId === 'string') {
+                    try {
+                        newItem.userCreator = new ObjectId(userId);
+                    } catch {}
                 }
+
+                this.validate(newItem)
+                    .then(async (data: any) => {
+                        const result: any =
+                            await Repository.insert<RolesEntity>(
+                                RolesEntity,
+                                newItem,
+                            );
+
+                        if (result.success) {
+                            let dataFixed = this.fixIds(result.data);
+                            resolve(Roles.fromEntity(dataFixed));
+                        } else {
+                            reject(result);
+                        }
+                    })
+                    .catch(error => {
+                        reject({ success: false, message: error.message });
+                    });
             } catch (e) {
                 reject({ success: false, message: e.message });
             }
@@ -118,35 +109,38 @@ export class RolesServiceGenerated extends AbstractService {
 
     async update(
         id: string,
-        item: IRoles,
+        item: Partial<Roles>,
         req?: any,
     ): Promise<{ success: boolean; affected: number }> {
         return new Promise(async (resolve, reject) => {
             try {
-                let updateItem: any = plainToInstance(Roles, item, {
-                    exposeUnsetFields: false,
-                    enableImplicitConversion: true,
-                    excludeExtraneousValues: true,
-                });
+                let updateItem: any = Roles.fromPartial(item);
 
-                const errors = await validate(updateItem, {
-                    forbidUnknownValues: false,
-                    skipMissingProperties: true,
-                    stopAtFirstError: true,
-                });
+                this.validate(updateItem)
+                    .then(async (data: any) => {
+                        const userId: string = req.user?.id;
 
-                if (errors.length > 0) {
-                    reject(errors);
-                } else {
-                    updateItem = this.removeUndefined(updateItem);
-                    delete updateItem._id;
-                    const result = await Repository.update(
-                        RolesEntity,
-                        new ObjectId(id),
-                        updateItem,
-                    );
-                    resolve({ success: result > 0, affected: result });
-                }
+                        if (typeof userId === 'string') {
+                            try {
+                                data.userLastUpdate = new ObjectId(userId);
+                            } catch {}
+                        }
+
+                        const result = await Repository.update(
+                            RolesEntity,
+                            new ObjectId(id),
+                            {
+                                ...data,
+                                updatedAt: new Date(),
+                            },
+                        );
+
+                        resolve({ success: result > 0, affected: result });
+                    })
+                    .catch(error => {
+                        console.log(error);
+                        reject(error);
+                    });
             } catch (e) {
                 reject({ success: false, affected: 0 });
             }
@@ -162,6 +156,7 @@ export class RolesServiceGenerated extends AbstractService {
                 RolesEntity,
                 new ObjectId(id),
             );
+
             return { success: result > 0, affected: result };
         } catch (e) {
             return { success: false, affected: 0 };

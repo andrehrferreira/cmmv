@@ -1,5 +1,7 @@
 import * as jwt from 'jsonwebtoken';
-import { Config } from '@cmmv/core';
+
+import { Config, Logger } from '@cmmv/core';
+
 import { IAuthSettings } from './auth.interface';
 
 export function Auth(
@@ -7,10 +9,14 @@ export function Auth(
 ): MethodDecorator {
     return (target, propertyKey: string | symbol, descriptor: any) => {
         const middleware = (request: any, response: any, next?: any) => {
+            const logger = new Logger('Auth');
+
             const cookieName = Config.get(
                 'server.session.options.sessionCookieName',
                 'token',
             );
+
+            const logging = Config.get<string>('server.logging', 'all');
 
             let token = request.req.cookies
                 ? request.req.cookies[cookieName]
@@ -20,13 +26,35 @@ export function Auth(
                 token =
                     request.req.headers.authorization?.split(' ')[1] || null;
 
-            if (!token) return response.code(401).end('Unauthorized');
+            if (!token) {
+                if (
+                    logging === 'all' ||
+                    logging === 'error' ||
+                    logging === 'warning'
+                )
+                    logger.warning(
+                        `${request.method.toUpperCase()} ${request.path} (0ms) 401 - ${request.req.socket.remoteAddress}`,
+                    );
+
+                return response.code(401).end('Unauthorized');
+            }
 
             jwt.verify(
                 token,
                 Config.get('auth.jwtSecret'),
                 (err: any, decoded: any) => {
-                    if (err) return response.code(401).end('Unauthorized');
+                    if (err) {
+                        if (
+                            logging === 'all' ||
+                            logging === 'error' ||
+                            logging === 'warning'
+                        )
+                            logger.warning(
+                                `${request.method.toUpperCase()} ${request.path} (0ms) 401 - ${request.req.socket.remoteAddress}`,
+                            );
+
+                        return response.code(401).end('Unauthorized');
+                    }
 
                     if (decoded.root !== true) {
                         if (
@@ -39,6 +67,15 @@ export function Auth(
                             (typeof rolesOrSettings == 'string' &&
                                 !decoded?.roles.includes(rolesOrSettings))
                         ) {
+                            if (
+                                logging === 'all' ||
+                                logging === 'error' ||
+                                logging === 'warning'
+                            )
+                                logger.warning(
+                                    `${request.method.toUpperCase()} ${request.path} (0ms) 401 - ${request.req.socket.remoteAddress}`,
+                                );
+
                             return response.code(401).end('Unauthorized');
                         } else if (rolesOrSettings) {
                             try {
@@ -55,6 +92,15 @@ export function Auth(
                                             decoded.roles.includes(role),
                                         )
                                     ) {
+                                        if (
+                                            logging === 'all' ||
+                                            logging === 'error' ||
+                                            logging === 'warning'
+                                        )
+                                            logger.warning(
+                                                `${request.method.toUpperCase()} ${request.path} (0ms) 401 - ${request.req.socket.remoteAddress}`,
+                                            );
+
                                         return response
                                             .code(401)
                                             .end('Unauthorized');

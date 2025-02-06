@@ -1,5 +1,7 @@
 import { AbstractContract, Contract, ContractField } from '@cmmv/core';
 
+import { I18nCoinsForm } from './coins.form';
+
 @Contract({
     controllerName: 'I18nCoins',
     controllerCustomPath: '/i18n/coins',
@@ -16,6 +18,7 @@ import { AbstractContract, Contract, ContractField } from '@cmmv/core';
         ttl: 3000,
         compress: true,
     },
+    viewForm: I18nCoinsForm,
 })
 export class I18nCoinsContract extends AbstractContract {
     @ContractField({

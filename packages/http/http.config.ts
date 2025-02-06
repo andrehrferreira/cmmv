@@ -36,6 +36,11 @@ export const HTTPConfig: ConfigSchema = {
             type: 'boolean',
             default: true,
         },
+        logging: {
+            required: false,
+            type: 'string',
+            default: 'all',
+        },
         compress: {
             required: false,
             type: 'object',

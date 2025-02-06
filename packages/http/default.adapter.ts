@@ -13,6 +13,7 @@ import etag from '@cmmv/etag';
 import helmet from '@cmmv/helmet';
 
 import {
+    Logger,
     AbstractHttpAdapter,
     IHTTPSettings,
     Application,
@@ -28,6 +29,7 @@ export class DefaultAdapter extends AbstractHttpAdapter<
     http.Server | https.Server
 > {
     protected readonly openConnections = new Set<Duplex>();
+    protected readonly logger = new Logger('HTTP');
 
     constructor(protected instance?: any) {
         super(instance || cmmv());
@@ -330,6 +332,14 @@ export class DefaultAdapter extends AbstractHttpAdapter<
                                     }
                                 }
 
+                                this.printLog(
+                                    'log',
+                                    method,
+                                    req.path,
+                                    Telemetry.getProcessTimer(req.requestId),
+                                    200,
+                                );
+
                                 if (typeof result === 'object') res.json(raw);
                                 else res.send(result);
                             } else if (result) {
@@ -353,10 +363,20 @@ export class DefaultAdapter extends AbstractHttpAdapter<
                                     }
                                 }
 
+                                this.printLog(
+                                    'log',
+                                    method,
+                                    req.path,
+                                    Telemetry.getProcessTimer(req.requestId),
+                                    200,
+                                );
+
                                 res.send(result);
                             }
                         } catch (error) {
-                            console.error(error);
+                            this.logger.error(
+                                error.message || 'Internal Server Error',
+                            );
                             const processingTime = Date.now() - startTime;
                             Telemetry.end('Request Process', req.requestId);
                             const telemetry = Telemetry.getTelemetry(
@@ -366,7 +386,7 @@ export class DefaultAdapter extends AbstractHttpAdapter<
                             const response = ResponseSchema({
                                 status: 500,
                                 processingTime,
-                                data: {
+                                result: {
                                     message:
                                         error.message ||
                                         'Internal Server Error',
@@ -379,7 +399,16 @@ export class DefaultAdapter extends AbstractHttpAdapter<
                                 response['telemetry'] = telemetry;
                             }
 
-                            res.code(500).text(response);
+                            this.printLog(
+                                'error',
+                                method,
+                                req.path,
+                                Telemetry.getProcessTimer(req.requestId),
+                                500,
+                            );
+                            res.set('content-type', 'text/json')
+                                .code(500)
+                                .send(response);
                         }
 
                         Telemetry.clearTelemetry(req.requestId);
@@ -519,5 +548,43 @@ export class DefaultAdapter extends AbstractHttpAdapter<
                 resolve('');
             }
         });
+    }
+
+    public printLog(
+        type: string,
+        method: string,
+        path: string,
+        timer: number,
+        status: number,
+    ) {
+        const logging = Config.get<string>('server.logging', 'all');
+        const logContent = `${method.toUpperCase()} ${path} (${timer}ms) ${status}`;
+
+        switch (type) {
+            case 'error':
+                if (logging === 'all' || logging === 'error')
+                    this.logger.error(logContent);
+                break;
+            case 'warning':
+                if (
+                    logging === 'all' ||
+                    logging === 'error' ||
+                    logging === 'warning'
+                )
+                    this.logger.warning(logContent);
+                break;
+            case 'verbose':
+                if (
+                    logging === 'all' ||
+                    logging === 'error' ||
+                    logging === 'warning' ||
+                    logging === 'verbose'
+                )
+                    this.logger.verbose(logContent);
+                break;
+            default:
+                this.logger.log(logContent);
+                break;
+        }
     }
 }

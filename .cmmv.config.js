@@ -19,6 +19,7 @@ module.exports = {
             },
         },
         cors: true,
+        logging: "all",
         helmet: {
             enabled: false,
             options: {
@@ -78,7 +79,7 @@ module.exports = {
         localRegister: true,
         localLogin: true,
         jwtSecret: process.env.JWT_SECRET || 'secret',
-        expiresIn: 60 * 60,
+        expiresIn: 60 * 60 * 24,
         google: {
             clientID: process.env.GOOGLE_CLIENT_ID,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET,

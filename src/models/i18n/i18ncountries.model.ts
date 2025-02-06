@@ -24,7 +24,7 @@ export interface II18nCountries {
     _id?: ObjectId;
     code: string;
     name: string;
-    currency?: object;
+    currency?: object | string | string[] | ObjectId;
 }
 
 //Model
@@ -49,8 +49,8 @@ export class I18nCountries implements II18nCountries {
 
     @Expose()
     @IsString({ message: 'Invalid currency code' })
-    @ValidateNested()
-    currency?: I18nCoins;
+    //@ValidateNested()
+    currency?: I18nCoins | string | ObjectId;
 
     constructor(partial: Partial<I18nCountries>) {
         Object.assign(this, partial);
@@ -99,7 +99,7 @@ export const I18nCountriesFastSchemaStructure = {
             nullable: false,
         },
         currency: {
-            type: 'object',
+            type: 'string',
             nullable: true,
         },
     },

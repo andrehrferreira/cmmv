@@ -38,7 +38,7 @@ export class AuthService extends AbstractService {
 
         const env = Config.get<string>('env', process.env.NODE_ENV);
         const jwtToken = Config.get<string>('auth.jwtSecret');
-        const expiresIn = Config.get<number>('auth.expiresIn', 60 * 60);
+        const expiresIn = Config.get<number>('auth.expiresIn', 60 * 60 * 24);
         const sessionEnabled = Config.get<boolean>(
             'server.session.enabled',
             true,
@@ -79,13 +79,13 @@ export class AuthService extends AbstractService {
             };
         }
 
-        let user = await Repository.findBy(UserEntity, {
+        let user: any = await Repository.findBy(UserEntity, {
             username: userValidation.username,
             password: userValidation.password,
         });
 
         if (
-            !user &&
+            !user.data &&
             env === 'dev' &&
             payload.username === 'root' &&
             payload.password === 'root'
@@ -95,6 +95,8 @@ export class AuthService extends AbstractService {
                 username: payload.username,
                 root: true,
             } as UserEntity;
+        } else {
+            user = user.data;
         }
 
         if (!user) {

@@ -38,8 +38,8 @@ export class UserEntity implements IUser {
     @Column({ type: 'varchar', nullable: true })
     groups?: string;
 
-    @ManyToOne(() => RolesEntity, roles => roles._id, { nullable: false })
-    roles?: RolesEntity[];
+    @ObjectIdColumn({ nullable: true })
+    roles?: RolesEntity[] | string[] | ObjectId;
 
     @Column({ type: 'boolean', default: false })
     root: boolean;

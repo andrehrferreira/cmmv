@@ -33,7 +33,7 @@ export interface IUser {
     password: string;
     googleId?: string;
     groups?: string;
-    roles?: object;
+    roles?: object | string | string[] | ObjectId;
     root: boolean;
 }
 
@@ -76,8 +76,8 @@ export class User implements IUser {
     groups?: string;
 
     @Expose()
-    @ValidateNested()
-    roles?: Roles[];
+    //@ValidateNested()
+    roles?: Roles[] | string[] | ObjectId;
 
     @Expose()
     root: boolean = false;

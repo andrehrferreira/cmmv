@@ -1,0 +1,27 @@
+{
+    "name": "@cmmv/form",
+    "version": "0.8.9",
+    "description": "Module testing module and application for CMMV",
+    "keywords": [
+        "cmmv",
+        "framework",
+        "form",
+        "formbuilder"
+    ],
+    "publishConfig": {
+        "access": "public"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/cmmvio/cmmv.git"
+    },
+    "author": "Andre Ferreira",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/cmmvio/cmmv/issues"
+    },
+    "homepage": "https://cmmv.io",
+    "dependencies": {
+        "@cmmv/core": "0.8.9"
+    }
+}

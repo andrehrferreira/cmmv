@@ -8,11 +8,14 @@
 
 import { ObjectId } from 'mongodb';
 import { validate } from 'class-validator';
-import { plainToInstance } from 'class-transformer';
 
-import { Telemetry, AbstractService, Logger } from '@cmmv/core';
+import { Telemetry, Logger } from '@cmmv/core';
 
-import { Repository, IFindResponse } from '@cmmv/repository';
+import {
+    Repository,
+    IFindResponse,
+    AbstractRepositoryService,
+} from '@cmmv/repository';
 
 import {
     I18nCountries,
@@ -21,7 +24,7 @@ import {
 
 import { I18nCountriesEntity } from '../../entities/i18n/i18ncountries.entity';
 
-export class I18nCountriesServiceGenerated extends AbstractService {
+export class I18nCountriesServiceGenerated extends AbstractRepositoryService {
     protected logger: Logger = new Logger('I18nCountriesServiceGenerated');
 
     async getAll(queries?: any, req?: any): Promise<IFindResponse> {
@@ -40,6 +43,7 @@ export class I18nCountriesServiceGenerated extends AbstractService {
                         : [],
             };
         } catch (e) {
+            console.log(e);
             this.logger.error(e);
             return null;
         }
@@ -72,50 +76,36 @@ export class I18nCountriesServiceGenerated extends AbstractService {
         }
     }
 
-    async add(item: II18nCountries, req?: any): Promise<I18nCountries> {
+    async add(item: Partial<I18nCountries>, req?: any): Promise<I18nCountries> {
         return new Promise(async (resolve, reject) => {
             try {
-                let newItem: any = plainToInstance(I18nCountries, item, {
-                    exposeUnsetFields: false,
-                    enableImplicitConversion: true,
-                    excludeExtraneousValues: true,
-                });
+                let newItem: any = I18nCountries.fromPartial(item);
+                const userId: string = req.user?.id;
 
-                const errors = await validate(newItem, {
-                    forbidUnknownValues: false,
-                    stopAtFirstError: true,
-                    skipMissingProperties: true,
-                });
-
-                const userId: string = req.user.id;
-
-                if (typeof userId === 'string')
-                    newItem.userCreator = new ObjectId(userId);
-
-                if (errors.length > 0) {
-                    reject({
-                        success: false,
-                        message: Object.values(errors[0].constraints).join(
-                            ', ',
-                        ),
-                    });
-                } else {
-                    newItem = this.removeUndefined(newItem);
-                    delete newItem._id;
-
-                    const result: any =
-                        await Repository.insert<I18nCountriesEntity>(
-                            I18nCountriesEntity,
-                            newItem,
-                        );
-
-                    if (result.success) {
-                        let dataFixed = this.fixIds(result.data);
-                        resolve(I18nCountries.fromEntity(dataFixed));
-                    } else {
-                        reject(result);
-                    }
+                if (typeof userId === 'string') {
+                    try {
+                        newItem.userCreator = new ObjectId(userId);
+                    } catch {}
                 }
+
+                this.validate(newItem)
+                    .then(async (data: any) => {
+                        const result: any =
+                            await Repository.insert<I18nCountriesEntity>(
+                                I18nCountriesEntity,
+                                newItem,
+                            );
+
+                        if (result.success) {
+                            let dataFixed = this.fixIds(result.data);
+                            resolve(I18nCountries.fromEntity(dataFixed));
+                        } else {
+                            reject(result);
+                        }
+                    })
+                    .catch(error => {
+                        reject({ success: false, message: error.message });
+                    });
             } catch (e) {
                 reject({ success: false, message: e.message });
             }
@@ -124,35 +114,38 @@ export class I18nCountriesServiceGenerated extends AbstractService {
 
     async update(
         id: string,
-        item: II18nCountries,
+        item: Partial<I18nCountries>,
         req?: any,
     ): Promise<{ success: boolean; affected: number }> {
         return new Promise(async (resolve, reject) => {
             try {
-                let updateItem: any = plainToInstance(I18nCountries, item, {
-                    exposeUnsetFields: false,
-                    enableImplicitConversion: true,
-                    excludeExtraneousValues: true,
-                });
+                let updateItem: any = I18nCountries.fromPartial(item);
 
-                const errors = await validate(updateItem, {
-                    forbidUnknownValues: false,
-                    skipMissingProperties: true,
-                    stopAtFirstError: true,
-                });
+                this.validate(updateItem)
+                    .then(async (data: any) => {
+                        const userId: string = req.user?.id;
 
-                if (errors.length > 0) {
-                    reject(errors);
-                } else {
-                    updateItem = this.removeUndefined(updateItem);
-                    delete updateItem._id;
-                    const result = await Repository.update(
-                        I18nCountriesEntity,
-                        new ObjectId(id),
-                        updateItem,
-                    );
-                    resolve({ success: result > 0, affected: result });
-                }
+                        if (typeof userId === 'string') {
+                            try {
+                                data.userLastUpdate = new ObjectId(userId);
+                            } catch {}
+                        }
+
+                        const result = await Repository.update(
+                            I18nCountriesEntity,
+                            new ObjectId(id),
+                            {
+                                ...data,
+                                updatedAt: new Date(),
+                            },
+                        );
+
+                        resolve({ success: result > 0, affected: result });
+                    })
+                    .catch(error => {
+                        console.log(error);
+                        reject(error);
+                    });
             } catch (e) {
                 reject({ success: false, affected: 0 });
             }
@@ -168,6 +161,7 @@ export class I18nCountriesServiceGenerated extends AbstractService {
                 I18nCountriesEntity,
                 new ObjectId(id),
             );
+
             return { success: result > 0, affected: result };
         } catch (e) {
             return { success: false, affected: 0 };

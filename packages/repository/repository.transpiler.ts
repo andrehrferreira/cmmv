@@ -90,16 +90,16 @@ ${contract.fields.map((field: any) => this.generateField(field)).join('\n\n')}${
 **/
 ${Config.get('repository.type') === 'mongodb' ? '\nimport { ObjectId } from "mongodb";' : ''}
 import { validate } from "class-validator";
-import { plainToInstance } from "class-transformer";
 
 import { 
-    Telemetry, AbstractService, 
+    Telemetry, 
     Logger 
 } from "@cmmv/core";
 
 import { 
     Repository,
-    IFindResponse 
+    IFindResponse,
+    AbstractRepositoryService 
 } from "@cmmv/repository";
 
 import { 
@@ -110,7 +110,7 @@ import {
 
 import { ${entityName} } from "${this.getImportPath(contract, 'entities', modelName.toLowerCase())}.entity";
 
-export class ${serviceName}Generated extends AbstractService {
+export class ${serviceName}Generated extends AbstractRepositoryService {
     protected logger: Logger = new Logger("${serviceName}Generated");
 
     async getAll(queries?: any, req?: any): Promise<IFindResponse> {
@@ -128,6 +128,7 @@ export class ${serviceName}Generated extends AbstractService {
             };
         }
         catch(e){
+            console.log(e)
             this.logger.error(e);
             return null;
         }
@@ -162,38 +163,25 @@ export class ${serviceName}Generated extends AbstractService {
         }
     }
 
-    async add(item: ${modelInterfaceName}, req?: any): Promise<${modelName}> {
+    async add(item: Partial<${modelName}>, req?: any): Promise<${modelName}> {
         return new Promise(async (resolve, reject) => {
             try{
                 Telemetry.start("${serviceName}::Add", req?.requestId);
-                        
-                let newItem: any = plainToInstance(${modelName}, item, { 
-                    exposeUnsetFields: false,
-                    enableImplicitConversion: true,
-                    excludeExtraneousValues: true
-                });                
+                let newItem: any = ${modelName}.fromPartial(item);  
+                const userId: string = req.user?.id;
 
-                const errors = await validate(newItem, { 
-                    forbidUnknownValues: false,
-                    stopAtFirstError: true, 
-                    skipMissingProperties: true
-                });
+                if(typeof userId === "string"){
+                    try{
+                        newItem.userCreator = ${Config.get('repository.type') === 'mongodb' ? 'new ObjectId(userId)' : 'userId'};
+                    } catch { }
+                }
 
-                const userId: string = req.user.id;
-
-                if(typeof userId === "string")
-                    newItem.userCreator = ${Config.get('repository.type') === 'mongodb' ? 'new ObjectId(userId)' : 'userId'};
-
-                if (errors.length > 0) {
-                    Telemetry.end("TaskService::Add", req?.requestId);
-                    reject({ success: false, message: Object.values(errors[0].constraints).join(", ") });
-                } 
-                else {      
-                    newItem = this.removeUndefined(newItem);
-                    delete newItem._id;
-
-                    const result: any = await Repository.insert<${entityName}>(${entityName}, newItem);
-                    
+                this.validate(newItem).then(async (data: any) => {
+                    const result: any = await Repository.insert<${entityName}>(
+                        ${entityName}, 
+                        newItem
+                    );
+                          
                     if(result.success){
                         ${Config.get('repository.type') === 'mongodb' ? 'let dataFixed = this.fixIds(result.data)' : ''}
                         Telemetry.end("TaskService::Add", req?.requestId);
@@ -202,8 +190,11 @@ export class ${serviceName}Generated extends AbstractService {
                     else {
                         Telemetry.end("TaskService::Add", req?.requestId);
                         reject(result);
-                    }           
-                }
+                    } 
+                }).catch((error) => {
+                    Telemetry.end("TaskService::Add", req?.requestId);
+                    reject({ success: false, message: error.message });
+                });   
             }
             catch(e){ 
                 Telemetry.end("TaskService::Add", req?.requestId);
@@ -212,34 +203,37 @@ export class ${serviceName}Generated extends AbstractService {
         });
     }
 
-    async update(id: string, item: ${modelInterfaceName}, req?: any): Promise<{ success: boolean, affected: number }> {
+    async update(id: string, item: Partial<${modelName}>, req?: any): Promise<{ success: boolean, affected: number }> {
         return new Promise(async (resolve, reject) => {
             try{
                 Telemetry.start("${serviceName}::Update", req?.requestId);
+                let updateItem: any = ${modelName}.fromPartial(item);
 
-                let updateItem: any = plainToInstance(${modelName}, item, { 
-                    exposeUnsetFields: false,
-                    enableImplicitConversion: true,
-                    excludeExtraneousValues: true
-                });
+                this.validate(updateItem).then(async (data: any) => {
+                    const userId: string = req.user?.id;
 
-                const errors = await validate(updateItem, { 
-                    forbidUnknownValues: false,
-                    skipMissingProperties: true,
-                    stopAtFirstError: true
-                });
-           
-                if (errors.length > 0) {
-                    Telemetry.end("TaskService::Add", req?.requestId);
-                    reject(errors);
-                } 
-                else {  
-                    updateItem = this.removeUndefined(updateItem);
-                    delete updateItem._id;
-                    const result = await Repository.update(${entityName}, ${Config.get('repository.type') === 'mongodb' ? 'new ObjectId(id)' : 'id'}, updateItem);                    
-                    Telemetry.end("TaskService::Add", req?.requestId);
-                    resolve({ success: result > 0, affected: result });       
-                }                
+                    if(typeof userId === "string"){
+                        try{
+                            data.userLastUpdate = ${Config.get('repository.type') === 'mongodb' ? 'new ObjectId(userId)' : 'userId'};
+                        } catch { }
+                    }
+
+                    const result = await Repository.update(
+                        ${entityName}, 
+                        ${Config.get('repository.type') === 'mongodb' ? 'new ObjectId(id)' : 'id'}, 
+                        {
+                            ...data,
+                            updatedAt: new Date()
+                        }
+                    );       
+                    
+                    Telemetry.end("TaskService::Update", req?.requestId);
+                    resolve({ success: result > 0, affected: result });
+                }).catch((error) => {
+                    console.log(error);
+                    Telemetry.end("TaskService::Update", req?.requestId);
+                    reject(error);
+                });             
             }
             catch(e){
                 Telemetry.end("${serviceName}::Update", req?.requestId);
@@ -251,8 +245,12 @@ export class ${serviceName}Generated extends AbstractService {
     async delete(id: string, req?: any): Promise<{ success: boolean, affected: number }> {
         try{
             Telemetry.start("${serviceName}::Delete", req?.requestId);
-            const result = await Repository.delete(${entityName}, ${Config.get('repository.type') === 'mongodb' ? 'new ObjectId(id)' : 'id'});
+            const result = await Repository.delete(
+                ${entityName}, 
+                ${Config.get('repository.type') === 'mongodb' ? 'new ObjectId(id)' : 'id'}
+            );
             Telemetry.end("${serviceName}::Delete", req?.requestId);
+
             return { success: result > 0, affected: result };
         }
         catch(e){
@@ -332,13 +330,19 @@ ${contract.services
                 );
                 const entityName = controllerName;
 
-                decorators.push(
-                    `@ManyToOne(() => ${entityName}Entity, (${link.entityName}) => ${link.entityName}.${link.field}, { nullable: ${link?.entityNullable === true || false ? 'true' : 'false'} })`,
-                );
+                if (Config.get('repository.type') === 'mongodb') {
+                    decorators.push(
+                        `@ObjectIdColumn({ nullable: ${field.nullable === true ? 'true' : 'false'} })`,
+                    );
+                } else {
+                    decorators.push(
+                        `@ManyToOne(() => ${entityName}Entity, (${link.entityName}) => ${link.entityName}.${link.field}, { nullable: ${link?.entityNullable === true || false ? 'true' : 'false'} })`,
+                    );
+                }
             });
 
             tsType =
-                `${field.entityType}${field.protoRepeated ? '[]' : ''}` ||
+                `${field.entityType}${field.protoRepeated ? '[]' : ''} | string${field.protoRepeated ? '[]' : ''}${Config.get('repository.type') === 'mongodb' ? ' | ObjectId' : ''}` ||
                 'object';
         }
 

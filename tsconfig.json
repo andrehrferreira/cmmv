@@ -49,6 +49,8 @@
             "@cmmv/auth/*": ["packages/auth/*"],
             "@cmmv/testing": ["packages/testing"],
             "@cmmv/testing/*": ["packages/testing/*"],
+            "@cmmv/form": ["packages/form"],
+            "@cmmv/form/*": ["packages/form/*"],
             "@models": ["models"],
             "@models/*": ["models/*"],
             "@services": ["services"],

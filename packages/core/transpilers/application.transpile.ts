@@ -45,7 +45,7 @@ ${includeId}${contract.fields
                 let optional = field.nullable ? '?' : '';
 
                 if (field.link && field.link.length > 0) {
-                    return `    ${field.propertyKey}${optional}: object;`;
+                    return `    ${field.propertyKey}${optional}: object | string | string[]${Config.get('repository.type') === 'mongodb' ? ' | ObjectId' : ''};`;
                 } else {
                     const fieldType = field.objectType
                         ? field.objectType
@@ -337,8 +337,8 @@ import {
         }
 
         if (field.link && field.link.length > 0) {
-            decorators.push('    @ValidateNested()');
-            return `${decorators.length > 0 ? decorators.join('\n') + '\n' : ''}    ${field.propertyKey}${optional}: ${field.entityType.replace('Entity', '')}${field.protoRepeated ? '[]' : ''};`;
+            decorators.push('    //@ValidateNested()');
+            return `${decorators.length > 0 ? decorators.join('\n') + '\n' : ''}    ${field.propertyKey}${optional}: ${field.entityType.replace('Entity', '')}${field.protoRepeated ? '[]' : ''} | string${field.protoRepeated ? '[]' : ''}${Config.get('repository.type') === 'mongodb' ? ' | ObjectId' : ''};`;
         } else {
             const fieldType = field.objectType
                 ? field.objectType

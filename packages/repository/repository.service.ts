@@ -137,6 +137,8 @@ export class Repository extends Singleton {
                     },
                 } as FindManyOptions<Entity>;
 
+                console.log(filter);
+
                 const results = await repository.find(filter);
                 const total = await repository.count(filter);
 

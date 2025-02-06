@@ -1,3 +1,4 @@
+export * from './service.abstract';
 export * from './repository.interface';
 export * from './repository.module';
 export * from './repository.service';
