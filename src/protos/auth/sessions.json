@@ -38,6 +38,10 @@
                         "revoked": {
                             "type": "bool",
                             "id": 8
+                        },
+                        "userAgent": {
+                            "type": "string",
+                            "id": 9
                         }
                     }
                 },

@@ -25,6 +25,7 @@ export interface ISessions {
     browser?: string;
     os?: string;
     revoked: boolean;
+    userAgent?: string;
 }
 
 //Model
@@ -65,6 +66,9 @@ export class Sessions implements ISessions {
     @Expose()
     @IsNotEmpty()
     revoked: boolean = false;
+
+    @Expose()
+    userAgent?: string;
 
     constructor(partial: Partial<Sessions>) {
         Object.assign(this, partial);
@@ -136,6 +140,10 @@ export const SessionsFastSchemaStructure = {
             type: 'boolean',
             nullable: false,
             default: false,
+        },
+        userAgent: {
+            type: 'string',
+            nullable: true,
         },
     },
     required: ['id', 'uuid', 'fingerprint', 'user', 'ipAddress', 'revoked'],

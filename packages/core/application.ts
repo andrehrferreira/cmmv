@@ -318,7 +318,15 @@ export class Application {
             this.configs.push(...module.getConfigsSchemas());
 
             module.getProviders().forEach(provider => {
-                const providerInstance = new provider();
+                const paramTypes =
+                    Reflect.getMetadata('design:paramtypes', provider) || [];
+                const instances = paramTypes.map(
+                    (paramType: any) =>
+                        this.providersMap.get(paramType.name) ||
+                        new paramType(),
+                );
+
+                const providerInstance = new provider(...instances);
                 this.providersMap.set(provider.name, providerInstance);
             });
 

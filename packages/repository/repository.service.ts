@@ -10,6 +10,7 @@ import {
     Like,
     FindManyOptions,
     FindOptionsSelect,
+    FindOptionsOrder,
 } from 'typeorm';
 
 import { Config, Logger, Singleton } from '@cmmv/core';
@@ -72,6 +73,20 @@ export class Repository extends Singleton {
                 : id.toString();
     }
 
+    private static escape(str: any): string {
+        if (typeof str !== 'string') return str;
+
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;')
+            .replace(/\\/g, '\\\\')
+            .replace(/\$/g, '\\$')
+            .replace(/\//g, '\\/');
+    }
+
     public static getEntity(name: string): new () => any | null {
         if (Repository.entities.has(name)) return Repository.entities.get(name);
 
@@ -132,91 +147,70 @@ export class Repository extends Singleton {
             const isMongoDB = Config.get('repository.type') === 'mongodb';
             const repository = this.getRepository(entity);
 
-            const {
-                limit = 10,
-                offset = 0,
-                sortBy = 'id',
-                sort = 'asc',
-                search,
-                searchField,
-                ...filters
-            } = queries || {};
+            const limit = Math.max(
+                1,
+                Math.min(100, parseInt(queries?.limit) || 10),
+            ); // Máx 100 para evitar sobrecarga
+            const offset = Math.max(0, parseInt(queries?.offset) || 0);
+            const sortBy = this.escape(queries?.sortBy || 'id');
+            const sort: 'ASC' | 'DESC' =
+                queries?.sort?.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
+            const search = this.escape(queries?.search || '');
+            const searchField = escape(queries?.searchField || '');
+            const filters = queries ? { ...queries } : {};
 
-            if (isMongoDB) {
-                const mongoQuery: any = {};
+            delete filters.limit;
+            delete filters.offset;
+            delete filters.sortBy;
+            delete filters.sort;
+            delete filters.search;
+            delete filters.searchField;
+            const where: any = {};
 
-                if (search && searchField) {
-                    mongoQuery[searchField] = {
-                        $regex: new RegExp(search, 'i'),
-                    }; // Case-insensitive search
-                }
-
-                Object.assign(mongoQuery, filters);
-
-                const filter = {
-                    where: mongoQuery,
-                    skip: parseInt(offset),
-                    take: parseInt(limit), //@ts-ignore
-                    order: {
-                        [sortBy]: sort.toLowerCase() === 'desc' ? -1 : 1,
-                    },
-                } as FindManyOptions<Entity>;
-
-                const results = await repository.find(filter);
-                const total = await repository.count();
-
-                return results
-                    ? {
-                          data: results,
-                          count: total,
-                          pagination: {
-                              limit,
-                              offset,
-                              sortBy,
-                              sort,
-                              search,
-                              searchField,
-                              filters,
-                          },
-                      }
-                    : null;
-            } else {
-                const where: FindOptionsWhere<Entity> = {};
-
-                if (search && searchField)
+            if (search && searchField) {
+                if (isMongoDB) {
+                    where[searchField] = { $regex: new RegExp(search, 'i') }; // Case-insensitive
+                } else {
                     where[searchField] = Like(`%${search}%`);
-
-                for (const [key, value] of Object.entries(filters)) //@ts-ignore
-                    where[key as keyof Entity] = value;
-
-                const results = await repository.find({
-                    where,
-                    take: parseInt(limit),
-                    skip: parseInt(offset), //@ts-ignore
-                    order: {
-                        [sortBy]:
-                            sort.toUpperCase() === 'DESC' ? 'DESC' : 'ASC',
-                    },
-                });
-                const total = await repository.count();
-
-                return results
-                    ? {
-                          data: results,
-                          count: total,
-                          pagination: {
-                              limit,
-                              offset,
-                              sortBy,
-                              sort,
-                              search,
-                              searchField,
-                              filters,
-                          },
-                      }
-                    : null;
+                }
             }
-        } catch (e) {
+
+            Object.entries(filters).forEach(([key, value]) => {
+                where[key] = this.escape(value);
+            });
+
+            const order: FindOptionsOrder<Entity> = {
+                [sortBy]: sort,
+            } as FindOptionsOrder<Entity>;
+
+            const queryOptions: FindManyOptions<Entity> = {
+                where,
+                relations,
+                take: limit,
+                skip: offset,
+                order,
+            };
+
+            const [results, total] = await Promise.all([
+                repository.find(queryOptions),
+                repository.count({ where }),
+            ]);
+
+            return {
+                data: results,
+                count: total,
+                pagination: {
+                    limit,
+                    offset,
+                    sortBy,
+                    sort,
+                    search,
+                    searchField,
+                    filters,
+                },
+            };
+        } catch (error) {
+            console.error('Database findAll error:', error);
             return null;
         }
     }
@@ -297,6 +291,7 @@ export class Repository extends Singleton {
     ) {
         try {
             const repository = this.getRepository(entity);
+
             const query = {
                 [this.getIdField()]: this.fixId(id),
             } as FindOptionsWhere<Entity>;

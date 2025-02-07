@@ -16,7 +16,6 @@ export class SessionsContract extends AbstractContract {
     @ContractField({
         protoType: 'string',
         nullable: false,
-        unique: true,
         index: true,
     })
     uuid: string;
@@ -24,6 +23,7 @@ export class SessionsContract extends AbstractContract {
     @ContractField({
         protoType: 'string',
         nullable: false,
+        unique: true,
         index: true,
     })
     fingerprint: string;
@@ -34,6 +34,7 @@ export class SessionsContract extends AbstractContract {
         entityType: 'UserEntity',
         protoRepeated: false,
         nullable: false,
+        index: true,
         link: [
             {
                 contract: UserContract,
@@ -75,4 +76,10 @@ export class SessionsContract extends AbstractContract {
         defaultValue: false,
     })
     revoked: boolean;
+
+    @ContractField({
+        protoType: 'string',
+        nullable: true,
+    })
+    userAgent: string;
 }

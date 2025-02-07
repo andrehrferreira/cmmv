@@ -22,8 +22,9 @@ import { ISessions } from '@models/auth/sessions.model';
 import { UserEntity } from '@entities/auth/user.entity';
 
 @Entity('auth_sessions')
-@Index('idx_sessions_uuid', ['uuid'], { unique: true })
-@Index('idx_sessions_fingerprint', ['fingerprint'])
+@Index('idx_sessions_uuid', ['uuid'])
+@Index('idx_sessions_fingerprint', ['fingerprint'], { unique: true })
+@Index('idx_sessions_user', ['user'])
 export class SessionsEntity implements ISessions {
     @ObjectIdColumn()
     _id: ObjectId;
@@ -76,6 +77,12 @@ export class SessionsEntity implements ISessions {
         nullable: false,
     })
     revoked: boolean;
+
+    @Column({
+        type: 'varchar',
+        nullable: true,
+    })
+    userAgent?: string;
 
     @CreateDateColumn({
         type: 'timestamp',

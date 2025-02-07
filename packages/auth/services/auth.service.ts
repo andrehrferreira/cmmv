@@ -54,6 +54,15 @@ export class AuthService extends AbstractService {
         });
     }
 
+    private isLocalhost(req: any): boolean {
+        const localIPs = ['127.0.0.1', '::1', 'localhost'];
+        const clientIP =
+            req.ip ||
+            req.connection?.remoteAddress ||
+            req.get('x-forwarded-for');
+        return localIPs.includes(clientIP);
+    }
+
     public async login(payload, req?: any, res?: any, session?: any) {
         const { ObjectId } = await import('mongodb');
         const UserEntity = Repository.getEntity('UserEntity');
@@ -77,19 +86,25 @@ export class AuthService extends AbstractService {
             process.env.NODE_ENV !== 'dev',
         );
 
-        const sesssionId = uuidv4();
-        const fingerprint = generateFingerprint(req);
+        const usernameHashed = crypto
+            .createHash('sha1')
+            .update(payload.username)
+            .digest('hex');
 
         let user: any = await Repository.findBy(UserEntity, {
-            username: payload.username,
-            password: payload.password,
+            username: usernameHashed,
+            password: crypto
+                .createHash('sha256')
+                .update(payload.password)
+                .digest('hex'),
         });
 
         if (
-            !user.data &&
+            (!user || !user?.data) &&
             env === 'dev' &&
             payload.username === 'root' &&
-            payload.password === 'root'
+            payload.password === 'root' &&
+            this.isLocalhost(req)
         ) {
             user = {
                 [Config.get('repository.type') === 'mongodb' ? '_id' : 'id']:
@@ -114,6 +129,9 @@ export class AuthService extends AbstractService {
             };
         }
 
+        const sesssionId = uuidv4();
+        const fingerprint = generateFingerprint(req, usernameHashed);
+
         // Creating JWT token
         const token = jwt.sign(
             {
@@ -132,10 +150,12 @@ export class AuthService extends AbstractService {
         );
 
         // Recording session
-        /*await this.sessionsService.registrySession(
-            sesssionId, req, 
-            ${Config.get('repository.type') === 'mongodb' ? `user._id` : `user.id`}
-        );*/
+        await this.sessionsService.registrySession(
+            sesssionId,
+            req,
+            fingerprint,
+            Config.get('repository.type') === 'mongodb' ? user._id : user.id,
+        );
 
         // Preparing session cookie
         res.cookie(cookieName, sesssionId, {

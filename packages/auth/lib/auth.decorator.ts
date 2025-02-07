@@ -1,4 +1,5 @@
 import * as jwt from 'jsonwebtoken';
+import * as crypto from 'crypto';
 
 import { Config, Logger } from '@cmmv/core';
 import { generateFingerprint } from '@cmmv/http';
@@ -125,8 +126,14 @@ export function Auth(
                         }
                     }
 
+                    const usernameHashed = crypto
+                        .createHash('sha1')
+                        .update(decoded.username)
+                        .digest('hex');
+
                     if (
-                        decoded.fingerprint !== generateFingerprint(request.req)
+                        decoded.fingerprint !==
+                        generateFingerprint(request.req, usernameHashed)
                     ) {
                         logger.warning(
                             `${request.method.toUpperCase()} ${request.path} (0ms) 403 - ${request.req.socket.remoteAddress}`,

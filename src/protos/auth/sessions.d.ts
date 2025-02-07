@@ -17,6 +17,7 @@ export namespace Sessions {
     export type browser = string;
     export type os = string;
     export type revoked = boolean;
+    export type userAgent = string;
 }
 
 export interface AddSessionsRequest {

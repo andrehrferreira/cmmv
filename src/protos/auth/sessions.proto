@@ -20,6 +20,7 @@ message Sessions {
    string browser = 6;
    string os = 7;
    bool revoked = 8;
+   string userAgent = 9;
 }
 
 message SessionsList {
