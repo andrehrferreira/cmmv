@@ -163,10 +163,10 @@ export class ${serviceName}Generated extends AbstractRepositoryService {
         }
     }
 
-    async add(item: Partial<${modelName}>, req?: any): Promise<${modelName}> {
+    async insert(item: Partial<${modelName}>, req?: any): Promise<${modelName}> {
         return new Promise(async (resolve, reject) => {
             try{
-                Telemetry.start("${serviceName}::Add", req?.requestId);
+                Telemetry.start("${serviceName}::Insert", req?.requestId);
                 let newItem: any = ${modelName}.fromPartial(item);  
                 const userId: string = req.user?.id;
 
@@ -184,20 +184,20 @@ export class ${serviceName}Generated extends AbstractRepositoryService {
                           
                     if(result.success){
                         ${Config.get('repository.type') === 'mongodb' ? 'let dataFixed = this.fixIds(result.data)' : ''}
-                        Telemetry.end("TaskService::Add", req?.requestId);
+                        Telemetry.end("TaskService::Insert", req?.requestId);
                         resolve(${modelName}.fromEntity(dataFixed)); 
                     }    
                     else {
-                        Telemetry.end("TaskService::Add", req?.requestId);
+                        Telemetry.end("TaskService::Insert", req?.requestId);
                         reject(result);
                     } 
                 }).catch((error) => {
-                    Telemetry.end("TaskService::Add", req?.requestId);
+                    Telemetry.end("TaskService::Insert", req?.requestId);
                     reject({ success: false, message: error.message });
                 });   
             }
             catch(e){ 
-                Telemetry.end("TaskService::Add", req?.requestId);
+                Telemetry.end("TaskService::Insert", req?.requestId);
                 reject({ success: false, message: e.message });
             }
         });

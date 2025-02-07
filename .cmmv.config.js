@@ -85,6 +85,95 @@ module.exports = {
             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
             callbackURL: 'http://localhost:3000/auth/google/callback',
         },
+        qrCode: {
+            image: 'public/assets/favicon/android-chrome-512x512.png',
+            "type": "canvas",
+            "shape": "square",
+            "width": 300,
+            "height": 300,
+            "margin": 0,
+            "qrOptions": {
+                "typeNumber": "0",
+                "mode": "Byte",
+                "errorCorrectionLevel": "Q"
+            },
+            "imageOptions": {
+                "saveAsBlob": true,
+                "hideBackgroundDots": true,
+                "imageSize": 0.4,
+                "margin": 0
+            },
+            "dotsOptions": {
+                "type": "square",
+                "color": "#000000",
+                "roundSize": true
+            },
+            "backgroundOptions": {
+                "round": 0,
+                "color": "#ffffff"
+            },
+            "dotsOptionsHelper": {
+                "colorType": {
+                    "single": true,
+                    "gradient": false
+                },
+                "gradient": {
+                    "linear": true,
+                    "radial": false,
+                    "color1": "#6a1a4c",
+                    "color2": "#6a1a4c",
+                    "rotation": "0"
+                }
+            },
+            "cornersSquareOptions": {
+                "type": "dot",
+                "color": "#000000",
+                "gradient": null
+            },
+            "cornersSquareOptionsHelper": {
+                "colorType": {
+                    "single": true,
+                    "gradient": false
+                },
+                "gradient": {
+                    "linear": true,
+                    "radial": false,
+                    "color1": "#000000",
+                    "color2": "#000000",
+                    "rotation": "0"
+                }
+            },
+            "cornersDotOptions": {
+                "type": "",
+                "color": "#000000"
+            },
+            "cornersDotOptionsHelper": {
+                "colorType": {
+                    "single": true,
+                    "gradient": false
+                },
+                "gradient": {
+                    "linear": true,
+                    "radial": false,
+                    "color1": "#000000",
+                    "color2": "#000000",
+                    "rotation": "0"
+                }
+            },
+            "backgroundOptionsHelper": {
+                "colorType": {
+                    "single": true,
+                    "gradient": false
+                },
+                "gradient": {
+                    "linear": true,
+                    "radial": false,
+                    "color1": "#ffffff",
+                    "color2": "#ffffff",
+                    "rotation": "0"
+                    }
+            }
+        }
     },
 
     keyv: {

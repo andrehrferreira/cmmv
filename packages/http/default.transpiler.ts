@@ -88,7 +88,7 @@ export class ${serviceName}Generated extends AbstractService {
         throw new Error('Item not found');
     }
 
-    async add(item: ${modelInterfaceName}, req?: any): Promise<${modelName}> {
+    async insert(item: ${modelInterfaceName}, req?: any): Promise<${modelName}> {
         return new Promise((resolve, reject) => {
             item['id'] = this.items.length + 1;
 
@@ -295,10 +295,10 @@ export class ${controllerName}Generated {
     }
 
     @Post()${this.getControllerDecorators({ authRouter, hasCache: false, contract }, { cacheKeyPrefix, cacheTtl, cacheCompress }, 'insert')}
-    async add(@Body() item: ${contract.controllerName}, @Req() req) {
-        Telemetry.start('${controllerName}::Add', req.requestId);
-        let result = await this.${serviceName.toLowerCase()}.add(item, req);${hasCache ? `\n        CacheService.del("${cacheKeyPrefix}getAll");` : ''}
-        Telemetry.end('${controllerName}::Add', req.requestId);
+    async insert(@Body() item: ${contract.controllerName}, @Req() req) {
+        Telemetry.start('${controllerName}::Insert', req.requestId);
+        let result = await this.${serviceName.toLowerCase()}.insert(item, req);${hasCache ? `\n        CacheService.del("${cacheKeyPrefix}getAll");` : ''}
+        Telemetry.end('${controllerName}::Insert', req.requestId);
         return result;
     }
 

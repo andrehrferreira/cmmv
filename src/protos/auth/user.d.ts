@@ -11,10 +11,18 @@ import { Roles } from './roles.d';
 export namespace User {
     export type username = string;
     export type password = string;
-    export type googleId = string;
+    export type provider = string;
     export type groups = string;
     export type roles = Roles;
     export type root = boolean;
+    export type blocked = boolean;
+    export type validated = boolean;
+    export type verifyEmail = boolean;
+    export type verifyEmailCode = number;
+    export type verifySMS = boolean;
+    export type verifySMSCode = number;
+    export type optSecret = string;
+    export type optSecretVerify = boolean;
 }
 
 export interface AddUserRequest {

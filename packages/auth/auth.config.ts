@@ -20,7 +20,7 @@ export const AuthConfig: ConfigSchema = {
         expiresIn: {
             required: true,
             type: 'number',
-            default: 3600,
+            default: 60 * 60 * 24,
         },
         google: {
             required: false,
@@ -44,23 +44,345 @@ export const AuthConfig: ConfigSchema = {
                 },
             },
         },
-    },
-
-    server: {
-        session: {
-            default: {},
+        optSecret: {
             required: false,
             type: 'object',
+            default: {},
             properties: {
-                options: {
-                    default: {},
+                issuer: {
+                    required: false,
+                    type: 'string',
+                    default: 'CMMV',
+                },
+                algorithm: {
+                    required: false,
+                    type: 'string',
+                    default: 'sha512',
+                },
+            },
+        },
+        qrCode: {
+            required: false,
+            type: 'object',
+            default: {},
+            properties: {
+                image: {
+                    required: false,
+                    type: 'string',
+                    default: 'public/assets/favicon/android-chrome-512x512.png',
+                },
+                type: {
+                    required: false,
+                    type: 'string',
+                    default: 'canvas',
+                },
+                shape: {
+                    required: false,
+                    type: 'string',
+                    default: 'square',
+                },
+                width: {
+                    required: false,
+                    type: 'number',
+                    default: 300,
+                },
+                height: {
+                    required: false,
+                    type: 'number',
+                    default: 300,
+                },
+                margin: {
+                    required: false,
+                    type: 'number',
+                    default: 0,
+                },
+                qrOptions: {
                     required: false,
                     type: 'object',
+                    default: {},
                     properties: {
-                        sessionCookieName: {
-                            default: 'cmmv-session',
+                        typeNumber: {
                             required: false,
                             type: 'string',
+                            default: '0',
+                        },
+                        mode: {
+                            required: false,
+                            type: 'string',
+                            default: 'Byte',
+                        },
+                        errorCorrectionLevel: {
+                            required: false,
+                            type: 'string',
+                            default: 'Q',
+                        },
+                    },
+                },
+                imageOptions: {
+                    required: false,
+                    type: 'object',
+                    default: {},
+                    properties: {
+                        saveAsBlob: {
+                            required: false,
+                            type: 'boolean',
+                            default: true,
+                        },
+                        hideBackgroundDots: {
+                            required: false,
+                            type: 'boolean',
+                            default: true,
+                        },
+                        imageSize: {
+                            required: false,
+                            type: 'number',
+                            default: 0.4,
+                        },
+                        margin: {
+                            required: false,
+                            type: 'number',
+                            default: 0,
+                        },
+                    },
+                },
+                dotsOptions: {
+                    required: false,
+                    type: 'object',
+                    default: {},
+                    properties: {
+                        type: {
+                            required: false,
+                            type: 'string',
+                            default: 'square',
+                        },
+                        color: {
+                            required: false,
+                            type: 'string',
+                            default: '#000000',
+                        },
+                        roundSize: {
+                            required: false,
+                            type: 'boolean',
+                            default: true,
+                        },
+                    },
+                },
+                backgroundOptions: {
+                    required: false,
+                    type: 'object',
+                    default: {},
+                    properties: {
+                        round: {
+                            required: false,
+                            type: 'number',
+                            default: 0,
+                        },
+                        color: {
+                            required: false,
+                            type: 'string',
+                            default: '#ffffff',
+                        },
+                    },
+                },
+                cornersSquareOptions: {
+                    required: false,
+                    type: 'object',
+                    default: {},
+                    properties: {
+                        type: {
+                            required: false,
+                            type: 'string',
+                            default: 'dot',
+                        },
+                        color: {
+                            required: false,
+                            type: 'string',
+                            default: '#000000',
+                        },
+                    },
+                },
+                cornersDotOptions: {
+                    required: false,
+                    type: 'object',
+                    default: {},
+                    properties: {
+                        type: {
+                            required: false,
+                            type: 'string',
+                            default: '',
+                        },
+                        color: {
+                            required: false,
+                            type: 'string',
+                            default: '#000000',
+                        },
+                    },
+                },
+                dotsOptionsHelper: {
+                    required: false,
+                    type: 'object',
+                    default: {},
+                    properties: {
+                        colorType: {
+                            required: false,
+                            type: 'object',
+                            default: {},
+                            properties: {
+                                single: {
+                                    required: false,
+                                    type: 'boolean',
+                                    default: true,
+                                },
+                                gradient: {
+                                    required: false,
+                                    type: 'boolean',
+                                    default: false,
+                                },
+                            },
+                        },
+                        gradient: {
+                            required: false,
+                            type: 'object',
+                            default: {},
+                            properties: {
+                                linear: {
+                                    required: false,
+                                    type: 'boolean',
+                                    default: true,
+                                },
+                                radial: {
+                                    required: false,
+                                    type: 'boolean',
+                                    default: false,
+                                },
+                                color1: {
+                                    required: false,
+                                    type: 'string',
+                                    default: '#6a1a4c',
+                                },
+                                color2: {
+                                    required: false,
+                                    type: 'string',
+                                    default: '#6a1a4c',
+                                },
+                                rotation: {
+                                    required: false,
+                                    type: 'string',
+                                    default: '0',
+                                },
+                            },
+                        },
+                    },
+                },
+                cornersSquareOptionsHelper: {
+                    required: false,
+                    type: 'object',
+                    default: {},
+                    properties: {
+                        colorType: {
+                            required: false,
+                            type: 'object',
+                            default: {},
+                            properties: {
+                                single: {
+                                    required: false,
+                                    type: 'boolean',
+                                    default: true,
+                                },
+                                gradient: {
+                                    required: false,
+                                    type: 'boolean',
+                                    default: false,
+                                },
+                            },
+                        },
+                        gradient: {
+                            required: false,
+                            type: 'object',
+                            default: {},
+                            properties: {
+                                linear: {
+                                    required: false,
+                                    type: 'boolean',
+                                    default: true,
+                                },
+                                radial: {
+                                    required: false,
+                                    type: 'boolean',
+                                    default: false,
+                                },
+                                color1: {
+                                    required: false,
+                                    type: 'string',
+                                    default: '#000000',
+                                },
+                                color2: {
+                                    required: false,
+                                    type: 'string',
+                                    default: '#000000',
+                                },
+                                rotation: {
+                                    required: false,
+                                    type: 'string',
+                                    default: '0',
+                                },
+                            },
+                        },
+                    },
+                },
+                backgroundOptionsHelper: {
+                    required: false,
+                    type: 'object',
+                    default: {},
+                    properties: {
+                        colorType: {
+                            required: false,
+                            type: 'object',
+                            default: {},
+                            properties: {
+                                single: {
+                                    required: false,
+                                    type: 'boolean',
+                                    default: true,
+                                },
+                                gradient: {
+                                    required: false,
+                                    type: 'boolean',
+                                    default: false,
+                                },
+                            },
+                        },
+                        gradient: {
+                            required: false,
+                            type: 'object',
+                            default: {},
+                            properties: {
+                                linear: {
+                                    required: false,
+                                    type: 'boolean',
+                                    default: true,
+                                },
+                                radial: {
+                                    required: false,
+                                    type: 'boolean',
+                                    default: false,
+                                },
+                                color1: {
+                                    required: false,
+                                    type: 'string',
+                                    default: '#ffffff',
+                                },
+                                color2: {
+                                    required: false,
+                                    type: 'string',
+                                    default: '#ffffff',
+                                },
+                                rotation: {
+                                    required: false,
+                                    type: 'string',
+                                    default: '0',
+                                },
+                            },
                         },
                     },
                 },

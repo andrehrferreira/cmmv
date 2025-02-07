@@ -43,9 +43,7 @@ export class WSTranspile extends AbstractTranspile implements ITranspile {
     **********************************************
 **/
     
-import { Rpc, Message, Data, Socket, RpcUtils } from "@cmmv/ws";
-import { plainToClass } from "class-transformer";
-import { ${contract.controllerName}Entity } from "${this.getImportPath(contract, 'entities', contract.controllerName.toLowerCase() + '.entity')}";${hasCache ? `\nimport { Cache, CacheService } from "@cmmv/cache";` : ''}
+import { Rpc, Message, Data, Socket, RpcUtils } from "@cmmv/ws";${hasCache ? `\nimport { Cache, CacheService } from "@cmmv/cache";` : ''}
 
 import { 
     Add${contract.controllerName}Request, 
@@ -53,7 +51,13 @@ import {
     Delete${contract.controllerName}Request 
 } from "${this.getImportPath(contract, 'protos', contract.controllerName.toLowerCase())}.d";
 
-import { ${serviceName} } from "${this.getImportPath(contract, 'services', contract.controllerName.toLowerCase() + '.service')}";
+import { 
+    ${contract.controllerName} 
+} from "${this.getImportPath(contract, 'models', contract.controllerName.toLowerCase() + '.model')}";
+
+import { 
+    ${serviceName} 
+} from "${this.getImportPath(contract, 'services', contract.controllerName.toLowerCase() + '.service')}";
 
 @Rpc("${contract.controllerName.toLowerCase()}")
 export class ${gatewayName} {
@@ -77,10 +81,10 @@ export class ${gatewayName} {
     }
 
     @Message("Add${contract.controllerName}Request")
-    async add(@Data() data: Add${contract.controllerName}Request, @Socket() socket){
+    async insert(@Data() data: Add${contract.controllerName}Request, @Socket() socket){
         try{
-            const entity = plainToClass(${contract.controllerName}Entity, data.item);
-            const result = await this.${serviceName.toLowerCase()}.add(entity);
+            const ${contract.controllerName.toLocaleLowerCase()} = ${contract.controllerName}.fromPartial(data.item);
+            const result = await this.${serviceName.toLowerCase()}.insert(${contract.controllerName.toLocaleLowerCase()});
             const response = await RpcUtils.pack(
                 "${contract.controllerName.toLowerCase()}", 
                 "Add${contract.controllerName}Response", 
@@ -99,8 +103,7 @@ export class ${gatewayName} {
     @Message("Update${contract.controllerName}Request")
     async update(@Data() data: Update${contract.controllerName}Request, @Socket() socket){
         try{
-            const entity = plainToClass(${contract.controllerName}Entity, data.item);
-            const result = await this.${serviceName.toLowerCase()}.update(data.id, entity);
+            const result = await this.${serviceName.toLowerCase()}.update(data.id, data.item);
             const response = await RpcUtils.pack(
                 "${contract.controllerName.toLowerCase()}", 
                 "Update${contract.controllerName}Response", 

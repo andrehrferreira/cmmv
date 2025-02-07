@@ -14,6 +14,7 @@ import {
     Expose,
     instanceToPlain,
     plainToInstance,
+    Exclude,
     Transform,
 } from 'class-transformer';
 
@@ -31,10 +32,18 @@ export interface IUser {
     _id?: ObjectId;
     username: string;
     password: string;
-    googleId?: string;
+    provider?: string;
     groups?: string;
     roles?: object | string | string[] | ObjectId;
     root: boolean;
+    blocked: boolean;
+    validated: boolean;
+    verifyEmail: boolean;
+    verifyEmailCode?: number;
+    verifySMS: boolean;
+    verifySMSCode?: number;
+    optSecret?: string;
+    optSecretVerify: boolean;
 }
 
 //Model
@@ -66,7 +75,7 @@ export class User implements IUser {
     password: string;
 
     @Expose()
-    googleId?: string;
+    provider?: string;
 
     @Expose()
     @Transform(({ value }) => JSON.stringify(value), { toClassOnly: true })
@@ -81,6 +90,30 @@ export class User implements IUser {
 
     @Expose()
     root: boolean = false;
+
+    @Expose()
+    blocked: boolean = false;
+
+    @Expose()
+    validated: boolean = false;
+
+    @Expose()
+    verifyEmail: boolean = false;
+
+    @Expose()
+    verifyEmailCode?: number;
+
+    @Expose()
+    verifySMS: boolean = false;
+
+    @Expose()
+    verifySMSCode?: number;
+
+    @Expose()
+    optSecret?: string;
+
+    @Expose()
+    optSecretVerify: boolean = false;
 
     constructor(partial: Partial<User>) {
         Object.assign(this, partial);
@@ -128,7 +161,7 @@ export const UserFastSchemaStructure = {
             type: 'string',
             nullable: false,
         },
-        googleId: {
+        provider: {
             type: 'string',
             nullable: true,
         },
@@ -149,8 +182,55 @@ export const UserFastSchemaStructure = {
             nullable: false,
             default: false,
         },
+        blocked: {
+            type: 'boolean',
+            nullable: false,
+            default: false,
+        },
+        validated: {
+            type: 'boolean',
+            nullable: false,
+            default: false,
+        },
+        verifyEmail: {
+            type: 'boolean',
+            nullable: false,
+            default: false,
+        },
+        verifyEmailCode: {
+            type: 'integer',
+            nullable: true,
+        },
+        verifySMS: {
+            type: 'boolean',
+            nullable: false,
+            default: false,
+        },
+        verifySMSCode: {
+            type: 'integer',
+            nullable: true,
+        },
+        optSecret: {
+            type: 'string',
+            nullable: true,
+        },
+        optSecretVerify: {
+            type: 'boolean',
+            nullable: false,
+            default: false,
+        },
     },
-    required: ['id', 'username', 'password', 'root'],
+    required: [
+        'id',
+        'username',
+        'password',
+        'root',
+        'blocked',
+        'validated',
+        'verifyEmail',
+        'verifySMS',
+        'optSecretVerify',
+    ],
 };
 
 export const UserFastSchema = fastJson(UserFastSchemaStructure);

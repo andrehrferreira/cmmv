@@ -60,8 +60,8 @@ export class I18nCoinsControllerGenerated {
 
     @Post()
     @Auth('i18ncoins:insert')
-    async add(@Body() item: I18nCoins, @Req() req) {
-        let result = await this.i18ncoinsservice.add(item, req);
+    async insert(@Body() item: I18nCoins, @Req() req) {
+        let result = await this.i18ncoinsservice.insert(item, req);
         CacheService.del('coins:getAll');
         return result;
     }

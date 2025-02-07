@@ -24,7 +24,7 @@ import { RolesContract } from './roles.contract';
         },
     ],
 })
-export class AuthContract extends AbstractContract {
+export class UserContract extends AbstractContract {
     @ContractField({
         protoType: 'string',
         unique: true,
@@ -67,7 +67,7 @@ export class AuthContract extends AbstractContract {
         index: true,
         nullable: true,
     })
-    googleId?: string;
+    provider?: string;
 
     @ContractField({
         protoType: 'string',
@@ -102,6 +102,58 @@ export class AuthContract extends AbstractContract {
         defaultValue: false,
     })
     root: boolean;
+
+    @ContractField({
+        protoType: 'bool',
+        defaultValue: false,
+    })
+    blocked: boolean;
+
+    @ContractField({
+        protoType: 'bool',
+        defaultValue: false,
+    })
+    validated: boolean;
+
+    @ContractField({
+        protoType: 'bool',
+        defaultValue: false,
+    })
+    verifyEmail: boolean;
+
+    @ContractField({
+        protoType: 'int',
+        nullable: true,
+        exclude: true,
+    })
+    verifyEmailCode: number;
+
+    @ContractField({
+        protoType: 'bool',
+        defaultValue: false,
+    })
+    verifySMS: boolean;
+
+    @ContractField({
+        protoType: 'int',
+        nullable: true,
+        exclude: true,
+    })
+    verifySMSCode: number;
+
+    @ContractField({
+        protoType: 'string',
+        nullable: true,
+        exclude: true,
+    })
+    optSecret: string;
+
+    @ContractField({
+        protoType: 'bool',
+        defaultValue: false,
+        exclude: true,
+    })
+    optSecretVerify: boolean;
 
     // Login
     @ContractMessage({

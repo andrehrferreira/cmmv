@@ -20,7 +20,7 @@ import { RolesEntity } from './roles.entity';
 
 @Entity('user')
 @Index('idx_user_username', ['username'], { unique: true })
-@Index('idx_user_googleId', ['googleId'])
+@Index('idx_user_provider', ['provider'])
 @Index('idx_user_login', ['username', 'password'])
 export class UserEntity implements IUser {
     @ObjectIdColumn()
@@ -33,7 +33,7 @@ export class UserEntity implements IUser {
     password: string;
 
     @Column({ type: 'varchar', nullable: true })
-    googleId?: string;
+    provider?: string;
 
     @Column({ type: 'varchar', nullable: true })
     groups?: string;
@@ -43,4 +43,28 @@ export class UserEntity implements IUser {
 
     @Column({ type: 'boolean', default: false })
     root: boolean;
+
+    @Column({ type: 'boolean', default: false })
+    blocked: boolean;
+
+    @Column({ type: 'boolean', default: false })
+    validated: boolean;
+
+    @Column({ type: 'boolean', default: false })
+    verifyEmail: boolean;
+
+    @Column({ type: 'int', nullable: true })
+    verifyEmailCode?: string;
+
+    @Column({ type: 'boolean', default: false })
+    verifySMS: boolean;
+
+    @Column({ type: 'int', nullable: true })
+    verifySMSCode?: string;
+
+    @Column({ type: 'varchar', nullable: true })
+    optSecret?: string;
+
+    @Column({ type: 'boolean', default: false })
+    optSecretVerify: boolean;
 }

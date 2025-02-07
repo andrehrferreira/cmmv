@@ -5,110 +5,61 @@
     "nested": {
         "auth": {
             "nested": {
-                "User": {
+                "Groups": {
                     "fields": {
-                        "username": {
+                        "name": {
                             "type": "string",
                             "id": 1
-                        },
-                        "password": {
-                            "type": "string",
-                            "id": 2
-                        },
-                        "provider": {
-                            "type": "string",
-                            "id": 3
-                        },
-                        "groups": {
-                            "rule": "repeated",
-                            "type": "string",
-                            "id": 4
                         },
                         "roles": {
                             "rule": "repeated",
                             "type": "Roles",
-                            "id": 5
-                        },
-                        "root": {
-                            "type": "bool",
-                            "id": 6
-                        },
-                        "blocked": {
-                            "type": "bool",
-                            "id": 7
-                        },
-                        "validated": {
-                            "type": "bool",
-                            "id": 8
-                        },
-                        "verifyEmail": {
-                            "type": "bool",
-                            "id": 9
-                        },
-                        "verifyEmailCode": {
-                            "type": "int32",
-                            "id": 10
-                        },
-                        "verifySMS": {
-                            "type": "bool",
-                            "id": 11
-                        },
-                        "verifySMSCode": {
-                            "type": "int32",
-                            "id": 12
-                        },
-                        "optSecret": {
-                            "type": "string",
-                            "id": 13
-                        },
-                        "optSecretVerify": {
-                            "type": "bool",
-                            "id": 14
+                            "id": 2
                         }
                     }
                 },
-                "UserList": {
+                "GroupsList": {
                     "fields": {
                         "items": {
                             "rule": "repeated",
-                            "type": "User",
+                            "type": "Groups",
                             "id": 1
                         }
                     }
                 },
-                "AddUserRequest": {
+                "AddGroupsRequest": {
                     "fields": {
                         "item": {
-                            "type": "User",
+                            "type": "Groups",
                             "id": 1
                         }
                     }
                 },
-                "AddUserResponse": {
-                    "fields": {
-                        "id": {
-                            "type": "string",
-                            "id": 1
-                        },
-                        "item": {
-                            "type": "User",
-                            "id": 2
-                        }
-                    }
-                },
-                "UpdateUserRequest": {
+                "AddGroupsResponse": {
                     "fields": {
                         "id": {
                             "type": "string",
                             "id": 1
                         },
                         "item": {
-                            "type": "User",
+                            "type": "Groups",
                             "id": 2
                         }
                     }
                 },
-                "UpdateUserResponse": {
+                "UpdateGroupsRequest": {
+                    "fields": {
+                        "id": {
+                            "type": "string",
+                            "id": 1
+                        },
+                        "item": {
+                            "type": "Groups",
+                            "id": 2
+                        }
+                    }
+                },
+                "UpdateGroupsResponse": {
                     "fields": {
                         "success": {
                             "type": "bool",
@@ -120,7 +71,7 @@
                         }
                     }
                 },
-                "DeleteUserRequest": {
+                "DeleteGroupsRequest": {
                     "fields": {
                         "id": {
                             "type": "string",
@@ -128,7 +79,7 @@
                         }
                     }
                 },
-                "DeleteUserResponse": {
+                "DeleteGroupsResponse": {
                     "fields": {
                         "success": {
                             "type": "bool",
@@ -140,126 +91,34 @@
                         }
                     }
                 },
-                "GetAllUserRequest": {
+                "GetAllGroupsRequest": {
                     "fields": {}
                 },
-                "GetAllUserResponse": {
+                "GetAllGroupsResponse": {
                     "fields": {
                         "items": {
-                            "type": "UserList",
+                            "type": "GroupsList",
                             "id": 1
                         }
                     }
                 },
-                "LoginRequest": {
-                    "fields": {
-                        "username": {
-                            "type": "string",
-                            "id": 1
-                        },
-                        "password": {
-                            "type": "string",
-                            "id": 2
-                        }
-                    }
-                },
-                "LoginResponse": {
-                    "oneofs": {
-                        "_token": {
-                            "oneof": [
-                                "token"
-                            ]
-                        },
-                        "_message": {
-                            "oneof": [
-                                "message"
-                            ]
-                        }
-                    },
-                    "fields": {
-                        "success": {
-                            "type": "bool",
-                            "id": 1
-                        },
-                        "token": {
-                            "type": "string",
-                            "id": 2,
-                            "options": {
-                                "proto3_optional": true
-                            }
-                        },
-                        "message": {
-                            "type": "string",
-                            "id": 3,
-                            "options": {
-                                "proto3_optional": true
-                            }
-                        }
-                    }
-                },
-                "RegisterRequest": {
-                    "fields": {
-                        "username": {
-                            "type": "string",
-                            "id": 1
-                        },
-                        "email": {
-                            "type": "string",
-                            "id": 2
-                        },
-                        "password": {
-                            "type": "string",
-                            "id": 3
-                        }
-                    }
-                },
-                "RegisterResponse": {
-                    "oneofs": {
-                        "_message": {
-                            "oneof": [
-                                "message"
-                            ]
-                        }
-                    },
-                    "fields": {
-                        "success": {
-                            "type": "bool",
-                            "id": 1
-                        },
-                        "message": {
-                            "type": "string",
-                            "id": 2,
-                            "options": {
-                                "proto3_optional": true
-                            }
-                        }
-                    }
-                },
-                "UserService": {
+                "GroupsService": {
                     "methods": {
-                        "AddUser": {
-                            "requestType": "AddUserRequest",
-                            "responseType": "AddUserResponse"
+                        "AddGroups": {
+                            "requestType": "AddGroupsRequest",
+                            "responseType": "AddGroupsResponse"
                         },
-                        "UpdateUser": {
-                            "requestType": "UpdateUserRequest",
-                            "responseType": "UpdateUserResponse"
+                        "UpdateGroups": {
+                            "requestType": "UpdateGroupsRequest",
+                            "responseType": "UpdateGroupsResponse"
                         },
-                        "DeleteUser": {
-                            "requestType": "DeleteUserRequest",
-                            "responseType": "DeleteUserResponse"
+                        "DeleteGroups": {
+                            "requestType": "DeleteGroupsRequest",
+                            "responseType": "DeleteGroupsResponse"
                         },
-                        "GetAllUser": {
-                            "requestType": "GetAllUserRequest",
-                            "responseType": "GetAllUserResponse"
-                        },
-                        "Login": {
-                            "requestType": "LoginRequest",
-                            "responseType": "LoginResponse"
-                        },
-                        "Register": {
-                            "requestType": "RegisterRequest",
-                            "responseType": "RegisterResponse"
+                        "GetAllGroups": {
+                            "requestType": "GetAllGroupsRequest",
+                            "responseType": "GetAllGroupsResponse"
                         }
                     }
                 },

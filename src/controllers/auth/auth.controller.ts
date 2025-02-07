@@ -6,7 +6,6 @@
     **********************************************
 **/
 
-import { Config } from '@cmmv/core';
 import { Auth } from '@cmmv/auth';
 
 import {
@@ -18,6 +17,7 @@ import {
     Get,
     User,
     Session,
+    Header,
 } from '@cmmv/http';
 
 import { AuthService } from '../../services/auth/auth.service';
@@ -40,7 +40,7 @@ export class AuthController {
     }
 
     @Post('login')
-    async login(
+    async handlerLogin(
         @Body() payload: LoginRequest,
         @Request() req,
         @Response() res,
@@ -56,9 +56,26 @@ export class AuthController {
     }
 
     @Post('register')
-    async register(
+    async handlerRegister(
         @Body() payload: RegisterRequest,
     ): Promise<RegisterResponse> {
         return await this.authService.register(payload);
+    }
+
+    @Post('check-username')
+    async handlerCheckUsername(
+        @Body() payload: { username: string },
+        @Response() res,
+    ) {
+        const exists = await this.authService.checkUsernameExists(
+            payload.username,
+        );
+        res.type('text/json').send(exists.toString());
+    }
+
+    //OPT
+    @Get('opt-secret')
+    async handlerGenerateOptSecret(@Header('authorization') token) {
+        return await this.authService.generateOptSecret(token);
     }
 }

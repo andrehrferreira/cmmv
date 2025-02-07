@@ -76,7 +76,10 @@ export class I18nCountriesServiceGenerated extends AbstractRepositoryService {
         }
     }
 
-    async add(item: Partial<I18nCountries>, req?: any): Promise<I18nCountries> {
+    async insert(
+        item: Partial<I18nCountries>,
+        req?: any,
+    ): Promise<I18nCountries> {
         return new Promise(async (resolve, reject) => {
             try {
                 let newItem: any = I18nCountries.fromPartial(item);

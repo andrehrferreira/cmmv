@@ -20,53 +20,53 @@ import {
     Req,
 } from '@cmmv/http';
 
-import { Roles, RolesFastSchema } from '../../models/auth/roles.model';
+import { Groups, GroupsFastSchema } from '../../models/auth/groups.model';
 
-import { RolesService } from '../../services/auth/roles.service';
+import { GroupsService } from '../../services/auth/groups.service';
 
-@Controller('roles')
-export class RolesControllerGenerated {
-    constructor(private readonly rolesservice: RolesService) {}
+@Controller('groups')
+export class GroupsControllerGenerated {
+    constructor(private readonly groupsservice: GroupsService) {}
 
     @Get()
-    @Auth('roles:get')
+    @Auth('groups:get')
     async getAll(@Queries() queries: any, @Req() req) {
-        let result = await this.rolesservice.getAll(queries, req);
+        let result = await this.groupsservice.getAll(queries, req);
         return result;
     }
 
     @Get(':id')
-    @Auth('roles:get')
+    @Auth('groups:get')
     async getById(@Param('id') id: string, @Req() req) {
-        let result = await this.rolesservice.getById(id, req);
+        let result = await this.groupsservice.getById(id, req);
         return result;
     }
 
     @Get(':id/raw')
-    @Auth('roles:get')
+    @Auth('groups:get')
     async getByIdRaw(@Param('id') id: string, @Req() req) {
-        let result = await this.rolesservice.getById(id, req);
-        return RolesFastSchema(result.data);
+        let result = await this.groupsservice.getById(id, req);
+        return GroupsFastSchema(result.data);
     }
 
     @Post()
-    @Auth('roles:insert')
-    async insert(@Body() item: Roles, @Req() req) {
-        let result = await this.rolesservice.insert(item, req);
+    @Auth('groups:insert')
+    async insert(@Body() item: Groups, @Req() req) {
+        let result = await this.groupsservice.insert(item, req);
         return result;
     }
 
     @Put(':id')
-    @Auth('roles:update')
-    async update(@Param('id') id: string, @Body() item: Roles, @Req() req) {
-        let result = await this.rolesservice.update(id, item, req);
+    @Auth('groups:update')
+    async update(@Param('id') id: string, @Body() item: Groups, @Req() req) {
+        let result = await this.groupsservice.update(id, item, req);
         return result;
     }
 
     @Delete(':id')
-    @Auth('roles:delete')
+    @Auth('groups:delete')
     async delete(@Param('id') id: string, @Req() req) {
-        let result = await this.rolesservice.delete(id, req);
+        let result = await this.groupsservice.delete(id, req);
         return result;
     }
 }

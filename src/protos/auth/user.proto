@@ -14,10 +14,18 @@ import "./roles.proto";
 message User {
    string username = 1;
    string password = 2;
-   string googleId = 3;
+   string provider = 3;
    repeated string groups = 4;
    repeated Roles roles = 5;
    bool root = 6;
+   bool blocked = 7;
+   bool validated = 8;
+   bool verifyEmail = 9;
+   int32 verifyEmailCode = 10;
+   bool verifySMS = 11;
+   int32 verifySMSCode = 12;
+   string optSecret = 13;
+   bool optSecretVerify = 14;
 }
 
 message UserList {

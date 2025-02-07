@@ -39,15 +39,17 @@ export class AuthTranspile implements ITranspile {
     **********************************************
 **/
     
-import { Config } from "@cmmv/core";
 import { Auth } from "@cmmv/auth";
 
 import { 
     Controller, Post, Body, Request, 
-    Response, Get, User, Session
+    Response, Get, User, Session,
+    Header
 } from "@cmmv/http";
 
-import { AuthService } from "../../services/auth/auth.service";
+import { 
+    AuthService 
+} from "../../services/auth/auth.service";
 
 import { 
     LoginRequest, LoginResponse, 
@@ -67,7 +69,7 @@ export class AuthController {
     ${
         localLogin
             ? `@Post("login")
-    async login(
+    async handlerLogin(
         @Body() payload: LoginRequest, 
         @Request() req, @Response() res, @Session() session
     ): Promise<LoginResponse> {
@@ -80,11 +82,24 @@ export class AuthController {
     ${
         localRegister && hasRepository
             ? `@Post("register")
-    async register(@Body() payload: RegisterRequest): Promise<RegisterResponse> {
+    async handlerRegister(@Body() payload: RegisterRequest): Promise<RegisterResponse> {
         return await this.authService.register(payload);
+    }
+        
+    @Post("check-username")
+    async handlerCheckUsername(@Body() payload: { username: string }, @Response() res) {
+        const exists = await this.authService.checkUsernameExists(payload.username);
+        res.type("text/json").send(exists.toString()); 
     }`
             : ''
     }
+
+    //OPT
+    @Get("opt-secret")
+    async handlerGenerateOptSecret(@Header("authorization") token){
+        return await this.authService.generateOptSecret(token);
+    }
+
 }`;
 
         if (!fs.existsSync(outputDir))
@@ -100,7 +115,6 @@ export class AuthController {
     }
 
     async generateService() {
-        const config = Config.get('auth');
         const outputDir = path.resolve(process.cwd(), './src/services/auth');
         const serviceFileName = `auth.service.ts`;
 
@@ -115,20 +129,27 @@ export class AuthController {
     **********************************************
 **/
     
+import * as crypto from 'node:crypto';
 import * as jwt from "jsonwebtoken";
 import { validate } from "class-validator";
 import { plainToInstance } from "class-transformer";
 import { v4 as uuidv4 } from "uuid";
+import * as QRCode from "qrcode";
+import * as speakeasy from "speakeasy";
+import { QRCodeCanvas } from '@loskir/styled-qr-code-node';
+
+import { generateFingerprint } from "@cmmv/http";
+
+import { 
+    jwtVerify,
+    IJWTDecoded 
+} from "@cmmv/auth";
 
 import { 
     Telemetry, Service, Scope,
     AbstractService, Config,
     IContract, Application
 } from "@cmmv/core";
-
-import {
-    generateFingerprint
-} from "@cmmv/http";
 
 ${hasRepository ? 'import { Repository } from "@cmmv/repository";' : ''}
 ${hasCache ? 'import { CacheService } from "@cmmv/cache";' : ''}
@@ -321,38 +342,174 @@ export class AuthService extends AbstractService {
 ${
     hasRepository
         ? `    public async register(payload: RegisterRequest, req?: any): Promise<RegisterResponse> {
-        Telemetry.start("AuthService::register", req?.requestId);
+        return new Promise(async (resolve, reject) => {
+            Telemetry.start("AuthService::register", req?.requestId);
+            const newUser = User.fromPartial(payload); 
 
-        const newUser = plainToInstance(User, payload, { 
-            exposeUnsetFields: true,
-            enableImplicitConversion: true
-        }); 
-
-        const errors = await validate(newUser, { skipMissingProperties: true });
-        
-        if (errors.length > 0) {
-            console.error(errors);
-            Telemetry.end("AuthService::register", req?.requestId);
-            return { success: false, message: JSON.stringify(errors[0].constraints) };
-        } 
-        else {    
-            try{
-                const result = await Repository.insert<UserEntity>(UserEntity, newUser);
+            this.validate(newUser).then(async (data: any) => {
+                const result = await Repository.insert(UserEntity, data);
                 Telemetry.end("AuthService::register", req?.requestId);
 
-                return (result) ? 
+                resolve((result.success) ? 
                     { success: true, message: "User registered successfully!" } : 
-                    { success: false, message: "Error trying to register new user" };
-            }   
-            catch(e){
-                console.error(e);
+                    { success: false, message: "Error trying to register new user" });
+            }).catch((error) => {
                 Telemetry.end("AuthService::register", req?.requestId);
-                return { success: false, message: e.message };
-            }                                                    
+                reject({ success: false, message: error.message });
+            }); 
+        });
+    }
+        
+    public async checkUsernameExists(username: string): Promise<boolean> {
+        if(username.length >= 3) {
+            const usernameHash = crypto
+                .createHash('sha1')
+                .update(username)
+                .digest('hex');
+            
+            return await Repository.exists(
+                UserEntity,
+                { username: usernameHash }
+            );
+        }
+        else {
+            return false;
         }
     }`
         : ``
 }
+
+    // OPT   
+
+    public async generateOptSecret(token: string){
+        return new Promise(async (resolve, reject) => {
+            jwtVerify(token).then(async (decoded: IJWTDecoded) => {
+                const issuer = Config.get("auth.optSecret.issuer", "Cmmv.io");
+                const algorithm = Config.get("auth.optSecret.algorithm", "sha512");
+                const qrCodeOptions = Config.get<object>("auth.qrCode", {});
+
+                const defaultqrCodeOpions = {
+                    "type": "canvas",
+                    "shape": "square",
+                    "width": 300,
+                    "height": 300,
+                    "margin": 0,
+                    "qrOptions": {
+                        "typeNumber": "0",
+                        "mode": "Byte",
+                        "errorCorrectionLevel": "Q"
+                    },
+                    "imageOptions": {
+                        "saveAsBlob": true,
+                        "hideBackgroundDots": true,
+                        "imageSize": 0.4,
+                        "margin": 0
+                    },
+                    "dotsOptions": {
+                        "type": "square",
+                        "color": "#000000",
+                        "roundSize": true
+                    },
+                    "backgroundOptions": {
+                        "round": 0,
+                        "color": "#ffffff"
+                    },
+                    "dotsOptionsHelper": {
+                        "colorType": {
+                            "single": true,
+                            "gradient": false
+                        },
+                        "gradient": {
+                            "linear": true,
+                            "radial": false,
+                            "color1": "#6a1a4c",
+                            "color2": "#6a1a4c",
+                            "rotation": "0"
+                        }
+                    },
+                    "cornersSquareOptions": {
+                        "type": "dot",
+                        "color": "#000000",
+                        "gradient": null
+                    },
+                    "cornersSquareOptionsHelper": {
+                        "colorType": {
+                            "single": true,
+                            "gradient": false
+                        },
+                        "gradient": {
+                            "linear": true,
+                            "radial": false,
+                            "color1": "#000000",
+                            "color2": "#000000",
+                            "rotation": "0"
+                        }
+                    },
+                    "cornersDotOptions": {
+                        "type": "",
+                        "color": "#000000"
+                    },
+                    "cornersDotOptionsHelper": {
+                        "colorType": {
+                            "single": true,
+                            "gradient": false
+                        },
+                        "gradient": {
+                            "linear": true,
+                            "radial": false,
+                            "color1": "#000000",
+                            "color2": "#000000",
+                            "rotation": "0"
+                        }
+                    },
+                    "backgroundOptionsHelper": {
+                        "colorType": {
+                            "single": true,
+                            "gradient": false
+                        },
+                        "gradient": {
+                            "linear": true,
+                            "radial": false,
+                            "color1": "#ffffff",
+                            "color2": "#ffffff",
+                            "rotation": "0"
+                            }
+                    }
+                }
+
+                Object.assign(defaultqrCodeOpions, qrCodeOptions);
+
+                const secret = speakeasy.generateSecret({
+                    name: "cmmv"
+                });
+
+                const otpUrl = speakeasy.otpauthURL({ 
+                    secret: secret.base32, 
+                    label: 'Name of Secret', 
+                    issuer: issuer,
+                    algorithm: algorithm
+                });
+
+                const result = await Repository.updateById(
+                    UserEntity, 
+                    decoded.id, 
+                    { 
+                        optSecret: secret.base32, 
+                        optSecretVerify: false 
+                    }
+                );
+
+                if(result){
+                    qrCodeOptions.data = otpUrl;
+                    const qrCode = new QRCodeCanvas(qrCodeOptions);
+                    resolve(qrCode.toDataUrl());
+                }
+                else {
+                    reject({ message: "Unable to generate QRcode" })
+                }
+            }).catch(reject);
+        });
+    }
 }`;
 
         if (!fs.existsSync(outputDir))

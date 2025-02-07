@@ -7,8 +7,6 @@
 **/
 
 import { Rpc, Message, Data, Socket, RpcUtils } from '@cmmv/ws';
-import { plainToClass } from 'class-transformer';
-import { I18nCoinsEntity } from '../../entities/i18n/i18ncoins.entity';
 import { Cache, CacheService } from '@cmmv/cache';
 
 import {
@@ -16,6 +14,8 @@ import {
     UpdateI18nCoinsRequest,
     DeleteI18nCoinsRequest,
 } from '../../protos/i18n/i18ncoins.d';
+
+import { I18nCoins } from '../../models/i18n/i18ncoins.model';
 
 import { I18nCoinsService } from '../../services/i18n/i18ncoins.service';
 
@@ -39,10 +39,10 @@ export class I18nCoinsGateway {
     }
 
     @Message('AddI18nCoinsRequest')
-    async add(@Data() data: AddI18nCoinsRequest, @Socket() socket) {
+    async insert(@Data() data: AddI18nCoinsRequest, @Socket() socket) {
         try {
-            const entity = plainToClass(I18nCoinsEntity, data.item);
-            const result = await this.i18ncoinsservice.add(entity);
+            const i18ncoins = I18nCoins.fromPartial(data.item);
+            const result = await this.i18ncoinsservice.insert(i18ncoins);
             const response = await RpcUtils.pack(
                 'i18ncoins',
                 'AddI18nCoinsResponse',
@@ -63,8 +63,10 @@ export class I18nCoinsGateway {
     @Message('UpdateI18nCoinsRequest')
     async update(@Data() data: UpdateI18nCoinsRequest, @Socket() socket) {
         try {
-            const entity = plainToClass(I18nCoinsEntity, data.item);
-            const result = await this.i18ncoinsservice.update(data.id, entity);
+            const result = await this.i18ncoinsservice.update(
+                data.id,
+                data.item,
+            );
             const response = await RpcUtils.pack(
                 'i18ncoins',
                 'UpdateI18nCoinsResponse',

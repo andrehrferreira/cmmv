@@ -17,16 +17,16 @@ import {
     AbstractRepositoryService,
 } from '@cmmv/repository';
 
-import { I18nCoins, II18nCoins } from '../../models/i18n/i18ncoins.model';
+import { Groups, IGroups } from '../../models/auth/groups.model';
 
-import { I18nCoinsEntity } from '../../entities/i18n/i18ncoins.entity';
+import { GroupsEntity } from '../../entities/auth/groups.entity';
 
-export class I18nCoinsServiceGenerated extends AbstractRepositoryService {
-    protected logger: Logger = new Logger('I18nCoinsServiceGenerated');
+export class GroupsServiceGenerated extends AbstractRepositoryService {
+    protected logger: Logger = new Logger('GroupsServiceGenerated');
 
     async getAll(queries?: any, req?: any): Promise<IFindResponse> {
         try {
-            let result = await Repository.findAll(I18nCoinsEntity, queries);
+            let result = await Repository.findAll(GroupsEntity, queries);
             result = this.fixIds(result);
 
             return {
@@ -34,7 +34,7 @@ export class I18nCoinsServiceGenerated extends AbstractRepositoryService {
                 pagination: result.pagination,
                 data:
                     result && result.data.length > 0
-                        ? result.data.map(item => I18nCoins.fromEntity(item))
+                        ? result.data.map(item => Groups.fromEntity(item))
                         : [],
             };
         } catch (e) {
@@ -46,7 +46,7 @@ export class I18nCoinsServiceGenerated extends AbstractRepositoryService {
 
     async getById(id: string, req?: any): Promise<IFindResponse> {
         try {
-            let item = await Repository.findBy(I18nCoinsEntity, {
+            let item = await Repository.findBy(GroupsEntity, {
                 _id: new ObjectId(id),
             });
             item = this.fixIds(item);
@@ -64,17 +64,17 @@ export class I18nCoinsServiceGenerated extends AbstractRepositoryService {
                     sort: 'asc',
                     filters: {},
                 },
-                data: I18nCoins.fromEntity(item.data),
+                data: Groups.fromEntity(item.data),
             };
         } catch (e) {
             return null;
         }
     }
 
-    async insert(item: Partial<I18nCoins>, req?: any): Promise<I18nCoins> {
+    async insert(item: Partial<Groups>, req?: any): Promise<Groups> {
         return new Promise(async (resolve, reject) => {
             try {
-                let newItem: any = I18nCoins.fromPartial(item);
+                let newItem: any = Groups.fromPartial(item);
                 const userId: string = req.user?.id;
 
                 if (typeof userId === 'string') {
@@ -86,14 +86,14 @@ export class I18nCoinsServiceGenerated extends AbstractRepositoryService {
                 this.validate(newItem)
                     .then(async (data: any) => {
                         const result: any =
-                            await Repository.insert<I18nCoinsEntity>(
-                                I18nCoinsEntity,
+                            await Repository.insert<GroupsEntity>(
+                                GroupsEntity,
                                 newItem,
                             );
 
                         if (result.success) {
                             let dataFixed = this.fixIds(result.data);
-                            resolve(I18nCoins.fromEntity(dataFixed));
+                            resolve(Groups.fromEntity(dataFixed));
                         } else {
                             reject(result);
                         }
@@ -109,12 +109,12 @@ export class I18nCoinsServiceGenerated extends AbstractRepositoryService {
 
     async update(
         id: string,
-        item: Partial<I18nCoins>,
+        item: Partial<Groups>,
         req?: any,
     ): Promise<{ success: boolean; affected: number }> {
         return new Promise(async (resolve, reject) => {
             try {
-                let updateItem: any = I18nCoins.fromPartial(item);
+                let updateItem: any = Groups.fromPartial(item);
 
                 this.validate(updateItem)
                     .then(async (data: any) => {
@@ -127,7 +127,7 @@ export class I18nCoinsServiceGenerated extends AbstractRepositoryService {
                         }
 
                         const result = await Repository.update(
-                            I18nCoinsEntity,
+                            GroupsEntity,
                             new ObjectId(id),
                             {
                                 ...data,
@@ -153,7 +153,7 @@ export class I18nCoinsServiceGenerated extends AbstractRepositoryService {
     ): Promise<{ success: boolean; affected: number }> {
         try {
             const result = await Repository.delete(
-                I18nCoinsEntity,
+                GroupsEntity,
                 new ObjectId(id),
             );
 

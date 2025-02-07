@@ -1,0 +1,61 @@
+/**                                                                               
+    **********************************************
+    This script was generated automatically by CMMV.
+    It is recommended not to modify this file manually, 
+    as it may be overwritten by the application.
+    **********************************************
+**/
+
+syntax = "proto3";
+package auth;
+
+import "./roles.proto";
+
+message Groups {
+   string name = 1;
+   repeated Roles roles = 2;
+}
+
+message GroupsList {
+    repeated Groups items = 1;
+}
+
+message AddGroupsRequest {
+    Groups item = 1;
+}
+
+message AddGroupsResponse {
+    string id = 1;
+    Groups item = 2;
+}
+
+message UpdateGroupsRequest {
+    string id = 1;
+    Groups item = 2;
+}
+
+message UpdateGroupsResponse {
+    bool success = 1;
+    int32 affected = 2;
+}
+
+message DeleteGroupsRequest {
+    string id = 1;
+}
+
+message DeleteGroupsResponse {
+    bool success = 1;
+    int32 affected = 2;
+}
+
+message GetAllGroupsRequest {}
+
+message GetAllGroupsResponse {
+    GroupsList items = 1;
+}
+service GroupsService {
+   rpc AddGroups (AddGroupsRequest) returns (AddGroupsResponse);
+   rpc UpdateGroups (UpdateGroupsRequest) returns (UpdateGroupsResponse);
+   rpc DeleteGroups (DeleteGroupsRequest) returns (DeleteGroupsResponse);
+   rpc GetAllGroups (GetAllGroupsRequest) returns (GetAllGroupsResponse);
+}

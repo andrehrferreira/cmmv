@@ -60,8 +60,8 @@ export class I18nCountriesControllerGenerated {
 
     @Post()
     @Auth('i18ncountries:insert')
-    async add(@Body() item: I18nCountries, @Req() req) {
-        let result = await this.i18ncountriesservice.add(item, req);
+    async insert(@Body() item: I18nCountries, @Req() req) {
+        let result = await this.i18ncountriesservice.insert(item, req);
         CacheService.del('country:getAll');
         return result;
     }

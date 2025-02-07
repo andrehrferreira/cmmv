@@ -6,10 +6,18 @@
     **********************************************
 **/
 
+import * as crypto from 'node:crypto';
 import * as jwt from 'jsonwebtoken';
 import { validate } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
 import { v4 as uuidv4 } from 'uuid';
+import * as QRCode from 'qrcode';
+import * as speakeasy from 'speakeasy';
+import { QRCodeCanvas } from '@loskir/styled-qr-code-node';
+
+import { generateFingerprint } from '@cmmv/http';
+
+import { jwtVerify, IJWTDecoded } from '@cmmv/auth';
 
 import {
     Telemetry,
@@ -20,8 +28,6 @@ import {
     IContract,
     Application,
 } from '@cmmv/core';
-
-import { generateFingerprint } from '@cmmv/http';
 
 import { Repository } from '@cmmv/repository';
 
@@ -215,44 +221,185 @@ export class AuthService extends AbstractService {
         payload: RegisterRequest,
         req?: any,
     ): Promise<RegisterResponse> {
-        Telemetry.start('AuthService::register', req?.requestId);
+        return new Promise(async (resolve, reject) => {
+            Telemetry.start('AuthService::register', req?.requestId);
+            const newUser = User.fromPartial(payload);
 
-        const newUser = plainToInstance(User, payload, {
-            exposeUnsetFields: true,
-            enableImplicitConversion: true,
+            this.validate(newUser)
+                .then(async (data: any) => {
+                    const result = await Repository.insert(UserEntity, data);
+                    Telemetry.end('AuthService::register', req?.requestId);
+
+                    resolve(
+                        result.success
+                            ? {
+                                  success: true,
+                                  message: 'User registered successfully!',
+                              }
+                            : {
+                                  success: false,
+                                  message: 'Error trying to register new user',
+                              },
+                    );
+                })
+                .catch(error => {
+                    Telemetry.end('AuthService::register', req?.requestId);
+                    reject({ success: false, message: error.message });
+                });
         });
+    }
 
-        const errors = await validate(newUser, { skipMissingProperties: true });
+    public async checkUsernameExists(username: string): Promise<boolean> {
+        if (username.length >= 3) {
+            const usernameHash = crypto
+                .createHash('sha1')
+                .update(username)
+                .digest('hex');
 
-        if (errors.length > 0) {
-            console.error(errors);
-            Telemetry.end('AuthService::register', req?.requestId);
-            return {
-                success: false,
-                message: JSON.stringify(errors[0].constraints),
-            };
+            return await Repository.exists(UserEntity, {
+                username: usernameHash,
+            });
         } else {
-            try {
-                const result = await Repository.insert<UserEntity>(
-                    UserEntity,
-                    newUser,
-                );
-                Telemetry.end('AuthService::register', req?.requestId);
-
-                return result
-                    ? {
-                          success: true,
-                          message: 'User registered successfully!',
-                      }
-                    : {
-                          success: false,
-                          message: 'Error trying to register new user',
-                      };
-            } catch (e) {
-                console.error(e);
-                Telemetry.end('AuthService::register', req?.requestId);
-                return { success: false, message: e.message };
-            }
+            return false;
         }
+    }
+
+    // OPT
+
+    public async generateOptSecret(token: string) {
+        return new Promise(async (resolve, reject) => {
+            jwtVerify(token)
+                .then(async (decoded: IJWTDecoded) => {
+                    const issuer = Config.get(
+                        'auth.optSecret.issuer',
+                        'Cmmv.io',
+                    );
+                    const algorithm = Config.get(
+                        'auth.optSecret.algorithm',
+                        'sha512',
+                    );
+                    const qrCodeOptions = Config.get<object>('auth.qrCode', {});
+
+                    const defaultqrCodeOpions = {
+                        type: 'canvas',
+                        shape: 'square',
+                        width: 300,
+                        height: 300,
+                        margin: 0,
+                        qrOptions: {
+                            typeNumber: '0',
+                            mode: 'Byte',
+                            errorCorrectionLevel: 'Q',
+                        },
+                        imageOptions: {
+                            saveAsBlob: true,
+                            hideBackgroundDots: true,
+                            imageSize: 0.4,
+                            margin: 0,
+                        },
+                        dotsOptions: {
+                            type: 'square',
+                            color: '#000000',
+                            roundSize: true,
+                        },
+                        backgroundOptions: {
+                            round: 0,
+                            color: '#ffffff',
+                        },
+                        dotsOptionsHelper: {
+                            colorType: {
+                                single: true,
+                                gradient: false,
+                            },
+                            gradient: {
+                                linear: true,
+                                radial: false,
+                                color1: '#6a1a4c',
+                                color2: '#6a1a4c',
+                                rotation: '0',
+                            },
+                        },
+                        cornersSquareOptions: {
+                            type: 'dot',
+                            color: '#000000',
+                            gradient: null,
+                        },
+                        cornersSquareOptionsHelper: {
+                            colorType: {
+                                single: true,
+                                gradient: false,
+                            },
+                            gradient: {
+                                linear: true,
+                                radial: false,
+                                color1: '#000000',
+                                color2: '#000000',
+                                rotation: '0',
+                            },
+                        },
+                        cornersDotOptions: {
+                            type: '',
+                            color: '#000000',
+                        },
+                        cornersDotOptionsHelper: {
+                            colorType: {
+                                single: true,
+                                gradient: false,
+                            },
+                            gradient: {
+                                linear: true,
+                                radial: false,
+                                color1: '#000000',
+                                color2: '#000000',
+                                rotation: '0',
+                            },
+                        },
+                        backgroundOptionsHelper: {
+                            colorType: {
+                                single: true,
+                                gradient: false,
+                            },
+                            gradient: {
+                                linear: true,
+                                radial: false,
+                                color1: '#ffffff',
+                                color2: '#ffffff',
+                                rotation: '0',
+                            },
+                        },
+                    };
+
+                    Object.assign(defaultqrCodeOpions, qrCodeOptions);
+
+                    const secret = speakeasy.generateSecret({
+                        name: 'cmmv',
+                    });
+
+                    const otpUrl = speakeasy.otpauthURL({
+                        secret: secret.base32,
+                        label: 'Name of Secret',
+                        issuer: issuer,
+                        algorithm: algorithm,
+                    });
+
+                    const result = await Repository.updateById(
+                        UserEntity,
+                        decoded.id,
+                        {
+                            optSecret: secret.base32,
+                            optSecretVerify: false,
+                        },
+                    );
+
+                    if (result) {
+                        qrCodeOptions.data = otpUrl;
+                        const qrCode = new QRCodeCanvas(qrCodeOptions);
+                        resolve(qrCode.toDataUrl());
+                    } else {
+                        reject({ message: 'Unable to generate QRcode' });
+                    }
+                })
+                .catch(reject);
+        });
     }
 }

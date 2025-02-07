@@ -58,8 +58,8 @@ export class UserControllerGenerated {
 
     @Post()
     @Auth('user:insert')
-    async add(@Body() item: User, @Req() req) {
-        let result = await this.userservice.add(item, req);
+    async insert(@Body() item: User, @Req() req) {
+        let result = await this.userservice.insert(item, req);
         return result;
     }
 

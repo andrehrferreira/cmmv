@@ -71,7 +71,7 @@ export class RolesServiceGenerated extends AbstractRepositoryService {
         }
     }
 
-    async add(item: Partial<Roles>, req?: any): Promise<Roles> {
+    async insert(item: Partial<Roles>, req?: any): Promise<Roles> {
         return new Promise(async (resolve, reject) => {
             try {
                 let newItem: any = Roles.fromPartial(item);

@@ -71,7 +71,7 @@ export class UserServiceGenerated extends AbstractRepositoryService {
         }
     }
 
-    async add(item: Partial<User>, req?: any): Promise<User> {
+    async insert(item: Partial<User>, req?: any): Promise<User> {
         return new Promise(async (resolve, reject) => {
             try {
                 let newItem: any = User.fromPartial(item);

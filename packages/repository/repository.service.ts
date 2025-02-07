@@ -9,11 +9,13 @@ import {
     DeepPartial,
     Like,
     FindManyOptions,
+    FindOptionsSelect,
 } from 'typeorm';
 
 import { Config, Logger, Singleton } from '@cmmv/core';
 
 import { IFindResponse, IInsertResponse } from './repository.interface';
+import { ObjectId } from 'mongodb';
 
 export class Repository extends Singleton {
     public static logger: Logger = new Logger('Repository');
@@ -46,6 +48,21 @@ export class Repository extends Singleton {
     ): TypeORMRepository<Entity> {
         const instance = Repository.getInstance();
         return instance.dataSource.getRepository(entity);
+    }
+
+    private static getIdField(): string {
+        return Config.get('repository.type') === 'mongodb' ? '_id' : 'id';
+    }
+
+    private static fixId(id: string | ObjectId): ObjectId | string {
+        if (typeof id === 'string')
+            return Config.get('repository.type') === 'mongodb'
+                ? new ObjectId(id)
+                : id;
+        else
+            return Config.get('repository.type') === 'mongodb'
+                ? id
+                : id.toString();
     }
 
     public static async findBy<Entity>(
@@ -202,7 +219,57 @@ export class Repository extends Singleton {
             const result = await repository.update(id, data);
             return result.affected;
         } catch (e) {
+            console.log(e);
             return 0;
+        }
+    }
+
+    public static async updateOne<Entity>(
+        entity: new () => Entity,
+        criteria: FindOptionsWhere<Entity>,
+        data: Partial<Entity>,
+    ) {
+        try {
+            const repository = this.getRepository(entity);
+            const existingRecord = await repository.findOne({
+                where: criteria,
+            });
+
+            if (!existingRecord) return false;
+
+            Object.assign(existingRecord, data);
+            await repository.save(existingRecord);
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    public static async updateById<Entity>(
+        entity: new () => Entity,
+        id: any,
+        data: Partial<Entity>,
+    ) {
+        try {
+            const repository = this.getRepository(entity);
+            const query = {
+                [this.getIdField()]: this.fixId(id),
+            } as FindOptionsWhere<Entity>;
+
+            const existingRecord = await repository.findOne({
+                where: query,
+                select: {
+                    [this.getIdField()]: true,
+                } as FindOptionsSelect<Entity>,
+            });
+
+            if (!existingRecord) return false;
+
+            Object.assign(existingRecord, data);
+            await repository.save(existingRecord);
+            return true;
+        } catch (e) {
+            return false;
         }
     }
 
@@ -216,6 +283,26 @@ export class Repository extends Singleton {
             return result.affected;
         } catch (e) {
             return 0;
+        }
+    }
+
+    public static async exists<Entity>(
+        entity: new () => Entity,
+        criteria: FindOptionsWhere<Entity>,
+    ): Promise<boolean> {
+        try {
+            const repository = this.getRepository(entity);
+
+            const result = await repository.findOne({
+                where: criteria,
+                select: {
+                    [this.getIdField()]: true,
+                } as FindOptionsSelect<Entity>,
+            });
+
+            return result !== null;
+        } catch (e) {
+            return false;
         }
     }
 }
