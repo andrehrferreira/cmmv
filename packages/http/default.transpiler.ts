@@ -19,7 +19,7 @@ export class DefaultHTTPTranspiler
         const controllers = [];
         const providers = [];
 
-        contracts?.forEach((contract: any) => {
+        contracts?.forEach((contract: IContract) => {
             if (contract.generateController) {
                 this.generateService(contract);
                 this.generateController(contract);

@@ -1,4 +1,11 @@
-import { Controller, Request, Response, Get, Param } from '@cmmv/http';
+import {
+    Controller,
+    Request,
+    Response,
+    Get,
+    Redirect,
+    HttpCode,
+} from '@cmmv/http';
 
 import { ServiceRegistry } from '@cmmv/core';
 
@@ -11,5 +18,15 @@ export class IndexController {
             services: ServiceRegistry.getServicesArr(),
             requestId: req.requestId,
         });
+    }
+
+    @Get('secure')
+    @Redirect('/login', 302)
+    async redirectToLogin() {}
+
+    @Get('code')
+    @HttpCode(403)
+    async routerCode() {
+        return 'Return 403 code';
     }
 }

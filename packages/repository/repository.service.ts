@@ -54,12 +54,25 @@ export class Repository extends Singleton {
     ): Promise<IFindResponse> {
         try {
             const repository = this.getRepository(entity);
-            return { data: await repository.findOne({ where: criteria }) };
+
+            return {
+                data: await repository.findOne({ where: criteria }),
+                count: 1,
+                pagination: {
+                    limit: 1,
+                    offset: 0,
+                    sortBy: 'id',
+                    sort: 'ASC',
+                    search: '',
+                    searchField: '',
+                    filters: {},
+                },
+            };
         } catch (e) {
             if (process.env.NODE_ENV === 'dev')
                 Repository.logger.error(e.message);
 
-            return { data: [] };
+            return null;
         }
     }
 
@@ -127,7 +140,7 @@ export class Repository extends Singleton {
                 for (const [key, value] of Object.entries(filters)) //@ts-ignore
                     where[key as keyof Entity] = value;
 
-                const filter = {
+                const results = await repository.find({
                     where,
                     take: parseInt(limit),
                     skip: parseInt(offset), //@ts-ignore
@@ -135,25 +148,10 @@ export class Repository extends Singleton {
                         [sortBy]:
                             sort.toUpperCase() === 'DESC' ? 'DESC' : 'ASC',
                     },
-                } as FindManyOptions<Entity>;
-
-                console.log(filter);
-
-                const results = await repository.find(filter);
-                const total = await repository.count(filter);
+                });
 
                 return {
                     data: results,
-                    count: total,
-                    pagination: {
-                        limit,
-                        offset,
-                        sortBy,
-                        sort,
-                        search,
-                        searchField,
-                        filters,
-                    },
                 };
             }
         } catch (e) {
@@ -171,6 +169,26 @@ export class Repository extends Singleton {
             return { data: await repository.save(newEntity), success: true };
         } catch (e) {
             return { success: false, message: e.message };
+        }
+    }
+
+    public static async insertIfNotExists<Entity>(
+        entity: new () => Entity,
+        data: DeepPartial<Entity>,
+        fieldFilter: string,
+    ) {
+        try {
+            let criteria = {};
+            criteria[fieldFilter] = data[fieldFilter];
+            const repository = this.getRepository(entity);
+            const exists = await repository.findOne({ where: criteria });
+
+            if (!exists) {
+                const newEntity = repository.create(data);
+                await repository.save(newEntity);
+            }
+        } catch (e) {
+            return false;
         }
     }
 

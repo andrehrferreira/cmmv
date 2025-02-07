@@ -1,7 +1,16 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 
-import { Application, Config, ITranspile, Logger, Module } from '@cmmv/core';
+import {
+    Application,
+    Config,
+    ITranspile,
+    Logger,
+    Module,
+    Scope,
+    IContract,
+    ServiceRegistry,
+} from '@cmmv/core';
 
 export class AuthTranspile implements ITranspile {
     private logger: Logger = new Logger('AuthTranspile');
@@ -109,11 +118,17 @@ export class AuthController {
 import * as jwt from "jsonwebtoken";
 import { validate } from "class-validator";
 import { plainToInstance } from "class-transformer";
+import { v4 as uuidv4 } from "uuid";
 
 import { 
-    Telemetry, Service, 
-    AbstractService, Config
+    Telemetry, Service, Scope,
+    AbstractService, Config,
+    IContract, Application
 } from "@cmmv/core";
+
+import {
+    generateFingerprint
+} from "@cmmv/http";
 
 ${hasRepository ? 'import { Repository } from "@cmmv/repository";' : ''}
 ${hasCache ? 'import { CacheService } from "@cmmv/cache";' : ''}
@@ -123,12 +138,49 @@ import {
     RegisterRequest, RegisterResponse 
 } from "../../models/auth/user.model";
 
-${hasRepository ? 'import { UserEntity } from "../../entities/auth/user.entity";' : ''}
+${
+    hasRepository
+        ? `import { UserEntity } from "../../entities/auth/user.entity";
+import { RolesEntity } from "../../entities/auth/roles.entity";`
+        : ''
+}
 
 ${Config.get('repository.type') === 'mongodb' ? 'import { ObjectId } from "mongodb";' : ''} 
 
 @Service("auth")
 export class AuthService extends AbstractService {
+    ${
+        hasRepository
+            ? `constructor() {
+        super();
+
+        Application.awaitService("Repository", async () => {
+            const instance = Repository.getInstance();
+            const contracts = Scope.getArray<any>('__contracts');
+            const rolesSufixs = ["get", "insert", "update", "delete", "export"];
+            const rolesNames = new Set<string>();
+            
+            if(!instance.dataSource)
+                await Repository.loadConfig();
+
+            contracts?.forEach((contract: IContract) => {
+                if(contract.auth && contract.generateController){
+                    rolesSufixs.map((sufix: string) => {
+                        rolesNames.add(\`\${contract.controllerName.toLowerCase()}:\${sufix}\`);
+                    })
+                }
+            });
+
+            rolesNames.forEach((roleName: string) => {
+                Repository.insertIfNotExists(
+                    RolesEntity, 
+                    { name: roleName }, "name"
+                );
+            });
+        }, this);
+    }\n`
+            : ''
+    }
     public async login(
         payload: LoginRequest, 
         req?: any, res?: any, 
@@ -175,6 +227,9 @@ export class AuthService extends AbstractService {
                 user: null 
             };
         }
+
+        const sesssionId = uuidv4();
+        const fingerprint = generateFingerprint(req);
         
         ${
             hasRepository
@@ -223,13 +278,13 @@ export class AuthService extends AbstractService {
 
         const token = jwt.sign({ 
             id: ${Config.get('repository.type') === 'mongodb' ? `user._id` : `user.id`},
-            username: payload.username,
+            fingerprint,
             root: user.root || false,
             roles: user.roles || [],
             groups: user.groups || []
         }, jwtToken, { expiresIn });
 
-        res.cookie(cookieName, \`Bearer \${token}\`, {
+        res.cookie(cookieName, sesssionId, {
             httpOnly: true,
             secure: cookieSecure,
             sameSite: "strict",
@@ -238,8 +293,13 @@ export class AuthService extends AbstractService {
 
         if(sessionEnabled && session){
             session.user = {
+                id: ${Config.get('repository.type') === 'mongodb' ? `user._id` : `user.id`},
                 username: payload.username,
-                token: token,
+                fingerprint,
+                token,
+                root: user.root || false,
+                roles: user.roles || [],
+                groups: user.groups || []
             };
     
             session.save();
@@ -371,4 +431,6 @@ export class AuthGateway {
             path: `./gateways/auth/auth.gateway`,
         });
     }
+
+    async mapperRoles() {}
 }

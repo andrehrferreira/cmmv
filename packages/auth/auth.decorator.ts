@@ -1,6 +1,7 @@
 import * as jwt from 'jsonwebtoken';
 
 import { Config, Logger } from '@cmmv/core';
+import { generateFingerprint } from '@cmmv/http';
 
 import { IAuthSettings } from './auth.interface';
 
@@ -8,23 +9,35 @@ export function Auth(
     rolesOrSettings?: string[] | string | IAuthSettings,
 ): MethodDecorator {
     return (target, propertyKey: string | symbol, descriptor: any) => {
-        const middleware = (request: any, response: any, next?: any) => {
+        const middleware = async (request: any, response: any, next?: any) => {
             const logger = new Logger('Auth');
 
             const cookieName = Config.get(
                 'server.session.options.sessionCookieName',
                 'token',
             );
-
+            const sessionEnabled = Config.get<boolean>(
+                'server.session.enabled',
+                true,
+            );
             const logging = Config.get<string>('server.logging', 'all');
 
-            let token = request.req.cookies
+            let sessionId = request.req.cookies
                 ? request.req.cookies[cookieName]
                 : null;
 
-            if (!token)
+            let token = null;
+
+            if (sessionEnabled && request.session) {
+                const session = await request.session.get(sessionId);
+
+                if (session) token = session.user.token;
+            }
+
+            if (!token) {
                 token =
                     request.req.headers.authorization?.split(' ')[1] || null;
+            }
 
             if (!token) {
                 if (
@@ -110,6 +123,16 @@ export function Auth(
                                 return response.code(401).end('Unauthorized');
                             }
                         }
+                    }
+
+                    if (
+                        decoded.fingerprint !== generateFingerprint(request.req)
+                    ) {
+                        logger.warning(
+                            `${request.method.toUpperCase()} ${request.path} (0ms) 403 - ${request.req.socket.remoteAddress}`,
+                        );
+
+                        return response.code(403).end('Forbidden');
                     }
 
                     request.user = decoded;

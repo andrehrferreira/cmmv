@@ -9,8 +9,19 @@
 import * as jwt from 'jsonwebtoken';
 import { validate } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
+import { v4 as uuidv4 } from 'uuid';
 
-import { Telemetry, Service, AbstractService, Config } from '@cmmv/core';
+import {
+    Telemetry,
+    Service,
+    Scope,
+    AbstractService,
+    Config,
+    IContract,
+    Application,
+} from '@cmmv/core';
+
+import { generateFingerprint } from '@cmmv/http';
 
 import { Repository } from '@cmmv/repository';
 
@@ -23,11 +34,53 @@ import {
 } from '../../models/auth/user.model';
 
 import { UserEntity } from '../../entities/auth/user.entity';
+import { RolesEntity } from '../../entities/auth/roles.entity';
 
 import { ObjectId } from 'mongodb';
 
 @Service('auth')
 export class AuthService extends AbstractService {
+    constructor() {
+        super();
+
+        Application.awaitService(
+            'Repository',
+            async () => {
+                const instance = Repository.getInstance();
+                const contracts = Scope.getArray<any>('__contracts');
+                const rolesSufixs = [
+                    'get',
+                    'insert',
+                    'update',
+                    'delete',
+                    'export',
+                ];
+                const rolesNames = new Set<string>();
+
+                if (!instance.dataSource) await Repository.loadConfig();
+
+                contracts?.forEach((contract: IContract) => {
+                    if (contract.auth && contract.generateController) {
+                        rolesSufixs.map((sufix: string) => {
+                            rolesNames.add(
+                                `${contract.controllerName.toLowerCase()}:${sufix}`,
+                            );
+                        });
+                    }
+                });
+
+                rolesNames.forEach((roleName: string) => {
+                    Repository.insertIfNotExists(
+                        RolesEntity,
+                        { name: roleName },
+                        'name',
+                    );
+                });
+            },
+            this,
+        );
+    }
+
     public async login(
         payload: LoginRequest,
         req?: any,
@@ -79,6 +132,9 @@ export class AuthService extends AbstractService {
             };
         }
 
+        const sesssionId = uuidv4();
+        const fingerprint = generateFingerprint(req);
+
         let user: any = await Repository.findBy(UserEntity, {
             username: userValidation.username,
             password: userValidation.password,
@@ -113,7 +169,7 @@ export class AuthService extends AbstractService {
         const token = jwt.sign(
             {
                 id: user._id,
-                username: payload.username,
+                fingerprint,
                 root: user.root || false,
                 roles: user.roles || [],
                 groups: user.groups || [],
@@ -122,7 +178,7 @@ export class AuthService extends AbstractService {
             { expiresIn },
         );
 
-        res.cookie(cookieName, `Bearer ${token}`, {
+        res.cookie(cookieName, sesssionId, {
             httpOnly: true,
             secure: cookieSecure,
             sameSite: 'strict',
@@ -131,8 +187,13 @@ export class AuthService extends AbstractService {
 
         if (sessionEnabled && session) {
             session.user = {
+                id: user._id,
                 username: payload.username,
-                token: token,
+                fingerprint,
+                token,
+                root: user.root || false,
+                roles: user.roles || [],
+                groups: user.groups || [],
             };
 
             session.save();

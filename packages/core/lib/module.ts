@@ -1,6 +1,7 @@
 import { AbstractContract } from '../abstracts';
 import { ITranspile } from './transpile';
 import { ConfigSchema } from '../interfaces/config-shema.interface';
+import { Scope } from './scope';
 
 export interface IModuleOptions {
     controllers?: Array<any>;
@@ -40,6 +41,16 @@ export class Module implements IModule {
             options.contracts?.map(contractClass => new contractClass()) || [];
 
         Module.modules.set(name, this);
+
+        if (Scope.has(`_await_module_${name}`)) {
+            const actions = Scope.getArray(`_await_module_${name}`);
+
+            if (actions.length > 0) {
+                actions.map(({ cb, context }) => {
+                    cb.bind(context).call(context);
+                });
+            }
+        }
     }
 
     public static hasModule(name: string): boolean {

@@ -164,6 +164,24 @@ export class Application {
             settings.services?.forEach(async service => {
                 if (service && typeof service.loadConfig === 'function')
                     servicesLoad.push(service?.loadConfig(this));
+
+                if (Scope.has(`_await_service_${service.name}`)) {
+                    servicesLoad.push(
+                        new Promise(async resolve => {
+                            const actions = Scope.getArray(
+                                `_await_service_${service.name}`,
+                            );
+
+                            if (actions.length > 0) {
+                                actions.map(({ cb, context }) => {
+                                    cb.bind(context).call(context);
+                                });
+                            }
+
+                            resolve(true);
+                        }),
+                    );
+                }
             });
 
             await Promise.all(servicesLoad);
@@ -473,5 +491,27 @@ export let ApplicationModule = new Module("app", {
 
     public static setHTTPAfterRender(cb: Function) {
         Application.appModule.httpAfterRender.push(cb);
+    }
+
+    public static awaitModule(moduleName: string, cb: Function, context: any) {
+        if (Module.hasModule(moduleName)) {
+            cb.bind(context).call(context);
+        } else {
+            Scope.addToArray(`_await_module_${moduleName}`, {
+                cb,
+                context,
+            });
+        }
+    }
+
+    public static awaitService(
+        serviceName: string,
+        cb: Function,
+        context: any,
+    ) {
+        Scope.addToArray(`_await_service_${serviceName}`, {
+            cb,
+            context,
+        });
     }
 }
