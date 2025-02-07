@@ -16,7 +16,6 @@ import { GroupsController } from './controllers/auth/groups.controller';
 import { UserController } from './controllers/auth/user.controller';
 import { I18nCoinsController } from './controllers/i18n/i18ncoins.controller';
 import { I18nCountriesController } from './controllers/i18n/i18ncountries.controller';
-import { AuthController } from './controllers/auth/auth.controller';
 
 //Providers
 import { RolesService } from './services/auth/roles.service';
@@ -29,8 +28,6 @@ import { GroupsGateway } from './gateways/auth/groups.gateway';
 import { UserGateway } from './gateways/auth/user.gateway';
 import { I18nCoinsGateway } from './gateways/i18n/i18ncoins.gateway';
 import { I18nCountriesGateway } from './gateways/i18n/i18ncountries.gateway';
-import { AuthService } from './services/auth/auth.service';
-import { AuthGateway } from './gateways/auth/auth.gateway';
 
 export let ApplicationModule = new Module('app', {
     configs: [ApplicationConfig],
@@ -40,7 +37,6 @@ export let ApplicationModule = new Module('app', {
         UserController,
         I18nCoinsController,
         I18nCountriesController,
-        AuthController,
     ],
     providers: [
         RolesService,
@@ -53,8 +49,6 @@ export let ApplicationModule = new Module('app', {
         UserGateway,
         I18nCoinsGateway,
         I18nCountriesGateway,
-        AuthService,
-        AuthGateway,
     ],
     transpilers: [ApplicationTranspile],
 });

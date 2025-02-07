@@ -6,7 +6,16 @@ import * as Terser from 'terser';
 //import { build } from "esbuild";
 
 import { IHTTPSettings, ConfigSchema } from './interfaces';
-import { ITranspile, Logger, Scope, Transpile, Module, Config } from '.';
+import {
+    ITranspile,
+    Logger,
+    Scope,
+    Transpile,
+    Module,
+    Config,
+    Hooks,
+    HooksType,
+} from '.';
 import { AbstractHttpAdapter, AbstractWSAdapter } from './abstracts';
 
 import {
@@ -71,13 +80,13 @@ export class Application {
     protected contracts: Array<any> = [];
     protected configs: Array<ConfigSchema> = [];
     public providersMap = new Map<string, any>();
+    public static models = new Map<string, new () => any>();
 
     protected host: string;
     protected port: number;
 
     constructor(settings: IApplicationSettings, compile: boolean = false) {
         this.logger.log('Initialize application');
-
         Config.loadConfig();
 
         const env = Config.get<string>('env');
@@ -117,6 +126,7 @@ export class Application {
         compile: boolean = false,
     ): Promise<void> {
         try {
+            await Hooks.execute(HooksType.onPreInitialize);
             const env = Config.get<string>('env', process.env.NODE_ENV);
             this.loadModules(this.modules);
             await Config.validateConfigs(this.configs);
@@ -185,6 +195,7 @@ export class Application {
             });
 
             await Promise.all(servicesLoad);
+            await Hooks.execute(HooksType.onInitialize);
 
             if (this.httpAdapter && !compile) {
                 await this.httpAdapter.init(this, this.httpOptions);
@@ -202,6 +213,8 @@ export class Application {
                 await this.httpAdapter
                     .listen(`${this.host}:${this.port}`)
                     .then(() => {
+                        Hooks.execute(HooksType.onListen);
+
                         this.logger.log(
                             `Server HTTP successfully started on ${this.host}:${this.port}`,
                         );
@@ -213,6 +226,7 @@ export class Application {
                     });
             }
         } catch (error) {
+            await Hooks.execute(HooksType.onError, { error });
             console.log(error);
 
             this.logger.error(
@@ -411,24 +425,33 @@ export class Application {
         });
     }
 
-    public getHttpAdapter(): AbstractHttpAdapter {
-        return this.httpAdapter as AbstractHttpAdapter;
+    public static awaitModule(moduleName: string, cb: Function, context: any) {
+        if (Module.hasModule(moduleName)) {
+            cb.bind(context).call(context);
+        } else {
+            Scope.addToArray(`_await_module_${moduleName}`, {
+                cb,
+                context,
+            });
+        }
     }
 
-    public getUnderlyingHttpServer() {
-        this.httpAdapter.getHttpServer();
+    public static awaitService(
+        serviceName: string,
+        cb: Function,
+        context: any,
+    ) {
+        Scope.addToArray(`_await_service_${serviceName}`, {
+            cb,
+            context,
+        });
     }
 
-    public getWSServer(): AbstractWSAdapter {
-        return this.wsServer as AbstractWSAdapter;
-    }
+    public static getModel(modelName: string): new () => any {
+        if (Application.models.has(modelName))
+            return Application.models.get(modelName);
 
-    public static create(settings?: IApplicationSettings): Application {
-        return new Application(settings);
-    }
-
-    public static compile(settings?: IApplicationSettings): Application {
-        return new Application(settings, true);
+        throw new Error(`Could not load model '${modelName}'`);
     }
 
     protected static async generateModule(): Promise<Module> {
@@ -481,6 +504,26 @@ export let ApplicationModule = new Module("app", {
         }
     }
 
+    public getHttpAdapter(): AbstractHttpAdapter {
+        return this.httpAdapter as AbstractHttpAdapter;
+    }
+
+    public getUnderlyingHttpServer() {
+        this.httpAdapter.getHttpServer();
+    }
+
+    public getWSServer(): AbstractWSAdapter {
+        return this.wsServer as AbstractWSAdapter;
+    }
+
+    public static create(settings?: IApplicationSettings): Application {
+        return new Application(settings);
+    }
+
+    public static compile(settings?: IApplicationSettings): Application {
+        return new Application(settings, true);
+    }
+
     public static setHTTPMiddleware(cb: Function) {
         Application.appModule.httpMiddlewares.push(cb);
     }
@@ -491,27 +534,5 @@ export let ApplicationModule = new Module("app", {
 
     public static setHTTPAfterRender(cb: Function) {
         Application.appModule.httpAfterRender.push(cb);
-    }
-
-    public static awaitModule(moduleName: string, cb: Function, context: any) {
-        if (Module.hasModule(moduleName)) {
-            cb.bind(context).call(context);
-        } else {
-            Scope.addToArray(`_await_module_${moduleName}`, {
-                cb,
-                context,
-            });
-        }
-    }
-
-    public static awaitService(
-        serviceName: string,
-        cb: Function,
-        context: any,
-    ) {
-        Scope.addToArray(`_await_service_${serviceName}`, {
-            cb,
-            context,
-        });
     }
 }

@@ -53,6 +53,8 @@
             "@cmmv/form/*": ["packages/form/*"],
             "@models": ["src/models"],
             "@models/*": ["src/models/*"],
+            "@modules": ["src/modules"],
+            "@modules/*": ["src/modules/*"],
             "@services": ["src/services"],
             "@services/*": ["src/services/*"],
             "@controllers": ["src/controllers"],

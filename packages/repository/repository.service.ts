@@ -19,6 +19,7 @@ import { ObjectId } from 'mongodb';
 
 export class Repository extends Singleton {
     public static logger: Logger = new Logger('Repository');
+    public static entities = new Map<string, any>();
     public dataSource: DataSource;
 
     public static async loadConfig(): Promise<void> {
@@ -31,7 +32,13 @@ export class Repository extends Singleton {
         const entities = await Promise.all(
             entityFiles.map(async file => {
                 const entityModule = await import(file);
-                return Object.values(entityModule)[0];
+                const entityContructor = Object.values(entityModule)[0];
+                this.entities.set(
+                    //@ts-ignore
+                    entityContructor.name,
+                    entityContructor,
+                );
+                return entityContructor;
             }),
         );
 
@@ -63,6 +70,12 @@ export class Repository extends Singleton {
             return Config.get('repository.type') === 'mongodb'
                 ? id
                 : id.toString();
+    }
+
+    public static getEntity(name: string): new () => any | null {
+        if (Repository.entities.has(name)) return Repository.entities.get(name);
+
+        throw new Error(`Could not load entity '${name}'`);
     }
 
     public static queryBuilder<Entity>(
