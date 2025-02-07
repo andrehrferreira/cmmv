@@ -27,9 +27,9 @@ import {
     LoginResponse,
     RegisterRequest,
     RegisterResponse,
-} from '../../models/auth/user.model';
+} from '@models/auth/user.model';
 
-import { UserService } from '../../services/auth/user.service';
+import { UserService } from '@services/auth/user.service';
 
 @Controller('user')
 export class UserControllerGenerated {
@@ -38,15 +38,13 @@ export class UserControllerGenerated {
     @Get()
     @Auth('user:get')
     async getAll(@Queries() queries: any, @Req() req) {
-        let result = await this.userservice.getAll(queries, req);
-        return result;
+        return this.userservice.getAll(queries, req);
     }
 
     @Get(':id')
     @Auth('user:get')
     async getById(@Param('id') id: string, @Req() req) {
-        let result = await this.userservice.getById(id, req);
-        return result;
+        return this.userservice.getById(id, req);
     }
 
     @Get(':id/raw')

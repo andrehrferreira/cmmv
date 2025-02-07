@@ -29,13 +29,22 @@ export class GroupsEntity implements IGroups {
     @ObjectIdColumn()
     _id: ObjectId;
 
-    @Column({ type: 'varchar' })
+    @Column({
+        type: 'varchar',
+        nullable: false,
+    })
     name: string;
 
-    @Column({ type: 'simple-array', nullable: true })
+    @Column({
+        type: 'simple-array',
+        nullable: true,
+    })
     roles?: RolesEntity[] | string[] | ObjectId[] | null;
 
-    @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+    @CreateDateColumn({
+        type: 'timestamp',
+        default: () => 'CURRENT_TIMESTAMP',
+    })
     createdAt: Date;
 
     @UpdateDateColumn({
@@ -45,16 +54,11 @@ export class GroupsEntity implements IGroups {
     })
     updatedAt: Date;
 
-    @ManyToOne(() => UserEntity, { nullable: false })
-    @ObjectIdColumn({ nullable: false })
+    @ManyToOne(() => UserEntity, { nullable: true })
+    @ObjectIdColumn({ nullable: true })
     userCreator: ObjectId;
 
     @ManyToOne(() => UserEntity, { nullable: true })
     @ObjectIdColumn({ nullable: true })
     userLastUpdate: ObjectId;
-
-    @BeforeInsert()
-    checkUserCreator() {
-        if (!this.userCreator) throw new Error('userCreator is required');
-    }
 }

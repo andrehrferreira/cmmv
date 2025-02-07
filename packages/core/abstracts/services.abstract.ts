@@ -46,21 +46,18 @@ export abstract class AbstractService {
         return payload;
     }
 
-    validate(item: any) {
-        return new Promise(async (resolve, reject) => {
-            const errors = await validate(item, {
-                forbidUnknownValues: false,
-                skipMissingProperties: true,
-                stopAtFirstError: true,
-            });
-
-            if (errors.length > 0) {
-                reject(Object.values(errors[0].constraints).join(', '));
-            } else {
-                item = this.removeUndefined(item);
-                delete item._id;
-                resolve(item);
-            }
+    async validate<T>(item: object, partial: boolean = false): Promise<T> {
+        const errors = await validate(item, {
+            forbidUnknownValues: false,
+            skipNullProperties: partial,
+            skipMissingProperties: partial,
+            stopAtFirstError: true,
         });
+
+        if (errors.length > 0)
+            throw new Error(Object.values(errors[0].constraints).join(', '));
+
+        item = this.removeUndefined(item);
+        return item as T;
     }
 }

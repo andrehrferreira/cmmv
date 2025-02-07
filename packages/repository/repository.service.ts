@@ -338,3 +338,143 @@ export class Repository extends Singleton {
         }
     }
 }
+
+export class RepositorySchema<Entity, T> {
+    constructor(
+        private readonly entity: new () => Entity,
+        private readonly model: T,
+    ) {}
+
+    public async getAll(queries?: any, req?: any) {
+        let result = await Repository.findAll(this.entity, queries);
+
+        if (Config.get('repository.type') === 'mongodb')
+            result = this.fixIds(result);
+
+        if (!result) throw new Error('Unable to return a valid result.');
+
+        return {
+            count: result.count,
+            pagination: result.pagination,
+            data:
+                result && result.data.length > 0
+                    ? result.data //@ts-ignore
+                          .map(item => this.model.fromEntity(item))
+                    : [],
+        };
+    }
+
+    public async getById(id) {
+        let result = await Repository.findBy(
+            this.entity,
+            Repository.queryBuilder({ id }),
+        );
+
+        if (Config.get('repository.type') === 'mongodb')
+            result = this.fixIds(result);
+
+        if (!result) throw new Error('Unable to return a valid result.');
+
+        return {
+            count: 1,
+            pagination: {
+                limit: 1,
+                offset: 0,
+                search: id,
+                searchField: 'id',
+                sortBy: 'id',
+                sort: 'asc',
+                filters: {},
+            }, //@ts-ignore
+            data: this.model.fromEntity(result.data),
+        };
+    }
+
+    public async insert(data: any): Promise<any> {
+        const result: any = await Repository.insert<Entity>(this.entity, data);
+
+        if (!result.success)
+            throw new Error(result.message || 'Insert operation failed');
+
+        return this.toModel(this.model, result.data);
+    }
+
+    public async update(id: string, data: any) {
+        const result = await Repository.update(
+            this.entity,
+            Repository.queryBuilder({ id }),
+            {
+                ...data,
+                updatedAt: new Date(),
+            },
+        );
+
+        return { success: result > 0, affected: result };
+    }
+
+    public async delete(id: string) {
+        const result = await Repository.delete(
+            this.entity,
+            Repository.queryBuilder({ id }),
+        );
+
+        return { success: result > 0, affected: result };
+    }
+
+    protected fixIds(item: any, subtree: boolean = false) {
+        if (item && typeof item === 'object') {
+            if (item._id) {
+                item.id = item._id.toString();
+                delete item._id;
+            }
+
+            for (const key in item) {
+                if (Array.isArray(item[key])) {
+                    item[key] = item[key].map((element: any) =>
+                        this.fixIds(element),
+                    );
+                } else if (item[key] instanceof ObjectId) {
+                    item[key] = item[key].toString();
+                } else if (typeof item[key] === 'object' && !subtree) {
+                    item[key] = this.fixIds(item[key], true);
+                }
+            }
+        }
+
+        return item;
+    }
+
+    protected fromPartial(model: any, data: any, req: any) {
+        if (model && model.fromPartial)
+            return this.extraData(model?.fromPartial(data), req);
+        else return data;
+    }
+
+    protected toModel(model: any, data: any) {
+        const dataFixed =
+            Config.get('repository.type') === 'mongodb'
+                ? this.fixIds(data)
+                : data;
+
+        return model && model.fromEntity
+            ? model.fromEntity(dataFixed)
+            : dataFixed;
+    }
+
+    protected extraData(newItem: any, req: any) {
+        const userId: string = req?.user?.id;
+
+        if (typeof userId === 'string') {
+            try {
+                newItem.userCreator =
+                    Config.get('repository.type') === 'mongodb'
+                        ? new ObjectId(userId)
+                        : userId;
+            } catch (error) {
+                console.warn('Error assigning userCreator:', error);
+            }
+        }
+
+        return newItem;
+    }
+}

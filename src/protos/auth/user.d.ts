@@ -6,8 +6,8 @@
     **********************************************
 **/
 
-import { Groups } from '/mnt/f/Node/cmmv/src/protos/auth/user.proto/auth/groups.d';
-import { Roles } from '/mnt/f/Node/cmmv/src/protos/auth/user.proto/auth/roles.d';
+import { Groups } from './groups.d';
+import { Roles } from './roles.d';
 
 export namespace User {
     export type username = string;

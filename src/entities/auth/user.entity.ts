@@ -30,49 +30,100 @@ export class UserEntity implements IUser {
     @ObjectIdColumn()
     _id: ObjectId;
 
-    @Column({ type: 'varchar' })
+    @Column({
+        type: 'varchar',
+        nullable: false,
+    })
     username: string;
 
-    @Column({ type: 'varchar' })
+    @Column({
+        type: 'varchar',
+        nullable: false,
+    })
     password: string;
 
-    @Column({ type: 'varchar', nullable: true })
+    @Column({
+        type: 'varchar',
+        nullable: true,
+    })
     provider?: string;
 
-    @Column({ type: 'simple-array', nullable: true })
+    @Column({
+        type: 'simple-array',
+        nullable: true,
+    })
     groups?: GroupsEntity[] | string[] | ObjectId[] | null;
 
-    @Column({ type: 'simple-array', nullable: true })
+    @Column({
+        type: 'simple-array',
+        nullable: true,
+    })
     roles?: RolesEntity[] | string[] | ObjectId[] | null;
 
-    @Column({ type: 'boolean', default: false })
+    @Column({
+        type: 'boolean',
+        default: false,
+        nullable: false,
+    })
     root: boolean;
 
-    @Column({ type: 'boolean', default: false })
+    @Column({
+        type: 'boolean',
+        default: false,
+        nullable: false,
+    })
     blocked: boolean;
 
-    @Column({ type: 'boolean', default: false })
+    @Column({
+        type: 'boolean',
+        default: false,
+        nullable: false,
+    })
     validated: boolean;
 
-    @Column({ type: 'boolean', default: false })
+    @Column({
+        type: 'boolean',
+        default: false,
+        nullable: false,
+    })
     verifyEmail: boolean;
 
-    @Column({ type: 'int', nullable: true })
+    @Column({
+        type: 'int',
+        nullable: true,
+    })
     verifyEmailCode?: number;
 
-    @Column({ type: 'boolean', default: false })
+    @Column({
+        type: 'boolean',
+        default: false,
+        nullable: false,
+    })
     verifySMS: boolean;
 
-    @Column({ type: 'int', nullable: true })
+    @Column({
+        type: 'int',
+        nullable: true,
+    })
     verifySMSCode?: number;
 
-    @Column({ type: 'varchar', nullable: true })
+    @Column({
+        type: 'varchar',
+        nullable: true,
+    })
     optSecret?: string;
 
-    @Column({ type: 'boolean', default: false })
+    @Column({
+        type: 'boolean',
+        default: false,
+        nullable: false,
+    })
     optSecretVerify: boolean;
 
-    @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+    @CreateDateColumn({
+        type: 'timestamp',
+        default: () => 'CURRENT_TIMESTAMP',
+    })
     createdAt: Date;
 
     @UpdateDateColumn({

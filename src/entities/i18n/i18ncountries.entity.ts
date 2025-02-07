@@ -29,16 +29,28 @@ export class I18nCountriesEntity implements II18nCountries {
     @ObjectIdColumn()
     _id: ObjectId;
 
-    @Column({ type: 'varchar' })
+    @Column({
+        type: 'varchar',
+        nullable: false,
+    })
     code: string;
 
-    @Column({ type: 'varchar' })
+    @Column({
+        type: 'varchar',
+        nullable: false,
+    })
     name: string;
 
-    @Column({ type: 'string', nullable: true })
+    @Column({
+        type: 'string',
+        nullable: true,
+    })
     currency?: I18nCoinsEntity | string | ObjectId | null;
 
-    @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+    @CreateDateColumn({
+        type: 'timestamp',
+        default: () => 'CURRENT_TIMESTAMP',
+    })
     createdAt: Date;
 
     @UpdateDateColumn({
@@ -48,16 +60,11 @@ export class I18nCountriesEntity implements II18nCountries {
     })
     updatedAt: Date;
 
-    @ManyToOne(() => UserEntity, { nullable: false })
-    @ObjectIdColumn({ nullable: false })
+    @ManyToOne(() => UserEntity, { nullable: true })
+    @ObjectIdColumn({ nullable: true })
     userCreator: ObjectId;
 
     @ManyToOne(() => UserEntity, { nullable: true })
     @ObjectIdColumn({ nullable: true })
     userLastUpdate: ObjectId;
-
-    @BeforeInsert()
-    checkUserCreator() {
-        if (!this.userCreator) throw new Error('userCreator is required');
-    }
 }

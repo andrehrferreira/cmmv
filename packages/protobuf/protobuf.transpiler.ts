@@ -345,11 +345,11 @@ ${Object.entries(contract.messages[key].properties)
 
                     const entityName = controllerName;
                     const importPath = this.getImportPathRelative(
-                        contractInstance,
+                        link.contract,
                         contract,
                         'protos',
                         `${entityName.toLowerCase()}.d`,
-                        outputFilePath,
+                        '@protos',
                     );
 
                     if (importPath) {

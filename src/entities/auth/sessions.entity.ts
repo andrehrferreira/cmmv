@@ -28,31 +28,59 @@ export class SessionsEntity implements ISessions {
     @ObjectIdColumn()
     _id: ObjectId;
 
-    @Column({ type: 'varchar' })
+    @Column({
+        type: 'varchar',
+        nullable: false,
+    })
     uuid: string;
 
-    @Column({ type: 'varchar' })
+    @Column({
+        type: 'varchar',
+        nullable: false,
+    })
     fingerprint: string;
 
-    @Column({ type: 'string', nullable: true })
+    @Column({
+        type: 'string',
+        nullable: true,
+    })
     user: UserEntity | string | ObjectId | null;
 
-    @Column({ type: 'varchar' })
+    @Column({
+        type: 'varchar',
+        nullable: false,
+    })
     ipAddress: string;
 
-    @Column({ type: 'varchar', nullable: true })
+    @Column({
+        type: 'varchar',
+        nullable: true,
+    })
     device?: string;
 
-    @Column({ type: 'varchar', nullable: true })
+    @Column({
+        type: 'varchar',
+        nullable: true,
+    })
     browser?: string;
 
-    @Column({ type: 'varchar', nullable: true })
+    @Column({
+        type: 'varchar',
+        nullable: true,
+    })
     os?: string;
 
-    @Column({ type: 'boolean', default: false })
+    @Column({
+        type: 'boolean',
+        default: false,
+        nullable: false,
+    })
     revoked: boolean;
 
-    @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+    @CreateDateColumn({
+        type: 'timestamp',
+        default: () => 'CURRENT_TIMESTAMP',
+    })
     createdAt: Date;
 
     @UpdateDateColumn({

@@ -16,6 +16,9 @@ export class RolesEntity implements IRoles {
     @ObjectIdColumn()
     _id: ObjectId;
 
-    @Column({ type: 'varchar' })
+    @Column({
+        type: 'varchar',
+        nullable: false,
+    })
     name: string;
 }

@@ -1,4 +1,5 @@
 import { AbstractService, Config } from '@cmmv/core';
+
 import { ObjectId } from 'mongodb';
 
 export abstract class AbstractRepositoryService extends AbstractService {
@@ -23,6 +24,23 @@ export abstract class AbstractRepositoryService extends AbstractService {
         }
 
         return item;
+    }
+
+    protected fromPartial<T>(model: any, data: any, req: any): T {
+        if (model && model.fromPartial)
+            return model?.fromPartial(this.extraData(data, req));
+        else return data;
+    }
+
+    protected toModel(model: any, data: any) {
+        const dataFixed =
+            Config.get('repository.type') === 'mongodb'
+                ? this.fixIds(data)
+                : data;
+
+        return model && model.fromEntity
+            ? model.fromEntity(dataFixed)
+            : dataFixed;
     }
 
     protected extraData(newItem: any, req: any) {

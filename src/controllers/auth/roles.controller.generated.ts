@@ -20,9 +20,9 @@ import {
     Req,
 } from '@cmmv/http';
 
-import { Roles, RolesFastSchema } from '../../models/auth/roles.model';
+import { Roles, RolesFastSchema } from '@models/auth/roles.model';
 
-import { RolesService } from '../../services/auth/roles.service';
+import { RolesService } from '@services/auth/roles.service';
 
 @Controller('roles')
 export class RolesControllerGenerated {
@@ -31,15 +31,13 @@ export class RolesControllerGenerated {
     @Get()
     @Auth('roles:get')
     async getAll(@Queries() queries: any, @Req() req) {
-        let result = await this.rolesservice.getAll(queries, req);
-        return result;
+        return this.rolesservice.getAll(queries, req);
     }
 
     @Get(':id')
     @Auth('roles:get')
     async getById(@Param('id') id: string, @Req() req) {
-        let result = await this.rolesservice.getById(id, req);
-        return result;
+        return this.rolesservice.getById(id, req);
     }
 
     @Get(':id/raw')

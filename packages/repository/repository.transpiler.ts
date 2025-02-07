@@ -90,168 +90,54 @@ ${contract.fields.map((field: any) => this.generateField(field)).join('\n\n')}${
     as it may be overwritten by the application.
     **********************************************
 **/
-${Config.get('repository.type') === 'mongodb' ? '\nimport { ObjectId } from "mongodb";' : ''}
-import { validate } from "class-validator";
 
 import { 
-    Telemetry, 
-    Logger 
-} from "@cmmv/core";
-
-import { 
-    Repository,
-    IFindResponse,
-    AbstractRepositoryService 
+    AbstractRepositoryService,
+    RepositorySchema 
 } from "@cmmv/repository";
 
 import { 
-   ${modelName}, 
-   ${modelInterfaceName},
-   ${importsFromModel.join(', \n   ')}
+    ${modelName}${importsFromModel.join(', \n   ')}
 } from "${this.getImportPath(contract, 'models', modelName.toLowerCase(), '@models')}.model";
 
-import { ${entityName} } from "${this.getImportPath(contract, 'entities', modelName.toLowerCase(), '@entities')}.entity";
+import { 
+    ${entityName} 
+} from "${this.getImportPath(contract, 'entities', modelName.toLowerCase(), '@entities')}.entity";
 
 export class ${serviceName}Generated extends AbstractRepositoryService {
-    protected logger: Logger = new Logger("${serviceName}Generated");
+    protected schema = new RepositorySchema(${entityName}, ${modelName});
 
-    async getAll(queries?: any, req?: any): Promise<IFindResponse> {
-        try{
-            Telemetry.start("${serviceName}::GetAll", req?.requestId);
-            let result = await Repository.findAll(${entityName}, queries);
-            ${Config.get('repository.type') === 'mongodb' ? 'result = this.fixIds(result)' : ''}
-            Telemetry.end("${serviceName}::GetAll", req?.requestId);
-
-            if (!result) 
-                throw new Error("Unable to return a valid result.");
-
-            return {
-                count: result.count,
-                pagination: result.pagination,
-                data: result && result.data.length > 0 ? result.data.
-                    map((item) => ${modelName}.fromEntity(item)) : []
-            };
-        }
-        catch(e){
-            console.log(e)
-            this.logger.error(e);
-            return null;
-        }
+    async getAll(queries?: any, req?: any) {
+        return await this.schema.getAll(queries, req);
     }
 
-    async getById(id: string, req?: any): Promise<IFindResponse> {
-        try{
-            Telemetry.start("${serviceName}::GetById", req?.requestId);
-            let result = await Repository.findBy(${entityName}, { ${Config.get('repository.type') === 'mongodb' ? '_id: new ObjectId(id)' : 'id'} });
-            ${Config.get('repository.type') === 'mongodb' ? 'result = this.fixIds(result);' : ''}
-            Telemetry.end("${serviceName}::GetById", req?.requestId);
-
-            if (!result) 
-                throw new Error("Unable to return a valid result.");
-            
-            return {
-                count: 1,
-                pagination: {
-                    limit: 1,
-                    offset: 0,
-                    search: id,
-                    searchField: "id",
-                    "sortBy": "id",
-                    "sort": "asc",
-                    "filters": {}
-                },
-                data: ${modelName}.fromEntity(result.data)
-            };
-        }
-        catch(e){
-            return null;
-        }
+    async getById(id: string, req?: any) {
+        return await this.schema.getById(id);
     }
 
-    async insert(item: Partial<${modelName}>, req?: any): Promise<${modelName}> {
-        try {
-            Telemetry.start("${serviceName}::Insert", req?.requestId);
-            let newItem: any = this.extraData(${modelName}.fromPartial(item), req);
-            const validatedData = await this.validate(newItem);
-            const result: any = await Repository.insert<${entityName}>(${entityName}, validatedData);
-
-            if (!result.success) 
-                throw new Error(result.message || "Insert operation failed");
-            
-            ${Config.get('repository.type') === 'mongodb' ? 'const dataFixed = this.fixIds(result.data);' : ''}
-            Telemetry.end("${serviceName}::Insert", req?.requestId);
-            return ${modelName}.fromEntity(${Config.get('repository.type') === 'mongodb' ? 'dataFixed' : 'result.data'});
-        } catch (error) {
-            Telemetry.end("${serviceName}::Insert", req?.requestId);
-            throw new Error(error.message || "Error inserting item");
-        }
+    async insert(payload: Partial<${modelName}>, req?: any) {
+        let newItem: any = this.fromPartial(${modelName}, payload, req);
+        const validatedData = await this.validate<${modelName}>(newItem);
+        return await this.schema.insert(validatedData);
     }
 
-    async update(id: string, item: Partial<${modelName}>, req?: any): Promise<{ success: boolean, affected: number }> {
-        return new Promise(async (resolve, reject) => {
-            try{
-                Telemetry.start("${serviceName}::Update", req?.requestId);
-                let updateItem: any = ${modelName}.fromPartial(item);
-
-                this.validate(updateItem).then(async (data: any) => {
-                    const userId: string = req.user?.id;
-
-                    if(typeof userId === "string"){
-                        try{
-                            data.userLastUpdate = ${Config.get('repository.type') === 'mongodb' ? 'new ObjectId(userId)' : 'userId'};
-                        } catch { }
-                    }
-
-                    const result = await Repository.update(
-                        ${entityName}, 
-                        ${Config.get('repository.type') === 'mongodb' ? 'new ObjectId(id)' : 'id'}, 
-                        {
-                            ...data,
-                            updatedAt: new Date()
-                        }
-                    );       
-                    
-                    Telemetry.end("TaskService::Update", req?.requestId);
-                    resolve({ success: result > 0, affected: result });
-                }).catch((error) => {
-                    console.log(error);
-                    Telemetry.end("TaskService::Update", req?.requestId);
-                    reject(error);
-                });             
-            }
-            catch(e){
-                Telemetry.end("${serviceName}::Update", req?.requestId);
-                reject({ success: false, affected: 0 });
-            }
-        });
+    async update(id: string, payload: Partial<${modelName}>, req?: any) {
+        let updateItem: any = this.fromPartial(${modelName}, payload, req);
+        const validatedData = await this.validate<${modelName}>(updateItem, true);
+        return await this.schema.update(id, validatedData);
     }
 
-    async delete(id: string, req?: any): Promise<{ success: boolean, affected: number }> {
-        try{
-            Telemetry.start("${serviceName}::Delete", req?.requestId);
-            const result = await Repository.delete(
-                ${entityName}, 
-                ${Config.get('repository.type') === 'mongodb' ? 'new ObjectId(id)' : 'id'}
-            );
-
-            Telemetry.end("${serviceName}::Delete", req?.requestId);
-            return { success: result > 0, affected: result };
-        }
-        catch(e){
-            Telemetry.end("${serviceName}::Delete", req?.requestId);
-            return { success: false, affected: 0 };
-        }
+    async delete(id: string, req?: any) {
+        return await this.schema.delete(id);
     }
-
 ${contract.services
     .filter(service => service.createBoilerplate === true)
     .map(service => {
-        return `    async ${service.functionName}(payload: ${service.request}): Promise<${service.response}> {
+        return `\n    async ${service.functionName}(payload: ${service.request}): Promise<${service.response}> {
         throw new Error("Function ${service.functionName} not implemented");
     }`;
     })
-    .join('\n\n')}
-}`;
+    .join('\n\n')}}`;
 
         if (!telemetry)
             serviceTemplateGenerated = this.removeTelemetry(
@@ -300,7 +186,11 @@ ${contract.services
     private generateField(field: any): string {
         let tsType = this.mapToTsType(field.protoType);
         const columnOptions = this.generateColumnOptions(field);
-        let decorators = [`@Column({ ${columnOptions} })`];
+        let decorators = [
+            `@Column({ 
+        ${columnOptions} 
+    })`,
+        ];
         let optional = field.nullable ? '?' : '';
 
         if (field.link) {
@@ -321,7 +211,10 @@ ${contract.services
                 }
 
                 decorators.push(
-                    `@Column({ type: "${field.protoRepeated ? 'simple-array' : 'string'}", nullable: true })`,
+                    `@Column({ 
+        type: "${field.protoRepeated ? 'simple-array' : 'string'}", 
+        nullable: true 
+    })`,
                 );
             });
 
@@ -337,14 +230,17 @@ ${contract.services
         const options = [];
         options.push(`type: "${this.mapToTypeORMType(field.protoType)}"`);
 
-        if (field.defaultValue !== undefined)
+        if (field.defaultValue !== undefined) {
             options.push(
-                `default: ${typeof field.defaultValue === 'object' ? JSON.stringify(field.defaultValue) : field.defaultValue}`,
+                `        default: ${typeof field.defaultValue === 'object' ? JSON.stringify(field.defaultValue) : field.defaultValue}`,
             );
-        if (field.nullable && field.nullable === true)
-            options.push(`nullable: true`);
+        }
 
-        return options.join(', ');
+        options.push(
+            `        nullable: ${field.nullable === true ? 'true' : 'false'}`,
+        );
+
+        return options.join(', \n');
     }
 
     private mapToTsType(protoType: string): string {
@@ -421,10 +317,17 @@ ${contract.services
 
         if (contract.options?.databaseTimestamps) {
             extraFields += `
-    @CreateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
+    @CreateDateColumn({ 
+        type: "timestamp", 
+        default: () => "CURRENT_TIMESTAMP" 
+    })
     createdAt: Date;
 
-    @UpdateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP", onUpdate: "CURRENT_TIMESTAMP" })
+    @UpdateDateColumn({ 
+        type: "timestamp", 
+        default: () => "CURRENT_TIMESTAMP", 
+        onUpdate: "CURRENT_TIMESTAMP" 
+    })
     updatedAt: Date;`;
         }
 
@@ -432,19 +335,13 @@ ${contract.services
             if (extraFields) extraFields += '\n';
 
             extraFields += `
-    @ManyToOne(() => UserEntity, { nullable: false })
-    ${Config.get('repository.type') === 'mongodb' ? '@ObjectIdColumn({ nullable: false })' : '@Column({ type: "varchar", nullable: false })'}
+    @ManyToOne(() => UserEntity, { nullable: true })
+    ${Config.get('repository.type') === 'mongodb' ? '@ObjectIdColumn({ nullable: true })' : '@Column({ type: "varchar", nullable: true })'}
     userCreator: ${Config.get('repository.type') === 'mongodb' ? 'ObjectId' : 'string'};
 
     @ManyToOne(() => UserEntity, { nullable: true })
     ${Config.get('repository.type') === 'mongodb' ? '@ObjectIdColumn({ nullable: true })' : '@Column({ type: "varchar", nullable: true })'}
-    userLastUpdate: ${Config.get('repository.type') === 'mongodb' ? 'ObjectId' : 'string'};
-    
-    @BeforeInsert()
-    checkUserCreator() {
-        if (!this.userCreator) 
-            throw new Error("userCreator is required");
-    }`;
+    userLastUpdate: ${Config.get('repository.type') === 'mongodb' ? 'ObjectId' : 'string'};`;
         }
 
         return extraFields ? `\n${extraFields}` : '';

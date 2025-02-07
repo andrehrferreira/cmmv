@@ -31,11 +31,13 @@ export class I18nCoins implements II18nCoins {
     id: string;
 
     @Expose()
+    @IsNotEmpty()
     @IsString({ message: 'Invalid currency code' })
     @IsNotEmpty({ message: 'Currency code is required' })
     code: string;
 
     @Expose()
+    @IsNotEmpty()
     @IsString({ message: 'Invalid currency name' })
     @IsNotEmpty({ message: 'Currency name is required' })
     name: string;

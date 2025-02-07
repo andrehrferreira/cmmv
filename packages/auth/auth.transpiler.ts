@@ -49,12 +49,12 @@ import {
 
 import { 
     AuthService 
-} from "../../services/auth/auth.service";
+} from "@services/auth/auth.service";
 
 import { 
     LoginRequest, LoginResponse, 
     RegisterRequest, RegisterResponse 
-} from "../../models/auth/user.model";
+} from "@models/auth/user.model";
 
 @Controller("auth")
 export class AuthController {
@@ -312,10 +312,10 @@ export class AuthService extends AbstractService {
         }, jwtToken, { expiresIn });
 
         // Recording session
-        await this.sessionsService.registrySession(
+        /*await this.sessionsService.registrySession(
             sesssionId, req, 
             ${Config.get('repository.type') === 'mongodb' ? `user._id` : `user.id`}
-        );
+        );*/
 
         // Preparing session cookie
         res.cookie(cookieName, sesssionId, {
@@ -551,12 +551,12 @@ ${
 **/
 
 import { Rpc, Message, Data, Socket, RpcUtils } from "@cmmv/ws";
-import { AuthService } from "../../services/auth/auth.service";
+import { AuthService } from "@services/auth/auth.service";
 
 import { 
     LoginRequest,
     RegisterRequest  
-} from "../../models/auth/user.model";
+} from "@models/auth/user.model";
 
 @Rpc("auth")
 export class AuthGateway {

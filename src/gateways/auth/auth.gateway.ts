@@ -7,9 +7,9 @@
 **/
 
 import { Rpc, Message, Data, Socket, RpcUtils } from '@cmmv/ws';
-import { AuthService } from '../../services/auth/auth.service';
+import { AuthService } from '@services/auth/auth.service';
 
-import { LoginRequest, RegisterRequest } from '../../models/auth/user.model';
+import { LoginRequest, RegisterRequest } from '@models/auth/user.model';
 
 @Rpc('auth')
 export class AuthGateway {

@@ -24,9 +24,9 @@ import {
 import {
     I18nCountries,
     I18nCountriesFastSchema,
-} from '../../models/i18n/i18ncountries.model';
+} from '@models/i18n/i18ncountries.model';
 
-import { I18nCountriesService } from '../../services/i18n/i18ncountries.service';
+import { I18nCountriesService } from '@services/i18n/i18ncountries.service';
 
 @Controller('/i18n/countries')
 export class I18nCountriesControllerGenerated {
@@ -40,15 +40,16 @@ export class I18nCountriesControllerGenerated {
         schema: I18nCountriesFastSchema,
     })
     async getAll(@Queries() queries: any, @Req() req) {
-        let result = await this.i18ncountriesservice.getAll(queries, req);
-        return result;
+        return this.i18ncountriesservice.getAll(queries, req);
     }
 
     @Get(':id')
     @Auth('i18ncountries:get')
     async getById(@Param('id') id: string, @Req() req) {
-        let result = await this.i18ncountriesservice.getById(id, req);
-        return result;
+        const cacheData = await CacheService.get(`country:${id}`);
+        return cacheData
+            ? cacheData
+            : this.i18ncountriesservice.getById(id, req);
     }
 
     @Get(':id/raw')
@@ -62,7 +63,7 @@ export class I18nCountriesControllerGenerated {
     @Auth('i18ncountries:insert')
     async insert(@Body() item: I18nCountries, @Req() req) {
         let result = await this.i18ncountriesservice.insert(item, req);
-        CacheService.del('country:getAll');
+        await CacheService.del('country:getAll');
         return result;
     }
 
@@ -74,8 +75,8 @@ export class I18nCountriesControllerGenerated {
         @Req() req,
     ) {
         let result = await this.i18ncountriesservice.update(id, item, req);
-        CacheService.del(`country:${id}`);
-        CacheService.del('country:getAll');
+        await CacheService.del(`country:${id}`);
+        await CacheService.del('country:getAll');
         return result;
     }
 
@@ -83,8 +84,8 @@ export class I18nCountriesControllerGenerated {
     @Auth('i18ncountries:delete')
     async delete(@Param('id') id: string, @Req() req) {
         let result = await this.i18ncountriesservice.delete(id, req);
-        CacheService.del(`country:${id}`);
-        CacheService.del('country:getAll');
+        await CacheService.del(`country:${id}`);
+        await CacheService.del('country:getAll');
         return result;
     }
 }

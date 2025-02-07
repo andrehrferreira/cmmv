@@ -185,7 +185,10 @@ export class AuthService extends AbstractService {
         );
 
         // Recording session
-        await this.sessionsService.registrySession(sesssionId, req, user._id);
+        /*await this.sessionsService.registrySession(
+            sesssionId, req, 
+            user._id
+        );*/
 
         // Preparing session cookie
         res.cookie(cookieName, sesssionId, {

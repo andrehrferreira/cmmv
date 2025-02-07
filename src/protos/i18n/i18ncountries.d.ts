@@ -6,7 +6,7 @@
     **********************************************
 **/
 
-import { I18nCoins } from '/mnt/f/Node/cmmv/src/protos/i18n/i18ncountries.proto/i18n/i18ncoins.d';
+import { I18nCoins } from './i18ncoins.d';
 
 export namespace I18nCountries {
     export type code = string;

@@ -6,7 +6,7 @@
     **********************************************
 **/
 
-import { User } from '/mnt/f/Node/cmmv/src/protos/auth/sessions.proto/auth/user.d';
+import { User } from './user.d';
 
 export namespace Sessions {
     export type uuid = string;

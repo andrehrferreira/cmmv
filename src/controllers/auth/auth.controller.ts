@@ -20,14 +20,14 @@ import {
     Header,
 } from '@cmmv/http';
 
-import { AuthService } from '../../services/auth/auth.service';
+import { AuthService } from '@services/auth/auth.service';
 
 import {
     LoginRequest,
     LoginResponse,
     RegisterRequest,
     RegisterResponse,
-} from '../../models/auth/user.model';
+} from '@models/auth/user.model';
 
 @Controller('auth')
 export class AuthController {

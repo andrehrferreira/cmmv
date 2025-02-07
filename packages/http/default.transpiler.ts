@@ -75,11 +75,11 @@ import {
 export class ${serviceName}Generated extends AbstractService {
     private items: ${modelName}[] = [];
 
-    async getAll(queries?: any, req?: any): Promise<${modelName}[]> {
+    async getAll(queries?: any, req?: any) {
         return this.items;
     }
 
-    async getById(id: string, req?: any): Promise<${modelName}> {
+    async getById(id: string, req?: any) {
         const item = this.items.find(i => i.id === id);
 
         if (item) 
@@ -88,7 +88,7 @@ export class ${serviceName}Generated extends AbstractService {
         throw new Error('Item not found');
     }
 
-    async insert(item: ${modelInterfaceName}, req?: any): Promise<${modelName}> {
+    async insert(item: ${modelInterfaceName}, req?: any) {
         return new Promise((resolve, reject) => {
             item['id'] = this.items.length + 1;
 
@@ -108,7 +108,7 @@ export class ${serviceName}Generated extends AbstractService {
         });
     }
 
-    async update(id: string, item: ${modelInterfaceName}, req?: any): Promise<${modelName}> {
+    async update(id: string, item: ${modelInterfaceName}, req?: any) {
         return new Promise((resolve, reject) => {
             const index = this.items.findIndex(i => i.id === parseInt(id));
 
@@ -134,7 +134,7 @@ export class ${serviceName}Generated extends AbstractService {
         });
     }
 
-    async delete(id: string, req?: any): Promise<{ success: boolean, affected: number }> {
+    async delete(id: string, req?: any) {
         const index = this.items.findIndex(i => i.id === parseInt(id));
 
         if (index !== -1) {
@@ -260,11 +260,11 @@ import {
 import { 
    ${contract.controllerName}, 
    ${contract.controllerName}FastSchema, ${importsFromModel.join(', \n   ')}
-} from "${this.getImportPath(contract, 'models', contract.controllerName.toLowerCase() + '.model')}";
+} from "${this.getImportPath(contract, 'models', contract.controllerName.toLowerCase() + '.model', '@models')}";
 
 import { 
    ${serviceName} 
-} from "${this.getImportPath(contract, 'services', contract.controllerName.toLowerCase() + '.service')}";
+} from "${this.getImportPath(contract, 'services', contract.controllerName.toLowerCase() + '.service', '@services')}";
 
 @Controller('${controllerPath}')
 export class ${controllerName}Generated {
@@ -272,49 +272,40 @@ export class ${controllerName}Generated {
 
     @Get()${this.getControllerDecorators({ authRouter, hasCache, contract }, { cacheKeyPrefix, cacheTtl, cacheCompress }, 'get')}
     async getAll(@Queries() queries: any, @Req() req) {
-        Telemetry.start('${controllerName}::GetAll', req.requestId);
-        let result = await this.${serviceName.toLowerCase()}.getAll(queries, req);
-        Telemetry.end('${controllerName}::GetAll', req.requestId);
-        return result;
+        return this.${serviceName.toLowerCase()}.getAll(queries, req);
     }
 
     @Get(':id')${this.getControllerDecorators({ authRouter, hasCache: false, contract }, { cacheKeyPrefix, cacheTtl, cacheCompress }, 'get')}
     async getById(@Param('id') id: string, @Req() req) {
-        Telemetry.start('${controllerName}::GetById', req.requestId);
-        let result = await this.${serviceName.toLowerCase()}.getById(id, req);
-        Telemetry.end('${controllerName}::GetById', req.requestId);
-        return result;
+        ${
+            hasCache
+                ? `const cacheData = await CacheService.get(\`${cacheKeyPrefix}\$\{id\}\`);
+        return (cacheData) ? cacheData : this.${serviceName.toLowerCase()}.getById(id, req);`
+                : `return this.${serviceName.toLowerCase()}.getById(id, req);`
+        }
     }
 
     @Get(':id/raw')${this.getControllerDecorators({ authRouter, hasCache: false, contract }, { cacheKeyPrefix, cacheTtl, cacheCompress }, 'get')}
     async getByIdRaw(@Param('id') id: string, @Req() req) {
-        Telemetry.start('${controllerName}::GetById', req.requestId);
         let result = await this.${serviceName.toLowerCase()}.getById(id, req);
-        Telemetry.end('${controllerName}::GetById', req.requestId);
         return ${contract.controllerName}FastSchema(result.data);
     }
 
     @Post()${this.getControllerDecorators({ authRouter, hasCache: false, contract }, { cacheKeyPrefix, cacheTtl, cacheCompress }, 'insert')}
     async insert(@Body() item: ${contract.controllerName}, @Req() req) {
-        Telemetry.start('${controllerName}::Insert', req.requestId);
-        let result = await this.${serviceName.toLowerCase()}.insert(item, req);${hasCache ? `\n        CacheService.del("${cacheKeyPrefix}getAll");` : ''}
-        Telemetry.end('${controllerName}::Insert', req.requestId);
+        let result = await this.${serviceName.toLowerCase()}.insert(item, req);${hasCache ? `\n        await CacheService.del("${cacheKeyPrefix}getAll");` : ''}
         return result;
     }
 
     @Put(':id')${this.getControllerDecorators({ authRouter, hasCache: false, contract }, { cacheKeyPrefix, cacheTtl, cacheCompress }, 'update')}
     async update(@Param('id') id: string, @Body() item: ${contract.controllerName}, @Req() req) {
-        Telemetry.start('${controllerName}::Update', req.requestId);
-        let result = await this.${serviceName.toLowerCase()}.update(id, item, req);${hasCache ? `\n        CacheService.del(\`${cacheKeyPrefix}\${id}\`);\n        CacheService.del("${cacheKeyPrefix}getAll");` : ''}
-        Telemetry.end('${controllerName}::Update', req.requestId);
+        let result = await this.${serviceName.toLowerCase()}.update(id, item, req);${hasCache ? `\n        await CacheService.del(\`${cacheKeyPrefix}\${id}\`);\n        await CacheService.del("${cacheKeyPrefix}getAll");` : ''}
         return result;
     }
 
     @Delete(':id')${this.getControllerDecorators({ authRouter, hasCache: false, contract }, { cacheKeyPrefix, cacheTtl, cacheCompress }, 'delete')}
     async delete(@Param('id') id: string, @Req() req) {
-        Telemetry.start('${controllerName}::Delete', req.requestId);
-        let result = await this.${serviceName.toLowerCase()}.delete(id, req);${hasCache ? `\n        CacheService.del(\`${cacheKeyPrefix}\${id}\`);\n        CacheService.del("${cacheKeyPrefix}getAll");` : ''}
-        Telemetry.end('${controllerName}::Delete', req.requestId);
+        let result = await this.${serviceName.toLowerCase()}.delete(id, req);${hasCache ? `\n        await CacheService.del(\`${cacheKeyPrefix}\${id}\`);\n        await CacheService.del("${cacheKeyPrefix}getAll");` : ''}
         return result;
     }
 ${contract.services
@@ -322,14 +313,10 @@ ${contract.services
     .map(service => {
         return `    @${this.getMethodFormated(service.method)}("${service.path}")${this.getControllerDecorators({ authRouter: service.auth, hasCache: service.cache, contract }, service.cache, service.method.toLowerCase())}
     async ${service.functionName}(@Body() payload: ${service.request}, @Req() req): Promise<${service.response}> {
-        Telemetry.start('${controllerName}::${service.functionName}', req.requestId);
-        let result = await this.${serviceName.toLowerCase()}.${service.functionName}(payload);
-        Telemetry.end('${controllerName}::${service.functionName}', req.requestId);
-        return result;
+        return this.${serviceName.toLowerCase()}.${service.functionName}(payload);
     }`;
     })
-    .join('\n\n')}
-}`;
+    .join('\n\n')}}`;
 
         if (!telemetry)
             controllerTemplateGenerated = this.removeTelemetry(
