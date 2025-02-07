@@ -70,7 +70,7 @@ import { AbstractService, Service } from '@cmmv/core';
 import { 
     ${modelName}, 
     ${modelInterfaceName},${importsFromModel.join(', \n   ')}
-} from "${this.getImportPath(contract, 'models', modelName.toLowerCase() + '.model')}";
+} from "${this.getImportPath(contract, 'models', modelName.toLowerCase() + '.model', '@models')}";
 
 export class ${serviceName}Generated extends AbstractService {
     private items: ${modelName}[] = [];

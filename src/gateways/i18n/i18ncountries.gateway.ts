@@ -13,11 +13,11 @@ import {
     AddI18nCountriesRequest,
     UpdateI18nCountriesRequest,
     DeleteI18nCountriesRequest,
-} from '../../protos/i18n/i18ncountries.d';
+} from '@protos/i18n/i18ncountries.d';
 
-import { I18nCountries } from '../../models/i18n/i18ncountries.model';
+import { I18nCountries } from '@models/i18n/i18ncountries.model';
 
-import { I18nCountriesService } from '../../services/i18n/i18ncountries.service';
+import { I18nCountriesService } from '@services/i18n/i18ncountries.service';
 
 @Rpc('i18ncountries')
 export class I18nCountriesGateway {

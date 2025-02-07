@@ -12,11 +12,11 @@ import {
     AddRolesRequest,
     UpdateRolesRequest,
     DeleteRolesRequest,
-} from '../../protos/auth/roles.d';
+} from '@protos/auth/roles.d';
 
-import { Roles } from '../../models/auth/roles.model';
+import { Roles } from '@models/auth/roles.model';
 
-import { RolesService } from '../../services/auth/roles.service';
+import { RolesService } from '@services/auth/roles.service';
 
 @Rpc('roles')
 export class RolesGateway {

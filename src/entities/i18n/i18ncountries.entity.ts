@@ -18,9 +18,10 @@ import {
     BeforeInsert,
 } from 'typeorm';
 
-import { II18nCountries } from '../../models/i18n/i18ncountries.model';
-import { UserEntity } from '../../entities/auth/user.entity';
-import { I18nCoinsEntity } from './i18ncoins.entity';
+import { II18nCountries } from '@models/i18n/i18ncountries.model';
+
+import { UserEntity } from '@entities/auth/user.entity';
+import { I18nCoinsEntity } from '@entities/i18n/i18ncoins.entity';
 
 @Entity('i18n_countries')
 @Index('idx_i18ncountries_code', ['code'], { unique: true })
@@ -34,8 +35,8 @@ export class I18nCountriesEntity implements II18nCountries {
     @Column({ type: 'varchar' })
     name: string;
 
-    @ObjectIdColumn({ nullable: true })
-    currency?: I18nCoinsEntity | string | ObjectId;
+    @Column({ type: 'string', nullable: true })
+    currency?: I18nCoinsEntity | string | ObjectId | null;
 
     @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
     createdAt: Date;

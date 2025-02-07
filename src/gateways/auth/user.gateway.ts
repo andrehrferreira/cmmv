@@ -12,11 +12,11 @@ import {
     AddUserRequest,
     UpdateUserRequest,
     DeleteUserRequest,
-} from '../../protos/auth/user.d';
+} from '@protos/auth/user.d';
 
-import { User } from '../../models/auth/user.model';
+import { User } from '@models/auth/user.model';
 
-import { UserService } from '../../services/auth/user.service';
+import { UserService } from '@services/auth/user.service';
 
 @Rpc('user')
 export class UserGateway {

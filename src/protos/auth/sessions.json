@@ -5,6 +5,146 @@
     "nested": {
         "auth": {
             "nested": {
+                "Sessions": {
+                    "fields": {
+                        "uuid": {
+                            "type": "string",
+                            "id": 1
+                        },
+                        "fingerprint": {
+                            "type": "string",
+                            "id": 2
+                        },
+                        "user": {
+                            "type": "User",
+                            "id": 3
+                        },
+                        "ipAddress": {
+                            "type": "string",
+                            "id": 4
+                        },
+                        "device": {
+                            "type": "string",
+                            "id": 5
+                        },
+                        "browser": {
+                            "type": "string",
+                            "id": 6
+                        },
+                        "os": {
+                            "type": "string",
+                            "id": 7
+                        },
+                        "revoked": {
+                            "type": "bool",
+                            "id": 8
+                        }
+                    }
+                },
+                "SessionsList": {
+                    "fields": {
+                        "items": {
+                            "rule": "repeated",
+                            "type": "Sessions",
+                            "id": 1
+                        }
+                    }
+                },
+                "AddSessionsRequest": {
+                    "fields": {
+                        "item": {
+                            "type": "Sessions",
+                            "id": 1
+                        }
+                    }
+                },
+                "AddSessionsResponse": {
+                    "fields": {
+                        "id": {
+                            "type": "string",
+                            "id": 1
+                        },
+                        "item": {
+                            "type": "Sessions",
+                            "id": 2
+                        }
+                    }
+                },
+                "UpdateSessionsRequest": {
+                    "fields": {
+                        "id": {
+                            "type": "string",
+                            "id": 1
+                        },
+                        "item": {
+                            "type": "Sessions",
+                            "id": 2
+                        }
+                    }
+                },
+                "UpdateSessionsResponse": {
+                    "fields": {
+                        "success": {
+                            "type": "bool",
+                            "id": 1
+                        },
+                        "affected": {
+                            "type": "int32",
+                            "id": 2
+                        }
+                    }
+                },
+                "DeleteSessionsRequest": {
+                    "fields": {
+                        "id": {
+                            "type": "string",
+                            "id": 1
+                        }
+                    }
+                },
+                "DeleteSessionsResponse": {
+                    "fields": {
+                        "success": {
+                            "type": "bool",
+                            "id": 1
+                        },
+                        "affected": {
+                            "type": "int32",
+                            "id": 2
+                        }
+                    }
+                },
+                "GetAllSessionsRequest": {
+                    "fields": {}
+                },
+                "GetAllSessionsResponse": {
+                    "fields": {
+                        "items": {
+                            "type": "SessionsList",
+                            "id": 1
+                        }
+                    }
+                },
+                "SessionsService": {
+                    "methods": {
+                        "AddSessions": {
+                            "requestType": "AddSessionsRequest",
+                            "responseType": "AddSessionsResponse"
+                        },
+                        "UpdateSessions": {
+                            "requestType": "UpdateSessionsRequest",
+                            "responseType": "UpdateSessionsResponse"
+                        },
+                        "DeleteSessions": {
+                            "requestType": "DeleteSessionsRequest",
+                            "responseType": "DeleteSessionsResponse"
+                        },
+                        "GetAllSessions": {
+                            "requestType": "GetAllSessionsRequest",
+                            "responseType": "GetAllSessionsResponse"
+                        }
+                    }
+                },
                 "User": {
                     "fields": {
                         "username": {

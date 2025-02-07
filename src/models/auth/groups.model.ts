@@ -17,10 +17,9 @@ import {
     MinLength,
     MaxLength,
     IsNotEmpty,
-    ValidateNested,
 } from 'class-validator';
 
-import { Roles, RolesFastSchemaStructure } from './roles.model';
+import { Roles, RolesFastSchemaStructure } from '@models/auth/roles.model';
 
 export interface IGroups {
     _id?: ObjectId;
@@ -46,8 +45,7 @@ export class Groups implements IGroups {
     name: string;
 
     @Expose()
-    //@ValidateNested()
-    roles?: Roles[] | string[] | ObjectId;
+    roles?: Roles[] | string[] | ObjectId[] | null;
 
     constructor(partial: Partial<Groups>) {
         Object.assign(this, partial);

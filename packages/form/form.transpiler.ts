@@ -9,6 +9,6 @@ export class FormTranspile implements ITranspile {
     private logger: Logger = new Logger('FormTranspile');
 
     run(): void {
-        console.log(FormRegistry.getForms());
+        //console.log(FormRegistry.getForms());
     }
 }

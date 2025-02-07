@@ -74,8 +74,16 @@ export class AuthController {
     }
 
     //OPT
-    @Get('opt-secret')
+    @Get('opt-qrcode')
     async handlerGenerateOptSecret(@Header('authorization') token) {
         return await this.authService.generateOptSecret(token);
+    }
+
+    @Post('opt-validate-secret')
+    async handlerValidateOptSecret(
+        @Header('authorization') token,
+        @Body() payload,
+    ) {
+        return await this.authService.validateOptSecret(token, payload?.secret);
     }
 }

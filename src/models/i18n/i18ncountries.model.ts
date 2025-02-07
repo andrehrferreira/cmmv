@@ -11,14 +11,12 @@ import { ObjectId } from 'mongodb';
 
 import { Expose, instanceToPlain, plainToInstance } from 'class-transformer';
 
-import {
-    IsOptional,
-    IsString,
-    IsNotEmpty,
-    ValidateNested,
-} from 'class-validator';
+import { IsOptional, IsString, IsNotEmpty } from 'class-validator';
 
-import { I18nCoins, I18nCoinsFastSchemaStructure } from './i18ncoins.model';
+import {
+    I18nCoins,
+    I18nCoinsFastSchemaStructure,
+} from '@models/i18n/i18ncoins.model';
 
 export interface II18nCountries {
     _id?: ObjectId;
@@ -49,8 +47,7 @@ export class I18nCountries implements II18nCountries {
 
     @Expose()
     @IsString({ message: 'Invalid currency code' })
-    //@ValidateNested()
-    currency?: I18nCoins | string | ObjectId;
+    currency?: I18nCoins | string | ObjectId | null;
 
     constructor(partial: Partial<I18nCountries>) {
         Object.assign(this, partial);

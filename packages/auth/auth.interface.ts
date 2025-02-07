@@ -5,6 +5,7 @@ export interface IAuthSettings {
 
 export interface IJWTDecoded {
     id: string;
+    username: string;
     fingerprint: string;
     root: boolean;
     roles?: string[];

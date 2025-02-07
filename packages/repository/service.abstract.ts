@@ -1,4 +1,4 @@
-import { AbstractService } from '@cmmv/core';
+import { AbstractService, Config } from '@cmmv/core';
 import { ObjectId } from 'mongodb';
 
 export abstract class AbstractRepositoryService extends AbstractService {
@@ -23,5 +23,22 @@ export abstract class AbstractRepositoryService extends AbstractService {
         }
 
         return item;
+    }
+
+    protected extraData(newItem: any, req: any) {
+        const userId: string = req?.user?.id;
+
+        if (typeof userId === 'string') {
+            try {
+                newItem.userCreator =
+                    Config.get('repository.type') === 'mongodb'
+                        ? new ObjectId(userId)
+                        : userId;
+            } catch (error) {
+                console.warn('Error assigning userCreator:', error);
+            }
+        }
+
+        return newItem;
     }
 }

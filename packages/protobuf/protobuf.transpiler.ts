@@ -150,11 +150,10 @@ export class ProtobufTranspile extends AbstractTranspile implements ITranspile {
 
                     const entityName = controllerName;
                     const importPath = this.getImportPathRelative(
-                        contractInstance,
+                        link.contract,
                         contract,
                         'protos',
                         `${entityName.toLowerCase()}.proto`,
-                        outputFilePath,
                     );
 
                     if (importPath) {

@@ -17,9 +17,9 @@ import {
     AbstractRepositoryService,
 } from '@cmmv/repository';
 
-import { Roles, IRoles } from '../../models/auth/roles.model';
+import { Roles, IRoles } from '@models/auth/roles.model';
 
-import { RolesEntity } from '../../entities/auth/roles.entity';
+import { RolesEntity } from '@entities/auth/roles.entity';
 
 export class RolesServiceGenerated extends AbstractRepositoryService {
     protected logger: Logger = new Logger('RolesServiceGenerated');
@@ -28,6 +28,8 @@ export class RolesServiceGenerated extends AbstractRepositoryService {
         try {
             let result = await Repository.findAll(RolesEntity, queries);
             result = this.fixIds(result);
+
+            if (!result) throw new Error('Unable to return a valid result.');
 
             return {
                 count: result.count,
@@ -46,12 +48,12 @@ export class RolesServiceGenerated extends AbstractRepositoryService {
 
     async getById(id: string, req?: any): Promise<IFindResponse> {
         try {
-            let item = await Repository.findBy(RolesEntity, {
+            let result = await Repository.findBy(RolesEntity, {
                 _id: new ObjectId(id),
             });
-            item = this.fixIds(item);
+            result = this.fixIds(result);
 
-            if (!item) throw new Error('Item not found');
+            if (!result) throw new Error('Unable to return a valid result.');
 
             return {
                 count: 1,
@@ -64,7 +66,7 @@ export class RolesServiceGenerated extends AbstractRepositoryService {
                     sort: 'asc',
                     filters: {},
                 },
-                data: Roles.fromEntity(item.data),
+                data: Roles.fromEntity(result.data),
             };
         } catch (e) {
             return null;
@@ -72,39 +74,22 @@ export class RolesServiceGenerated extends AbstractRepositoryService {
     }
 
     async insert(item: Partial<Roles>, req?: any): Promise<Roles> {
-        return new Promise(async (resolve, reject) => {
-            try {
-                let newItem: any = Roles.fromPartial(item);
-                const userId: string = req.user?.id;
+        try {
+            let newItem: any = this.extraData(Roles.fromPartial(item), req);
+            const validatedData = await this.validate(newItem);
+            const result: any = await Repository.insert<RolesEntity>(
+                RolesEntity,
+                validatedData,
+            );
 
-                if (typeof userId === 'string') {
-                    try {
-                        newItem.userCreator = new ObjectId(userId);
-                    } catch {}
-                }
+            if (!result.success)
+                throw new Error(result.message || 'Insert operation failed');
 
-                this.validate(newItem)
-                    .then(async (data: any) => {
-                        const result: any =
-                            await Repository.insert<RolesEntity>(
-                                RolesEntity,
-                                newItem,
-                            );
-
-                        if (result.success) {
-                            let dataFixed = this.fixIds(result.data);
-                            resolve(Roles.fromEntity(dataFixed));
-                        } else {
-                            reject(result);
-                        }
-                    })
-                    .catch(error => {
-                        reject({ success: false, message: error.message });
-                    });
-            } catch (e) {
-                reject({ success: false, message: e.message });
-            }
-        });
+            const dataFixed = this.fixIds(result.data);
+            return Roles.fromEntity(dataFixed);
+        } catch (error) {
+            throw new Error(error.message || 'Error inserting item');
+        }
     }
 
     async update(

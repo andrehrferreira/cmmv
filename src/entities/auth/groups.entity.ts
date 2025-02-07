@@ -12,13 +12,18 @@ import {
     Column,
     Index,
     ObjectId,
+    CreateDateColumn,
+    UpdateDateColumn,
     ManyToOne,
+    BeforeInsert,
 } from 'typeorm';
 
-import { IGroups } from '../../models/auth/groups.model';
-import { RolesEntity } from './roles.entity';
+import { IGroups } from '@models/auth/groups.model';
 
-@Entity('groups')
+import { UserEntity } from '@entities/auth/user.entity';
+import { RolesEntity } from '@entities/auth/roles.entity';
+
+@Entity('auth_groups')
 @Index('idx_groups_name', ['name'], { unique: true })
 export class GroupsEntity implements IGroups {
     @ObjectIdColumn()
@@ -27,6 +32,29 @@ export class GroupsEntity implements IGroups {
     @Column({ type: 'varchar' })
     name: string;
 
+    @Column({ type: 'simple-array', nullable: true })
+    roles?: RolesEntity[] | string[] | ObjectId[] | null;
+
+    @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+    createdAt: Date;
+
+    @UpdateDateColumn({
+        type: 'timestamp',
+        default: () => 'CURRENT_TIMESTAMP',
+        onUpdate: 'CURRENT_TIMESTAMP',
+    })
+    updatedAt: Date;
+
+    @ManyToOne(() => UserEntity, { nullable: false })
+    @ObjectIdColumn({ nullable: false })
+    userCreator: ObjectId;
+
+    @ManyToOne(() => UserEntity, { nullable: true })
     @ObjectIdColumn({ nullable: true })
-    roles?: RolesEntity[] | string[] | ObjectId;
+    userLastUpdate: ObjectId;
+
+    @BeforeInsert()
+    checkUserCreator() {
+        if (!this.userCreator) throw new Error('userCreator is required');
+    }
 }

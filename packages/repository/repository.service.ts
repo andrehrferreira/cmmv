@@ -65,26 +65,43 @@ export class Repository extends Singleton {
                 : id.toString();
     }
 
+    public static queryBuilder<Entity>(
+        payload: object,
+    ): FindOptionsWhere<Entity> {
+        let query = {};
+
+        for (let key in payload) {
+            if (key === 'id' || key === '_id')
+                query[this.getIdField()] = this.fixId(payload[key]);
+            else query[key] = payload[key];
+        }
+
+        return query as FindOptionsWhere<Entity>;
+    }
+
     public static async findBy<Entity>(
         entity: new () => Entity,
         criteria: FindOptionsWhere<Entity>,
-    ): Promise<IFindResponse> {
+    ): Promise<IFindResponse | null> {
         try {
             const repository = this.getRepository(entity);
+            const registry = await repository.findOne({ where: criteria });
 
-            return {
-                data: await repository.findOne({ where: criteria }),
-                count: 1,
-                pagination: {
-                    limit: 1,
-                    offset: 0,
-                    sortBy: 'id',
-                    sort: 'ASC',
-                    search: '',
-                    searchField: '',
-                    filters: {},
-                },
-            };
+            return registry
+                ? {
+                      data: registry,
+                      count: 1,
+                      pagination: {
+                          limit: 1,
+                          offset: 0,
+                          sortBy: 'id',
+                          sort: 'ASC',
+                          search: '',
+                          searchField: '',
+                          filters: {},
+                      },
+                  }
+                : null;
         } catch (e) {
             if (process.env.NODE_ENV === 'dev')
                 Repository.logger.error(e.message);
@@ -97,7 +114,7 @@ export class Repository extends Singleton {
         entity: new () => Entity,
         queries?: any,
         relations?: [],
-    ): Promise<IFindResponse> {
+    ): Promise<IFindResponse | null> {
         try {
             const isMongoDB = Config.get('repository.type') === 'mongodb';
             const repository = this.getRepository(entity);
@@ -135,19 +152,21 @@ export class Repository extends Singleton {
                 const results = await repository.find(filter);
                 const total = await repository.count();
 
-                return {
-                    data: results,
-                    count: total,
-                    pagination: {
-                        limit,
-                        offset,
-                        sortBy,
-                        sort,
-                        search,
-                        searchField,
-                        filters,
-                    },
-                };
+                return results
+                    ? {
+                          data: results,
+                          count: total,
+                          pagination: {
+                              limit,
+                              offset,
+                              sortBy,
+                              sort,
+                              search,
+                              searchField,
+                              filters,
+                          },
+                      }
+                    : null;
             } else {
                 const where: FindOptionsWhere<Entity> = {};
 
@@ -166,10 +185,23 @@ export class Repository extends Singleton {
                             sort.toUpperCase() === 'DESC' ? 'DESC' : 'ASC',
                     },
                 });
+                const total = await repository.count();
 
-                return {
-                    data: results,
-                };
+                return results
+                    ? {
+                          data: results,
+                          count: total,
+                          pagination: {
+                              limit,
+                              offset,
+                              sortBy,
+                              sort,
+                              search,
+                              searchField,
+                              filters,
+                          },
+                      }
+                    : null;
             }
         } catch (e) {
             return null;

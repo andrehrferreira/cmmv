@@ -2,6 +2,7 @@ import * as path from 'node:path';
 import * as fs from 'node:fs';
 
 import { Logger } from './logger';
+import { SUB_PATH_METADATA } from '../decorators';
 
 export interface ITranspile {
     run(): void;
@@ -19,26 +20,44 @@ export abstract class AbstractTranspile {
         return outputDir;
     }
 
-    public getImportPath(contract: any, context: string, filename: string) {
-        return contract.subPath
+    public getImportPath(
+        contract: any,
+        context: string,
+        filename: string,
+        alias?: string,
+    ) {
+        let basePath = contract.subPath
             ? `${contract.subPath
                   .split('/')
                   .map(() => '../')
                   .join('')}${context}${contract.subPath}/${filename}`
             : `../${context}/${filename}`;
+
+        return alias
+            ? `${alias}${basePath
+                  .replace(context, '')
+                  .replace(/\.\.\//gim, '')}`
+            : basePath;
     }
 
     public getImportPathWithoutSubPath(
         contract: any,
         context: string,
         filename: string,
+        alias?: string,
     ) {
-        return contract.subPath
+        let basePath = contract.subPath
             ? `${contract.subPath
                   .split('/')
                   .map(() => '../')
                   .join('')}${context}/${filename}`
             : `../${context}/${filename}`;
+
+        return alias
+            ? `${alias}${basePath
+                  .replace(context, '')
+                  .replace(/\.\.\//gim, '')}`
+            : basePath;
     }
 
     public getImportPathRelative(
@@ -46,9 +65,14 @@ export abstract class AbstractTranspile {
         contractTo: any,
         context: string,
         filename: string,
-        baseFilename?: string,
+        alias?: string,
     ) {
-        if (contractTo.subPath === contractTo.subPath) return `./${filename}`;
+        const contractSubPath = Reflect.getMetadata(
+            SUB_PATH_METADATA,
+            contract,
+        );
+
+        if (contractTo.subPath === contractSubPath) return `./${filename}`;
 
         let relativePath = contractTo.subPath
             ? `${contractTo.subPath
@@ -57,7 +81,11 @@ export abstract class AbstractTranspile {
                   .join('')}${context}${contractTo.subPath}/${filename}`
             : `../${context}/${filename}`;
 
-        return relativePath;
+        return alias
+            ? `${alias}${relativePath
+                  .replace(context, '')
+                  .replace(/\.\.\//gim, '')}`
+            : relativePath;
     }
 
     public removeExtraSpaces(code: string): string {

@@ -6,7 +6,7 @@
     **********************************************
 **/
 
-import { Roles } from './roles.d';
+import { Roles } from '/mnt/f/Node/cmmv/src/protos/auth/groups.proto/auth/roles.d';
 
 export namespace Groups {
     export type name = string;

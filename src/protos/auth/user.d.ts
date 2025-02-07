@@ -6,13 +6,14 @@
     **********************************************
 **/
 
-import { Roles } from './roles.d';
+import { Groups } from '/mnt/f/Node/cmmv/src/protos/auth/user.proto/auth/groups.d';
+import { Roles } from '/mnt/f/Node/cmmv/src/protos/auth/user.proto/auth/roles.d';
 
 export namespace User {
     export type username = string;
     export type password = string;
     export type provider = string;
-    export type groups = string;
+    export type groups = Groups;
     export type roles = Roles;
     export type root = boolean;
     export type blocked = boolean;

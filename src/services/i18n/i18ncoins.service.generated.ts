@@ -17,9 +17,9 @@ import {
     AbstractRepositoryService,
 } from '@cmmv/repository';
 
-import { I18nCoins, II18nCoins } from '../../models/i18n/i18ncoins.model';
+import { I18nCoins, II18nCoins } from '@models/i18n/i18ncoins.model';
 
-import { I18nCoinsEntity } from '../../entities/i18n/i18ncoins.entity';
+import { I18nCoinsEntity } from '@entities/i18n/i18ncoins.entity';
 
 export class I18nCoinsServiceGenerated extends AbstractRepositoryService {
     protected logger: Logger = new Logger('I18nCoinsServiceGenerated');
@@ -28,6 +28,8 @@ export class I18nCoinsServiceGenerated extends AbstractRepositoryService {
         try {
             let result = await Repository.findAll(I18nCoinsEntity, queries);
             result = this.fixIds(result);
+
+            if (!result) throw new Error('Unable to return a valid result.');
 
             return {
                 count: result.count,
@@ -46,12 +48,12 @@ export class I18nCoinsServiceGenerated extends AbstractRepositoryService {
 
     async getById(id: string, req?: any): Promise<IFindResponse> {
         try {
-            let item = await Repository.findBy(I18nCoinsEntity, {
+            let result = await Repository.findBy(I18nCoinsEntity, {
                 _id: new ObjectId(id),
             });
-            item = this.fixIds(item);
+            result = this.fixIds(result);
 
-            if (!item) throw new Error('Item not found');
+            if (!result) throw new Error('Unable to return a valid result.');
 
             return {
                 count: 1,
@@ -64,7 +66,7 @@ export class I18nCoinsServiceGenerated extends AbstractRepositoryService {
                     sort: 'asc',
                     filters: {},
                 },
-                data: I18nCoins.fromEntity(item.data),
+                data: I18nCoins.fromEntity(result.data),
             };
         } catch (e) {
             return null;
@@ -72,39 +74,22 @@ export class I18nCoinsServiceGenerated extends AbstractRepositoryService {
     }
 
     async insert(item: Partial<I18nCoins>, req?: any): Promise<I18nCoins> {
-        return new Promise(async (resolve, reject) => {
-            try {
-                let newItem: any = I18nCoins.fromPartial(item);
-                const userId: string = req.user?.id;
+        try {
+            let newItem: any = this.extraData(I18nCoins.fromPartial(item), req);
+            const validatedData = await this.validate(newItem);
+            const result: any = await Repository.insert<I18nCoinsEntity>(
+                I18nCoinsEntity,
+                validatedData,
+            );
 
-                if (typeof userId === 'string') {
-                    try {
-                        newItem.userCreator = new ObjectId(userId);
-                    } catch {}
-                }
+            if (!result.success)
+                throw new Error(result.message || 'Insert operation failed');
 
-                this.validate(newItem)
-                    .then(async (data: any) => {
-                        const result: any =
-                            await Repository.insert<I18nCoinsEntity>(
-                                I18nCoinsEntity,
-                                newItem,
-                            );
-
-                        if (result.success) {
-                            let dataFixed = this.fixIds(result.data);
-                            resolve(I18nCoins.fromEntity(dataFixed));
-                        } else {
-                            reject(result);
-                        }
-                    })
-                    .catch(error => {
-                        reject({ success: false, message: error.message });
-                    });
-            } catch (e) {
-                reject({ success: false, message: e.message });
-            }
-        });
+            const dataFixed = this.fixIds(result.data);
+            return I18nCoins.fromEntity(dataFixed);
+        } catch (error) {
+            throw new Error(error.message || 'Error inserting item');
+        }
     }
 
     async update(

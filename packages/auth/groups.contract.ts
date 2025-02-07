@@ -8,6 +8,11 @@ import { RolesContract } from './roles.contract';
     subPath: '/auth',
     generateController: true,
     auth: true,
+    options: {
+        databaseSchemaName: 'auth_groups',
+        databaseTimestamps: true,
+        databaseUserAction: true,
+    },
 })
 export class GroupsContract extends AbstractContract {
     @ContractField({

@@ -198,7 +198,7 @@ import {
             if (field.nullable === false) validationImports.add('IsNotEmpty');
 
             if (field.link && field.link.length > 0) {
-                validationImports.add('ValidateNested');
+                //validationImports.add('ValidateNested');
 
                 field.link.map(link => {
                     const contractInstance = new link.contract();
@@ -216,7 +216,7 @@ import {
                             contract,
                             'models',
                             entityFileName,
-                            outputFilePath,
+                            '@models',
                         ),
                     });
                 });
@@ -235,7 +235,9 @@ import {
         if (importEntitiesList.length > 0) {
             importEntitiesList.map(importEntity => {
                 importStatements.push(
-                    `import { ${importEntity.entityName} } from "${importEntity.path}"; \n`,
+                    `import { 
+    ${importEntity.entityName} 
+} from "${importEntity.path}"; \n`,
                 );
             });
         }
@@ -337,8 +339,8 @@ import {
         }
 
         if (field.link && field.link.length > 0) {
-            decorators.push('    //@ValidateNested()');
-            return `${decorators.length > 0 ? decorators.join('\n') + '\n' : ''}    ${field.propertyKey}${optional}: ${field.entityType.replace('Entity', '')}${field.protoRepeated ? '[]' : ''} | string${field.protoRepeated ? '[]' : ''}${Config.get('repository.type') === 'mongodb' ? ' | ObjectId' : ''};`;
+            //decorators.push('    @ValidateNested()');
+            return `${decorators.length > 0 ? decorators.join('\n') + '\n' : ''}    ${field.propertyKey}${optional}: ${field.entityType.replace('Entity', '')}${field.protoRepeated ? '[]' : ''} | string${field.protoRepeated ? '[]' : ''}${Config.get('repository.type') === 'mongodb' ? ' | ObjectId' + (field.protoRepeated ? '[]' : '') : ''} | null;`;
         } else {
             const fieldType = field.objectType
                 ? field.objectType

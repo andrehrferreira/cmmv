@@ -12,11 +12,11 @@ import {
     AddGroupsRequest,
     UpdateGroupsRequest,
     DeleteGroupsRequest,
-} from '../../protos/auth/groups.d';
+} from '@protos/auth/groups.d';
 
-import { Groups } from '../../models/auth/groups.model';
+import { Groups } from '@models/auth/groups.model';
 
-import { GroupsService } from '../../services/auth/groups.service';
+import { GroupsService } from '@services/auth/groups.service';
 
 @Rpc('groups')
 export class GroupsGateway {

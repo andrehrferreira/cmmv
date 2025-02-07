@@ -46,7 +46,9 @@ import {
     ${this.generateTypeORMImports(contract)}
 } from "typeorm";
 
-import { I${entityName} } from "${this.getImportPath(contract, 'models', modelName.toLowerCase())}";${this.generateEntitiesImport(contract, extraEntitiesImport)}
+import { 
+    I${entityName} 
+} from "${this.getImportPath(contract, 'models', modelName.toLowerCase(), '@models')}";${this.generateEntitiesImport(contract, extraEntitiesImport)}
 
 @Entity("${schemaName}")
 ${this.generateIndexes(entityName, contract.fields, contract)}
@@ -106,9 +108,9 @@ import {
    ${modelName}, 
    ${modelInterfaceName},
    ${importsFromModel.join(', \n   ')}
-} from "${this.getImportPath(contract, 'models', modelName.toLowerCase())}.model";
+} from "${this.getImportPath(contract, 'models', modelName.toLowerCase(), '@models')}.model";
 
-import { ${entityName} } from "${this.getImportPath(contract, 'entities', modelName.toLowerCase())}.entity";
+import { ${entityName} } from "${this.getImportPath(contract, 'entities', modelName.toLowerCase(), '@entities')}.entity";
 
 export class ${serviceName}Generated extends AbstractRepositoryService {
     protected logger: Logger = new Logger("${serviceName}Generated");
@@ -119,6 +121,9 @@ export class ${serviceName}Generated extends AbstractRepositoryService {
             let result = await Repository.findAll(${entityName}, queries);
             ${Config.get('repository.type') === 'mongodb' ? 'result = this.fixIds(result)' : ''}
             Telemetry.end("${serviceName}::GetAll", req?.requestId);
+
+            if (!result) 
+                throw new Error("Unable to return a valid result.");
 
             return {
                 count: result.count,
@@ -137,12 +142,12 @@ export class ${serviceName}Generated extends AbstractRepositoryService {
     async getById(id: string, req?: any): Promise<IFindResponse> {
         try{
             Telemetry.start("${serviceName}::GetById", req?.requestId);
-            let item = await Repository.findBy(${entityName}, { ${Config.get('repository.type') === 'mongodb' ? '_id: new ObjectId(id)' : 'id'} });
-            ${Config.get('repository.type') === 'mongodb' ? 'item = this.fixIds(item)' : ''}
+            let result = await Repository.findBy(${entityName}, { ${Config.get('repository.type') === 'mongodb' ? '_id: new ObjectId(id)' : 'id'} });
+            ${Config.get('repository.type') === 'mongodb' ? 'result = this.fixIds(result);' : ''}
             Telemetry.end("${serviceName}::GetById", req?.requestId);
 
-            if (!item) 
-                throw new Error("Item not found");
+            if (!result) 
+                throw new Error("Unable to return a valid result.");
             
             return {
                 count: 1,
@@ -155,7 +160,7 @@ export class ${serviceName}Generated extends AbstractRepositoryService {
                     "sort": "asc",
                     "filters": {}
                 },
-                data: ${modelName}.fromEntity(item.data)
+                data: ${modelName}.fromEntity(result.data)
             };
         }
         catch(e){
@@ -164,43 +169,22 @@ export class ${serviceName}Generated extends AbstractRepositoryService {
     }
 
     async insert(item: Partial<${modelName}>, req?: any): Promise<${modelName}> {
-        return new Promise(async (resolve, reject) => {
-            try{
-                Telemetry.start("${serviceName}::Insert", req?.requestId);
-                let newItem: any = ${modelName}.fromPartial(item);  
-                const userId: string = req.user?.id;
+        try {
+            Telemetry.start("${serviceName}::Insert", req?.requestId);
+            let newItem: any = this.extraData(${modelName}.fromPartial(item), req);
+            const validatedData = await this.validate(newItem);
+            const result: any = await Repository.insert<${entityName}>(${entityName}, validatedData);
 
-                if(typeof userId === "string"){
-                    try{
-                        newItem.userCreator = ${Config.get('repository.type') === 'mongodb' ? 'new ObjectId(userId)' : 'userId'};
-                    } catch { }
-                }
-
-                this.validate(newItem).then(async (data: any) => {
-                    const result: any = await Repository.insert<${entityName}>(
-                        ${entityName}, 
-                        newItem
-                    );
-                          
-                    if(result.success){
-                        ${Config.get('repository.type') === 'mongodb' ? 'let dataFixed = this.fixIds(result.data)' : ''}
-                        Telemetry.end("TaskService::Insert", req?.requestId);
-                        resolve(${modelName}.fromEntity(dataFixed)); 
-                    }    
-                    else {
-                        Telemetry.end("TaskService::Insert", req?.requestId);
-                        reject(result);
-                    } 
-                }).catch((error) => {
-                    Telemetry.end("TaskService::Insert", req?.requestId);
-                    reject({ success: false, message: error.message });
-                });   
-            }
-            catch(e){ 
-                Telemetry.end("TaskService::Insert", req?.requestId);
-                reject({ success: false, message: e.message });
-            }
-        });
+            if (!result.success) 
+                throw new Error(result.message || "Insert operation failed");
+            
+            ${Config.get('repository.type') === 'mongodb' ? 'const dataFixed = this.fixIds(result.data);' : ''}
+            Telemetry.end("${serviceName}::Insert", req?.requestId);
+            return ${modelName}.fromEntity(${Config.get('repository.type') === 'mongodb' ? 'dataFixed' : 'result.data'});
+        } catch (error) {
+            Telemetry.end("${serviceName}::Insert", req?.requestId);
+            throw new Error(error.message || "Error inserting item");
+        }
     }
 
     async update(id: string, item: Partial<${modelName}>, req?: any): Promise<{ success: boolean, affected: number }> {
@@ -249,8 +233,8 @@ export class ${serviceName}Generated extends AbstractRepositoryService {
                 ${entityName}, 
                 ${Config.get('repository.type') === 'mongodb' ? 'new ObjectId(id)' : 'id'}
             );
-            Telemetry.end("${serviceName}::Delete", req?.requestId);
 
+            Telemetry.end("${serviceName}::Delete", req?.requestId);
             return { success: result > 0, affected: result };
         }
         catch(e){
@@ -330,19 +314,19 @@ ${contract.services
                 );
                 const entityName = controllerName;
 
-                if (Config.get('repository.type') === 'mongodb') {
-                    decorators.push(
-                        `@ObjectIdColumn({ nullable: ${field.nullable === true ? 'true' : 'false'} })`,
-                    );
-                } else {
+                if (Config.get('repository.type') !== 'mongodb') {
                     decorators.push(
                         `@ManyToOne(() => ${entityName}Entity, (${link.entityName}) => ${link.entityName}.${link.field}, { nullable: ${link?.entityNullable === true || false ? 'true' : 'false'} })`,
                     );
                 }
+
+                decorators.push(
+                    `@Column({ type: "${field.protoRepeated ? 'simple-array' : 'string'}", nullable: true })`,
+                );
             });
 
             tsType =
-                `${field.entityType}${field.protoRepeated ? '[]' : ''} | string${field.protoRepeated ? '[]' : ''}${Config.get('repository.type') === 'mongodb' ? ' | ObjectId' : ''}` ||
+                `${field.entityType}${field.protoRepeated ? '[]' : ''} | string${field.protoRepeated ? '[]' : ''}${Config.get('repository.type') === 'mongodb' ? ' | ObjectId' + (field.protoRepeated ? '[]' : '') : ''} | null` ||
                 'object';
         }
 
@@ -368,6 +352,7 @@ ${contract.services
             string: 'string',
             bool: 'boolean',
             int32: 'number',
+            int: 'number',
             float: 'number',
             double: 'number',
             any: 'any',
@@ -428,7 +413,7 @@ ${contract.services
         extraImport = [...new Set(extraImport)];
 
         return `Entity, ${Config.get('repository.type') === 'mongodb' ? 'ObjectIdColumn' : 'PrimaryGeneratedColumn'}, 
-    Column, Index, ${Config.get('repository.type') === 'mongodb' ? 'ObjectId,' : ''} ${extraImport.length > 0 ? `\n\t${extraImport.join(', ')}` : ''}`;
+    Column, Index, ${Config.get('repository.type') === 'mongodb' ? 'ObjectId,' : ''} ${extraImport.length > 0 ? `\n\t${extraImport.join(', \n    ')}` : ''}`;
     }
 
     private generateExtraFields(contract: IContract) {
@@ -490,6 +475,7 @@ ${contract.services
                             contract,
                             'entities',
                             entityFileName,
+                            '@entities',
                         ),
                     });
                 });
@@ -503,6 +489,7 @@ ${contract.services
                     contract,
                     'entities',
                     'auth/user.entity',
+                    '@entities',
                 ),
             });
         }
@@ -524,11 +511,12 @@ ${contract.services
         extraImports: Array<{ name: string; path: string }>,
     ) {
         return extraImports.length > 0
-            ? extraImports
-                  .map(value => {
-                      return `\nimport { ${value.name} } from "${value.path}";`;
-                  })
-                  .join('')
+            ? '\n' +
+                  extraImports
+                      .map(value => {
+                          return `\nimport { ${value.name} } from "${value.path}";`;
+                      })
+                      .join('')
             : '';
     }
 }

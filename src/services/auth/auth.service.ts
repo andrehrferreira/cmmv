@@ -8,16 +8,18 @@
 
 import * as crypto from 'node:crypto';
 import * as jwt from 'jsonwebtoken';
+import * as speakeasy from 'speakeasy';
 import { validate } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
 import { v4 as uuidv4 } from 'uuid';
-import * as QRCode from 'qrcode';
-import * as speakeasy from 'speakeasy';
 import { QRCodeCanvas } from '@loskir/styled-qr-code-node';
+import { ObjectId } from 'mongodb';
+
+import { Repository } from '@cmmv/repository';
 
 import { generateFingerprint } from '@cmmv/http';
 
-import { jwtVerify, IJWTDecoded } from '@cmmv/auth';
+import { jwtVerify, IJWTDecoded, SessionsService } from '@cmmv/auth';
 
 import {
     Telemetry,
@@ -29,24 +31,20 @@ import {
     Application,
 } from '@cmmv/core';
 
-import { Repository } from '@cmmv/repository';
-
 import {
     User,
     LoginRequest,
     LoginResponse,
     RegisterRequest,
     RegisterResponse,
-} from '../../models/auth/user.model';
+} from '@models/auth/user.model';
 
-import { UserEntity } from '../../entities/auth/user.entity';
-import { RolesEntity } from '../../entities/auth/roles.entity';
-
-import { ObjectId } from 'mongodb';
+import { UserEntity } from '@entities/auth/user.entity';
+import { RolesEntity } from '@entities/auth/roles.entity';
 
 @Service('auth')
 export class AuthService extends AbstractService {
-    constructor() {
+    constructor(private readonly sessionsService: SessionsService) {
         super();
 
         Application.awaitService(
@@ -172,9 +170,11 @@ export class AuthService extends AbstractService {
             };
         }
 
+        // Creating JWT token
         const token = jwt.sign(
             {
                 id: user._id,
+                username: payload.username,
                 fingerprint,
                 root: user.root || false,
                 roles: user.roles || [],
@@ -184,6 +184,10 @@ export class AuthService extends AbstractService {
             { expiresIn },
         );
 
+        // Recording session
+        await this.sessionsService.registrySession(sesssionId, req, user._id);
+
+        // Preparing session cookie
         res.cookie(cookieName, sesssionId, {
             httpOnly: true,
             secure: cookieSecure,
@@ -191,6 +195,7 @@ export class AuthService extends AbstractService {
             maxAge: cookieTTL,
         });
 
+        // Creating a session if a session plugin is active
         if (sessionEnabled && session) {
             session.user = {
                 id: user._id,
@@ -265,141 +270,128 @@ export class AuthService extends AbstractService {
     }
 
     // OPT
-
     public async generateOptSecret(token: string) {
-        return new Promise(async (resolve, reject) => {
-            jwtVerify(token)
-                .then(async (decoded: IJWTDecoded) => {
-                    const issuer = Config.get(
-                        'auth.optSecret.issuer',
-                        'Cmmv.io',
-                    );
-                    const algorithm = Config.get(
-                        'auth.optSecret.algorithm',
-                        'sha512',
-                    );
-                    const qrCodeOptions = Config.get<object>('auth.qrCode', {});
+        try {
+            const decoded: IJWTDecoded = await jwtVerify(token);
+            const issuer = Config.get('auth.optSecret.issuer', 'Cmmv');
+            const algorithm = Config.get('auth.optSecret.algorithm', 'sha512');
+            const qrCodeOptions = Config.get<object>('auth.qrCode', {});
 
-                    const defaultqrCodeOpions = {
-                        type: 'canvas',
-                        shape: 'square',
-                        width: 300,
-                        height: 300,
-                        margin: 0,
-                        qrOptions: {
-                            typeNumber: '0',
-                            mode: 'Byte',
-                            errorCorrectionLevel: 'Q',
-                        },
-                        imageOptions: {
-                            saveAsBlob: true,
-                            hideBackgroundDots: true,
-                            imageSize: 0.4,
-                            margin: 0,
-                        },
-                        dotsOptions: {
-                            type: 'square',
-                            color: '#000000',
-                            roundSize: true,
-                        },
-                        backgroundOptions: {
-                            round: 0,
-                            color: '#ffffff',
-                        },
-                        dotsOptionsHelper: {
-                            colorType: {
-                                single: true,
-                                gradient: false,
-                            },
-                            gradient: {
-                                linear: true,
-                                radial: false,
-                                color1: '#6a1a4c',
-                                color2: '#6a1a4c',
-                                rotation: '0',
-                            },
-                        },
-                        cornersSquareOptions: {
-                            type: 'dot',
-                            color: '#000000',
-                            gradient: null,
-                        },
-                        cornersSquareOptionsHelper: {
-                            colorType: {
-                                single: true,
-                                gradient: false,
-                            },
-                            gradient: {
-                                linear: true,
-                                radial: false,
-                                color1: '#000000',
-                                color2: '#000000',
-                                rotation: '0',
-                            },
-                        },
-                        cornersDotOptions: {
-                            type: '',
-                            color: '#000000',
-                        },
-                        cornersDotOptionsHelper: {
-                            colorType: {
-                                single: true,
-                                gradient: false,
-                            },
-                            gradient: {
-                                linear: true,
-                                radial: false,
-                                color1: '#000000',
-                                color2: '#000000',
-                                rotation: '0',
-                            },
-                        },
-                        backgroundOptionsHelper: {
-                            colorType: {
-                                single: true,
-                                gradient: false,
-                            },
-                            gradient: {
-                                linear: true,
-                                radial: false,
-                                color1: '#ffffff',
-                                color2: '#ffffff',
-                                rotation: '0',
-                            },
-                        },
-                    };
+            const account: any = await Repository.findBy(
+                UserEntity,
+                Repository.queryBuilder({
+                    id: decoded.id,
+                    optSecretVerify: true,
+                }),
+            );
 
-                    Object.assign(defaultqrCodeOpions, qrCodeOptions);
+            if (account) throw new Error('The user already has an active OPT.');
 
-                    const secret = speakeasy.generateSecret({
-                        name: 'cmmv',
-                    });
+            const defaultqrCodeOptions = {
+                type: 'canvas',
+                shape: 'square',
+                width: 300,
+                height: 300,
+                margin: 0,
+                ...qrCodeOptions,
+            };
 
-                    const otpUrl = speakeasy.otpauthURL({
-                        secret: secret.base32,
-                        label: 'Name of Secret',
-                        issuer: issuer,
-                        algorithm: algorithm,
-                    });
+            const secret = speakeasy.generateSecret({
+                name: issuer,
+            });
 
-                    const result = await Repository.updateById(
-                        UserEntity,
-                        decoded.id,
-                        {
-                            optSecret: secret.base32,
-                            optSecretVerify: false,
-                        },
-                    );
+            const otpUrl = speakeasy.otpauthURL({
+                secret: secret.base32,
+                label: decoded.username || 'User',
+                issuer,
+                algorithm,
+            });
 
-                    if (result) {
-                        qrCodeOptions.data = otpUrl;
-                        const qrCode = new QRCodeCanvas(qrCodeOptions);
-                        resolve(qrCode.toDataUrl());
-                    } else {
-                        reject({ message: 'Unable to generate QRcode' });
-                    }
-                })
-                .catch(reject);
-        });
+            const result = await Repository.updateById(UserEntity, decoded.id, {
+                optSecret: secret.base32,
+                optSecretVerify: false,
+            });
+
+            if (!result) throw new Error('Unable to generate QR code');
+
+            const qrCode = new QRCodeCanvas({
+                ...defaultqrCodeOptions,
+                data: otpUrl,
+            });
+
+            return qrCode.toDataUrl();
+        } catch (error) {
+            throw new Error(error.message || 'Failed to generate OTP secret');
+        }
+    }
+
+    public async validateOptSecret(token: string, secret: string) {
+        try {
+            const decoded: IJWTDecoded = await jwtVerify(token);
+
+            const account: any = await Repository.findBy(
+                UserEntity,
+                Repository.queryBuilder({
+                    id: decoded.id,
+                    optSecretVerify: true,
+                }),
+            );
+
+            if (!account)
+                throw new Error('Invalid user or without active OPT.');
+
+            const verify = speakeasy.totp.verify({
+                secret: account.optSecret,
+                encoding: 'base32',
+                token: secret,
+            });
+
+            if (!verify) throw new Error('Invalid code');
+
+            return true;
+        } catch (error) {
+            throw new Error(error.message || 'OTP validation failed');
+        }
+    }
+
+    public async updateOptSecret(token: string, secret: string) {
+        try {
+            const decoded: IJWTDecoded = await jwtVerify(token);
+
+            const account: any = await Repository.findBy(
+                UserEntity,
+                Repository.queryBuilder({
+                    id: decoded.id,
+                    optSecretVerify: false,
+                }),
+            );
+
+            if (!account)
+                throw new Error('Invalid user or without active OPT.');
+
+            const verify = speakeasy.totp.verify({
+                secret: account.optSecret,
+                encoding: 'base32',
+                token: secret,
+            });
+
+            if (verify) {
+                const result = await Repository.updateById(
+                    UserEntity,
+                    decoded.id,
+                    {
+                        optSecretVerify: true,
+                    },
+                );
+
+                if (!result) throw new Error('Unable to activate OPT');
+
+                return true;
+            } else {
+                throw new Error('Invalid code');
+            }
+        } catch (error) {
+            throw new Error(error.message || 'OTP validation failed');
+        }
     }
 }

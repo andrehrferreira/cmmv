@@ -18,22 +18,18 @@ import {
     Transform,
 } from 'class-transformer';
 
-import {
-    IsOptional,
-    IsString,
-    MinLength,
-    MaxLength,
-    ValidateNested,
-} from 'class-validator';
+import { IsOptional, IsString, MinLength, MaxLength } from 'class-validator';
 
-import { Roles, RolesFastSchemaStructure } from './roles.model';
+import { Groups, GroupsFastSchemaStructure } from '@models/auth/groups.model';
+
+import { Roles, RolesFastSchemaStructure } from '@models/auth/roles.model';
 
 export interface IUser {
     _id?: ObjectId;
     username: string;
     password: string;
     provider?: string;
-    groups?: string;
+    groups?: object | string | string[] | ObjectId;
     roles?: object | string | string[] | ObjectId;
     root: boolean;
     blocked: boolean;
@@ -78,15 +74,10 @@ export class User implements IUser {
     provider?: string;
 
     @Expose()
-    @Transform(({ value }) => JSON.stringify(value), { toClassOnly: true })
-    @Transform(({ value }) => (value ? JSON.parse(value) : []), {
-        toPlainOnly: true,
-    })
-    groups?: string;
+    groups?: Groups[] | string[] | ObjectId[] | null;
 
     @Expose()
-    //@ValidateNested()
-    roles?: Roles[] | string[] | ObjectId;
+    roles?: Roles[] | string[] | ObjectId[] | null;
 
     @Expose()
     root: boolean = false;
@@ -168,9 +159,7 @@ export const UserFastSchemaStructure = {
         groups: {
             type: 'array',
             nullable: true,
-            items: {
-                type: 'string',
-            },
+            items: GroupsFastSchemaStructure,
         },
         roles: {
             type: 'array',

@@ -13,11 +13,11 @@ import {
     AddI18nCoinsRequest,
     UpdateI18nCoinsRequest,
     DeleteI18nCoinsRequest,
-} from '../../protos/i18n/i18ncoins.d';
+} from '@protos/i18n/i18ncoins.d';
 
-import { I18nCoins } from '../../models/i18n/i18ncoins.model';
+import { I18nCoins } from '@models/i18n/i18ncoins.model';
 
-import { I18nCoinsService } from '../../services/i18n/i18ncoins.service';
+import { I18nCoinsService } from '@services/i18n/i18ncoins.service';
 
 @Rpc('i18ncoins')
 export class I18nCoinsGateway {

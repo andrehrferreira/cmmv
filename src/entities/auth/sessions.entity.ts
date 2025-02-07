@@ -15,27 +15,42 @@ import {
     CreateDateColumn,
     UpdateDateColumn,
     ManyToOne,
-    BeforeInsert,
 } from 'typeorm';
 
-import { II18nCoins } from '@models/i18n/i18ncoins.model';
+import { ISessions } from '@models/auth/sessions.model';
 
 import { UserEntity } from '@entities/auth/user.entity';
 
-@Entity('i18n_coins')
-@Index('idx_i18ncoins_code', ['code'], { unique: true })
-export class I18nCoinsEntity implements II18nCoins {
+@Entity('auth_sessions')
+@Index('idx_sessions_uuid', ['uuid'], { unique: true })
+@Index('idx_sessions_fingerprint', ['fingerprint'])
+export class SessionsEntity implements ISessions {
     @ObjectIdColumn()
     _id: ObjectId;
 
     @Column({ type: 'varchar' })
-    code: string;
+    uuid: string;
 
     @Column({ type: 'varchar' })
-    name: string;
+    fingerprint: string;
+
+    @Column({ type: 'string', nullable: true })
+    user: UserEntity | string | ObjectId | null;
 
     @Column({ type: 'varchar' })
-    format: string;
+    ipAddress: string;
+
+    @Column({ type: 'varchar', nullable: true })
+    device?: string;
+
+    @Column({ type: 'varchar', nullable: true })
+    browser?: string;
+
+    @Column({ type: 'varchar', nullable: true })
+    os?: string;
+
+    @Column({ type: 'boolean', default: false })
+    revoked: boolean;
 
     @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
     createdAt: Date;
@@ -46,17 +61,4 @@ export class I18nCoinsEntity implements II18nCoins {
         onUpdate: 'CURRENT_TIMESTAMP',
     })
     updatedAt: Date;
-
-    @ManyToOne(() => UserEntity, { nullable: false })
-    @ObjectIdColumn({ nullable: false })
-    userCreator: ObjectId;
-
-    @ManyToOne(() => UserEntity, { nullable: true })
-    @ObjectIdColumn({ nullable: true })
-    userLastUpdate: ObjectId;
-
-    @BeforeInsert()
-    checkUserCreator() {
-        if (!this.userCreator) throw new Error('userCreator is required');
-    }
 }

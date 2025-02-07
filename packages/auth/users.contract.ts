@@ -9,6 +9,7 @@ import {
 } from '@cmmv/core';
 
 import { RolesContract } from './roles.contract';
+import { GroupsContract } from './groups.contract';
 
 @Contract({
     controllerName: 'User',
@@ -23,6 +24,10 @@ import { RolesContract } from './roles.contract';
             fields: ['username', 'password'],
         },
     ],
+    options: {
+        databaseSchemaName: 'auth_users',
+        databaseTimestamps: true,
+    },
 })
 export class UserContract extends AbstractContract {
     @ContractField({
@@ -71,11 +76,18 @@ export class UserContract extends AbstractContract {
 
     @ContractField({
         protoType: 'string',
-        objectType: 'string',
+        objectType: 'object',
+        entityType: 'GroupsEntity',
         protoRepeated: true,
         nullable: true,
-        transform: ({ value }) => JSON.stringify(value),
-        toPlain: ({ value }) => (value ? JSON.parse(value) : []),
+        link: [
+            {
+                contract: GroupsContract,
+                entityName: 'groups',
+                field: '_id',
+                array: true,
+            },
+        ],
     })
     groups: Array<string>;
 
@@ -95,7 +107,7 @@ export class UserContract extends AbstractContract {
             },
         ],
     })
-    roles: Array<any>;
+    roles: Array<string>;
 
     @ContractField({
         protoType: 'bool',
@@ -122,7 +134,7 @@ export class UserContract extends AbstractContract {
     verifyEmail: boolean;
 
     @ContractField({
-        protoType: 'int',
+        protoType: 'int32',
         nullable: true,
         exclude: true,
     })
@@ -135,7 +147,7 @@ export class UserContract extends AbstractContract {
     verifySMS: boolean;
 
     @ContractField({
-        protoType: 'int',
+        protoType: 'int32',
         nullable: true,
         exclude: true,
     })

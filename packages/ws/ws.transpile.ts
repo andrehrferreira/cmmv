@@ -49,15 +49,15 @@ import {
     Add${contract.controllerName}Request, 
     Update${contract.controllerName}Request,   
     Delete${contract.controllerName}Request 
-} from "${this.getImportPath(contract, 'protos', contract.controllerName.toLowerCase())}.d";
+} from "${this.getImportPath(contract, 'protos', contract.controllerName.toLowerCase(), '@protos')}.d";
 
 import { 
     ${contract.controllerName} 
-} from "${this.getImportPath(contract, 'models', contract.controllerName.toLowerCase() + '.model')}";
+} from "${this.getImportPath(contract, 'models', contract.controllerName.toLowerCase() + '.model', '@models')}";
 
 import { 
     ${serviceName} 
-} from "${this.getImportPath(contract, 'services', contract.controllerName.toLowerCase() + '.service')}";
+} from "${this.getImportPath(contract, 'services', contract.controllerName.toLowerCase() + '.service', '@services')}";
 
 @Rpc("${contract.controllerName.toLowerCase()}")
 export class ${gatewayName} {
