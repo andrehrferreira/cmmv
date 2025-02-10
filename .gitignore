@@ -47,3 +47,7 @@ yarn.lock
 # Gsuite
 googleapis.json
 newrelic.js
+
+# CMMV
+.generated
+.generated/*

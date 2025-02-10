@@ -12,12 +12,16 @@ import {
 
 import { AuthOptService, AuthSessionsService, AuthService } from '../services';
 
-import { AuthOPTController, AuthController } from '../controllers';
+import {
+    AuthOPTController,
+    AuthController,
+    AuthSessionsController,
+} from '../controllers';
 
 export const AuthModule = new Module('auth', {
     configs: [AuthConfig],
     transpilers: [AuthTranspile],
     contracts: [RolesContract, GroupsContract, UserContract, SessionsContract],
     providers: [AuthOptService, AuthSessionsService, AuthService],
-    controllers: [AuthOPTController, AuthController],
+    controllers: [AuthOPTController, AuthController, AuthSessionsController],
 });

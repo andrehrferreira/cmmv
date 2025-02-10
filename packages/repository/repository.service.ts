@@ -150,7 +150,7 @@ export class Repository extends Singleton {
             const limit = Math.max(
                 1,
                 Math.min(100, parseInt(queries?.limit) || 10),
-            ); // Máx 100 para evitar sobrecarga
+            );
             const offset = Math.max(0, parseInt(queries?.offset) || 0);
             const sortBy = this.escape(queries?.sortBy || 'id');
             const sort: 'ASC' | 'DESC' =
@@ -168,11 +168,9 @@ export class Repository extends Singleton {
             const where: any = {};
 
             if (search && searchField) {
-                if (isMongoDB) {
+                if (isMongoDB)
                     where[searchField] = { $regex: new RegExp(search, 'i') }; // Case-insensitive
-                } else {
-                    where[searchField] = Like(`%${search}%`);
-                }
+                else where[searchField] = Like(`%${search}%`);
             }
 
             Object.entries(filters).forEach(([key, value]) => {
@@ -191,10 +189,8 @@ export class Repository extends Singleton {
                 order,
             };
 
-            const [results, total] = await Promise.all([
-                repository.find(queryOptions),
-                repository.count({ where }),
-            ]);
+            const total = await repository.count(queryOptions.where as any);
+            const results = await repository.find(queryOptions);
 
             return {
                 data: results,

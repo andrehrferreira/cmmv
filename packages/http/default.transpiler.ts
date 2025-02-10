@@ -8,6 +8,7 @@ import {
     Scope,
     AbstractTranspile,
     IContract,
+    Module,
 } from '@cmmv/core';
 
 export class DefaultHTTPTranspiler
@@ -41,7 +42,7 @@ export class DefaultHTTPTranspiler
         const serviceName = `${contract.controllerName}Service`;
         const modelName = `${contract.controllerName}`;
         const modelInterfaceName = `I${modelName}`;
-        const serviceFileNameGenerated = `${contract.controllerName.toLowerCase()}.service.generated.ts`;
+        const serviceFileNameGenerated = `${contract.controllerName.toLowerCase()}.service.ts`;
         const serviceFileName = `${contract.controllerName.toLowerCase()}.service.ts`;
 
         let importsFromModel = [];
@@ -156,7 +157,12 @@ export class ${serviceName}Generated extends AbstractService {
 }`;
 
         const outputDir = this.getRootPath(contract, 'services');
-        const outputFilePath = path.join(outputDir, serviceFileNameGenerated);
+        const outputDirGenerated = this.getGeneratedPath(contract, 'services');
+        const outputFilePath = path.join(
+            outputDirGenerated,
+            serviceFileNameGenerated,
+        );
+
         fs.writeFileSync(
             outputFilePath,
             this.removeExtraSpaces(serviceTemplateGenerated),
@@ -167,12 +173,12 @@ export class ${serviceName}Generated extends AbstractService {
         const serviceTemplate = `import { Service } from '@cmmv/core';
 
 import { 
-    ${serviceName}Generated 
-} from "./${contract.controllerName.toLowerCase()}.service.generated";
+   ${serviceName}Generated 
+} from "${this.getImportPath(contract, 'services', contract.controllerName.toLowerCase() + '.service', '@generated/services')}";
 
 import {
    ${importsFromModel.join(', \n   ')}
-} from "${this.getImportPath(contract, 'models', modelName.toLowerCase() + '.model')}";
+} from "${this.getImportPath(contract, 'models', modelName.toLowerCase() + '.model', '@models')}";
 
 @Service("${contract.controllerName.toLowerCase()}")
 export class ${serviceName} extends ${serviceName}Generated {
@@ -214,13 +220,16 @@ ${contract.services
 
     private generateController(contract: IContract): void {
         const telemetry = Config.get<boolean>('app.telemetry');
+        const hasCacheModule = Module.hasModule('cache');
         const controllerName = `${contract.controllerName}Controller`;
         const serviceName = `${contract.controllerName}Service`;
-        const controllerFileNameGenerated = `${contract.controllerName.toLowerCase()}.controller.generated.ts`;
+        const controllerFileNameGenerated = `${contract.controllerName.toLowerCase()}.controller.ts`;
         const controllerFileName = `${contract.controllerName.toLowerCase()}.controller.ts`;
 
         const hasCache =
-            contract.cache !== undefined && contract.cache !== null;
+            hasCacheModule &&
+            contract.cache !== undefined &&
+            contract.cache !== null;
         const authRouter = contract.auth === true;
         const cacheKeyPrefix = hasCache
             ? contract.cache.key || `${contract.controllerName.toLowerCase()}:`
@@ -324,9 +333,13 @@ ${contract.services
             );
 
         const outputDir = this.getRootPath(contract, 'controllers');
+        const outputGeneratedDir = this.getGeneratedPath(
+            contract,
+            'controllers',
+        );
 
         const outputFilePath = path.join(
-            outputDir,
+            outputGeneratedDir,
             controllerFileNameGenerated,
         );
 
@@ -343,7 +356,7 @@ ${contract.services
 
 import { 
     ${controllerName}Generated 
-} from "./${contract.controllerName.toLowerCase()}.controller.generated"; ${this.importServices(importsFromModel, contract)}
+} from "@generated/controllers${contract.subPath}/${contract.controllerName.toLowerCase()}.controller"; ${this.importServices(importsFromModel, contract)}
 
 @Controller('${controllerPath}')
 export class ${controllerName} extends ${controllerName}Generated {
@@ -352,12 +365,13 @@ export class ${controllerName} extends ${controllerName}Generated {
 
         const outputFilePathFinal = path.join(outputDir, controllerFileName);
 
-        if (!fs.existsSync(outputFilePathFinal))
+        if (!fs.existsSync(outputFilePathFinal)) {
             fs.writeFileSync(
                 outputFilePathFinal,
                 this.removeExtraSpaces(controllerTemplate),
                 'utf8',
             );
+        }
     }
 
     private generateModule(
@@ -402,7 +416,7 @@ export class ${controllerName} extends ${controllerName}Generated {
         return importsFromModel.length
             ? `\n\nimport {
    ${importsFromModel.join(', \n   ')}
-} from "${this.getImportPath(contract, 'models', contract.controllerName.toLowerCase() + '.model')}";`
+} from "${this.getImportPath(contract, 'models', contract.controllerName.toLowerCase() + '.model', '@models')}";`
             : '';
     }
 }

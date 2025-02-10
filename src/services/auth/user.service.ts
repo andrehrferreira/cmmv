@@ -1,8 +1,8 @@
 import { Service } from '@cmmv/core';
 
-import { UserServiceGenerated } from './user.service.generated';
+import { UserServiceGenerated } from '@generated/services/auth/user.service';
 
-import {} from '../../models/auth/user.model';
+import {} from '@models/auth/user.model';
 
 @Service('user')
 export class UserService extends UserServiceGenerated {}

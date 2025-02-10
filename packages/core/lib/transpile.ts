@@ -5,14 +5,27 @@ import { Logger } from './logger';
 import { SUB_PATH_METADATA } from '../decorators';
 
 export interface ITranspile {
-    run(): void;
+    run(): Promise<any> | void;
 }
 
 export abstract class AbstractTranspile {
+    abstract run(): Promise<any> | void;
+
     public getRootPath(contract: any, context: string): string {
         let outputDir = contract.subPath
             ? path.join('src', context, contract.subPath)
             : path.join('src', context);
+
+        if (!fs.existsSync(outputDir))
+            fs.mkdirSync(outputDir, { recursive: true });
+
+        return outputDir;
+    }
+
+    public getGeneratedPath(contract: any, context: string): string {
+        let outputDir = contract.subPath
+            ? path.join('.generated', context, contract.subPath)
+            : path.join('.generated', context);
 
         if (!fs.existsSync(outputDir))
             fs.mkdirSync(outputDir, { recursive: true });
@@ -127,7 +140,7 @@ export class Transpile {
 
             return Promise.all(transpilePromises);
         } catch (error) {
-            console.error(error);
+            //console.error(error);
             this.logger.error(error);
             throw error;
         }

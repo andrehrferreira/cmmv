@@ -9,13 +9,16 @@
             "@cmmv/http": ["../http"],
             "@cmmv/http/*": ["../http/*"],
             "@cmmv/repository": ["../repository"],
-            "@cmmv/repository/*": ["../repository/*"]
+            "@cmmv/repository/*": ["../repository/*"],
+            "@cmmv/cache": ["../cache"],
+            "@cmmv/cache/*": ["../cache/*"]
         }
     },
     "exclude": ["node_modules", "dist"],
     "references": [
         { "path": "../core/tsconfig.build.json" },
         { "path": "../http/tsconfig.build.json" },
-        { "path": "../repository/tsconfig.build.json" }
+        { "path": "../repository/tsconfig.build.json" },
+        { "path": "../cache/tsconfig.build.json" }
     ]
 }

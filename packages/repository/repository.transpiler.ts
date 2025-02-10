@@ -70,7 +70,7 @@ ${contract.fields.map((field: any) => this.generateField(field)).join('\n\n')}${
         const modelName = `${contract.controllerName}`;
         const modelInterfaceName = `I${modelName}`;
         const entityName = `${contract.controllerName}Entity`;
-        const serviceFileNameGenerated = `${contract.controllerName.toLowerCase()}.service.generated.ts`;
+        const serviceFileNameGenerated = `${contract.controllerName.toLowerCase()}.service.ts`;
 
         let importsFromModel = [];
 
@@ -144,7 +144,7 @@ ${contract.services
                 serviceTemplateGenerated,
             );
 
-        const outputDir = this.getRootPath(contract, 'services');
+        const outputDir = this.getGeneratedPath(contract, 'services');
         const outputFilePath = path.join(outputDir, serviceFileNameGenerated);
         fs.writeFileSync(
             outputFilePath,

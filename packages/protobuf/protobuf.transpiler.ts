@@ -499,7 +499,13 @@ ${Object.entries(contract.messages[key].properties)
         if (returnResult) {
             return JSON.stringify(data);
         } else {
-            let jsContent = '// Generated automatically by CMMV\n';
+            let jsContent = `/**                                                                               
+    **********************************************
+    This script was generated automatically by CMMV.
+    It is recommended not to modify this file manually, 
+    as it may be overwritten by the application.
+    **********************************************
+**/\n`;
             jsContent += '(function(global) {\n';
             jsContent += '  try {\n';
             jsContent +=
@@ -516,8 +522,8 @@ ${Object.entries(contract.messages[key].properties)
         }
     }
 
-    /*public async returnContractJs(): Promise<string> {
-        const contracts = Scope.getArray<any>("__contracts");
+    public async returnContractJs(): Promise<string> {
+        const contracts = Scope.getArray<any>('__contracts');
         const contractsJson: { [key: string]: any } = {};
 
         contracts?.forEach((contract: any) => {
@@ -526,7 +532,7 @@ ${Object.entries(contract.messages[key].properties)
 
             const itemMessage = new protobufjs.Type(
                 contract.controllerName,
-            ).add(new protobufjs.Field("id", 1, "int32"));
+            ).add(new protobufjs.Field('id', 1, 'int32'));
 
             contract.fields.forEach((field: any, index: number) => {
                 let protoType = this.mapToProtoType(field.protoType);
@@ -541,10 +547,18 @@ ${Object.entries(contract.messages[key].properties)
                         );
 
                         const entityName = controllerName;
-                        const protoOutputDir = this.getRootPath(contract, "protos");
-                        const importPath = path.relative(protoOutputDir, path.join(this.getRootPath(contractInstance, "protos"), `${entityName.toLowerCase()}.proto`));
+                        const protoOutputDir = this.getRootPath(
+                            contract,
+                            'protos',
+                        );
+                        const importPath = path.relative(
+                            protoOutputDir,
+                            path.join(
+                                this.getRootPath(contractInstance, 'protos'),
+                                `${entityName.toLowerCase()}.proto`,
+                            ),
+                        );
 
-                        // Only add import if there is a correlation
                         if (importPath) {
                             const linkedEntityImport = `import \"${importPath}\";`;
                             this.addImport(linkedEntityImport);
@@ -573,8 +587,8 @@ ${Object.entries(contract.messages[key].properties)
             true,
         );
 
-        return typeof parseContract == "string" ? parseContract : "";
-    }*/
+        return typeof parseContract == 'string' ? parseContract : '';
+    }
 
     private mapToProtoType(type: string): string {
         const typeMapping: { [key: string]: string } = {

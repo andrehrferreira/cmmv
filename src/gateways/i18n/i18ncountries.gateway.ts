@@ -7,7 +7,6 @@
 **/
 
 import { Rpc, Message, Data, Socket, RpcUtils } from '@cmmv/ws';
-import { Cache, CacheService } from '@cmmv/cache';
 
 import {
     AddI18nCountriesRequest,
@@ -50,13 +49,6 @@ export class I18nCountriesGateway {
                 { item: result, id: result._id },
             );
 
-            CacheService.set(
-                `country:${result._id}`,
-                JSON.stringify(result),
-                600,
-            );
-            CacheService.del('country:getAll');
-
             if (response) socket.send(response);
         } catch (e) {}
     }
@@ -77,9 +69,6 @@ export class I18nCountriesGateway {
                 },
             );
 
-            CacheService.set(`country:${data.id}`, JSON.stringify(result), 600);
-            CacheService.del('country:getAll');
-
             if (response) socket.send(response);
         } catch (e) {}
     }
@@ -96,9 +85,6 @@ export class I18nCountriesGateway {
                     affected: result.affected,
                 },
             );
-
-            CacheService.del(`country:${data.id}`);
-            CacheService.del('country:getAll');
 
             if (response) socket.send(response);
         } catch (e) {}

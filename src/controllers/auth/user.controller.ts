@@ -1,13 +1,13 @@
 import { Controller } from '@cmmv/http';
 
-import { UserControllerGenerated } from './user.controller.generated';
+import { UserControllerGenerated } from '@generated/controllers/auth/user.controller';
 
 import {
     LoginRequest,
     LoginResponse,
     RegisterRequest,
     RegisterResponse,
-} from '../../models/auth/user.model';
+} from '@models/auth/user.model';
 
 @Controller('user')
 export class UserController extends UserControllerGenerated {

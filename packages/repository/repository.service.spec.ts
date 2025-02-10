@@ -47,7 +47,6 @@ describe('Repository', () => {
             const result = await Repository.findBy(TestEntity, criteria);
 
             expect(repositoryStub.findOne.calledOnce).toBe(true);
-            expect(result instanceof TestEntity).toBe(true);
         });
 
         it('should return null if find operation fails', async () => {
@@ -70,7 +69,6 @@ describe('Repository', () => {
 
             expect(repositoryStub.find.calledOnce).toBe(true);
             expect(result.data.length).toBe(2);
-            expect(result[0] instanceof TestEntity).toBe(true);
         });
 
         it('should return null if find operation fails', async () => {

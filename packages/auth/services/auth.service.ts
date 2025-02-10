@@ -64,7 +64,6 @@ export class AuthService extends AbstractService {
     }
 
     public async login(payload, req?: any, res?: any, session?: any) {
-        const { ObjectId } = await import('mongodb');
         const UserEntity = Repository.getEntity('UserEntity');
         const env = Config.get<string>('env', process.env.NODE_ENV);
         const jwtToken = Config.get<string>('auth.jwtSecret');
@@ -106,6 +105,11 @@ export class AuthService extends AbstractService {
             payload.password === 'root' &&
             this.isLocalhost(req)
         ) {
+            const { ObjectId } =
+                Config.get('repository.type') === 'mongodb'
+                    ? await import('mongodb')
+                    : { ObjectId: null };
+
             user = {
                 [Config.get('repository.type') === 'mongodb' ? '_id' : 'id']:
                     Config.get('repository.type') === 'mongodb'
@@ -194,32 +198,17 @@ export class AuthService extends AbstractService {
     }
 
     public async register(payload, req?: any) {
-        return new Promise(async (resolve, reject) => {
-            const User = Application.getModel('User');
-            const UserEntity = Repository.getEntity('UserEntity');
-            //@ts-ignore
-            const newUser = User.fromPartial(payload);
+        const User = Application.getModel('User');
+        const UserEntity = Repository.getEntity('UserEntity');
+        //@ts-ignore
+        const newUser = User.fromPartial(payload);
 
-            this.validate(newUser)
-                .then(async (data: any) => {
-                    const result = await Repository.insert(UserEntity, data);
+        const data = await this.validate(newUser);
+        const result = await Repository.insert(UserEntity, data);
 
-                    resolve(
-                        result.success
-                            ? {
-                                  success: true,
-                                  message: 'User registered successfully!',
-                              }
-                            : {
-                                  success: false,
-                                  message: 'Error trying to register new user',
-                              },
-                    );
-                })
-                .catch(error => {
-                    reject({ success: false, message: error.message });
-                });
-        });
+        return result.success
+            ? { success: true, message: 'User registered successfully!' }
+            : { success: false, message: 'Error trying to register new user' };
     }
 
     public async checkUsernameExists(username: string): Promise<boolean> {

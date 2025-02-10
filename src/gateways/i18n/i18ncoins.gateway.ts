@@ -7,7 +7,6 @@
 **/
 
 import { Rpc, Message, Data, Socket, RpcUtils } from '@cmmv/ws';
-import { Cache, CacheService } from '@cmmv/cache';
 
 import {
     AddI18nCoinsRequest,
@@ -49,13 +48,6 @@ export class I18nCoinsGateway {
                 { item: result, id: result._id },
             );
 
-            CacheService.set(
-                `coins:${result._id}`,
-                JSON.stringify(result),
-                3000,
-            );
-            CacheService.del('coins:getAll');
-
             if (response) socket.send(response);
         } catch (e) {}
     }
@@ -76,9 +68,6 @@ export class I18nCoinsGateway {
                 },
             );
 
-            CacheService.set(`coins:${data.id}`, JSON.stringify(result), 3000);
-            CacheService.del('coins:getAll');
-
             if (response) socket.send(response);
         } catch (e) {}
     }
@@ -95,9 +84,6 @@ export class I18nCoinsGateway {
                     affected: result.affected,
                 },
             );
-
-            CacheService.del(`coins:${data.id}`);
-            CacheService.del('coins:getAll');
 
             if (response) socket.send(response);
         } catch (e) {}

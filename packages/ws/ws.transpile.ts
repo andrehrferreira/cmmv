@@ -8,6 +8,7 @@ import {
     ITranspile,
     Scope,
     IContract,
+    Module,
 } from '@cmmv/core';
 
 export class WSTranspile extends AbstractTranspile implements ITranspile {
@@ -20,12 +21,15 @@ export class WSTranspile extends AbstractTranspile implements ITranspile {
     }
 
     private generateGateway(contract: IContract) {
+        const hasCacheModule = Module.hasModule('cache');
         const gatewayName = `${contract.controllerName}Gateway`;
         const serviceName = `${contract.controllerName}Service`;
         const gatewayFileName = `${contract.controllerName.toLowerCase()}.gateway.ts`;
 
         const hasCache =
-            contract.cache !== undefined && contract.cache !== null;
+            hasCacheModule &&
+            contract.cache !== undefined &&
+            contract.cache !== null;
         const cacheKeyPrefix = hasCache
             ? contract.cache?.key || `${contract.controllerName.toLowerCase()}:`
             : '';
