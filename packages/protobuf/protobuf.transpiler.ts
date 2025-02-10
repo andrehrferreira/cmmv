@@ -18,7 +18,7 @@ export class ProtobufTranspile extends AbstractTranspile implements ITranspile {
     private logger: Logger = new Logger('ProtobufTranspile');
     private imports: Set<string> = new Set();
 
-    run(): void {
+    async run(): Promise<void> {
         const contracts = Scope.getArray<any>('__contracts');
         const contractsJson: { [key: string]: any } = {};
 
@@ -468,27 +468,33 @@ ${Object.entries(contract.messages[key].properties)
         let pointer = 0;
 
         for (const key in contracts) {
-            const contract = ProtoRegistry.retrieve(key);
-            const jsonProtoFile = contractsJson[key].path;
-            contractsList[key] = contract.toJSON();
+            if (returnResult) console.log(key, contractsJson[key].path);
 
-            fs.writeFileSync(
-                jsonProtoFile,
-                JSON.stringify(contractsList[key], null, 4),
-            );
+            if (contractsJson[key] && contractsJson[key].path) {
+                const contract = ProtoRegistry.retrieve(key);
+                const jsonProtoFile = contractsJson[key].path;
+                contractsList[key] = contract.toJSON();
 
-            const types = {};
-            let pointerTypes = 0;
-
-            for (const namespace of contract.nestedArray) {
-                for (const type in namespace.toJSON().nested) {
-                    types[type] = pointerTypes;
-                    pointerTypes++;
+                if (!returnResult) {
+                    fs.writeFileSync(
+                        jsonProtoFile,
+                        JSON.stringify(contractsList[key], null, 4),
+                    );
                 }
-            }
 
-            index[key] = { index: pointer, types };
-            pointer++;
+                const types = {};
+                let pointerTypes = 0;
+
+                for (const namespace of contract.nestedArray) {
+                    for (const type in namespace.toJSON().nested) {
+                        types[type] = pointerTypes;
+                        pointerTypes++;
+                    }
+                }
+
+                index[key] = { index: pointer, types };
+                pointer++;
+            }
         }
 
         const data = {
@@ -579,7 +585,19 @@ ${Object.entries(contract.messages[key].properties)
 
             protoNamespace.add(itemMessage);
             const contractJSON = root.toJSON();
-            contractsJson[contract.controllerName] = contractJSON;
+            const outputDir = path.resolve(
+                this.getRootPath(contract, 'protos'),
+            );
+            const protoFileName = `${contract.controllerName.toLowerCase()}.proto`;
+            const outputFilePath = path.join(outputDir, protoFileName);
+
+            const contractMeta = {
+                content: contractJSON,
+                path: outputFilePath.replace('.proto', '.json'),
+            };
+
+            contractsJson[contract.controllerName] = contractMeta;
+            contractsJson[contract.controllerName.toLowerCase()] = contractMeta;
         });
 
         const parseContract = await this.generateContractsJs(

@@ -311,6 +311,7 @@ export class Application {
 
     protected loadModules(modules: Array<Module>): void {
         modules.forEach(module => {
+            //if(module){
             this.transpilers.push(...module.getTranspilers());
             this.controllers.push(...module.getControllers());
             this.submodules.push(...module.getSubmodules());
@@ -332,6 +333,7 @@ export class Application {
 
             if (module.getSubmodules().length > 0)
                 this.loadModules(module.getSubmodules());
+            //}
         });
     }
 

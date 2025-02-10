@@ -7,3 +7,8 @@ export const ProtobufModule = new Module('protobuf', {
     controllers: [ProtobufController],
     transpilers: [ProtobufTranspile],
 });
+
+export const ProtobufModuleCompiler = new Module('protobuf', {
+    controllers: [],
+    transpilers: [ProtobufTranspile],
+});
