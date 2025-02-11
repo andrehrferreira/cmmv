@@ -103,13 +103,14 @@ export class DefaultAdapter extends AbstractHttpAdapter<
         this.instance.use(json({ limit: '50mb' }));
         this.instance.use(urlencoded({ limit: '50mb', extended: true }));
 
-        if (Config.get<boolean>('server.cors', true))
+        if (Config.get<boolean>('server.cors', true)) {
             this.instance.use(
                 cors({
                     methods: ['GET', 'POST', 'PUT', 'DELETE'],
                     allowedHeaders: ['Content-Type', 'Authorization'],
                 }),
             );
+        }
 
         if (Config.get<boolean>('server.helmet.enabled', true)) {
             this.instance.use(
