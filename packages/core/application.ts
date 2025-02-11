@@ -239,10 +239,17 @@ export class Application {
 
     protected async execProcess(settings: IApplicationSettings) {
         try {
+            this.modules = (settings && settings.modules) || [];
+            this.transpilers = settings.transpilers || [];
+            this.contracts =
+                settings.contracts?.map(contractClass => new contractClass()) ||
+                [];
+
             await Hooks.execute(HooksType.onPreInitialize);
             this.loadModules(this.modules);
             await Config.validateConfigs(this.configs);
             this.processContracts();
+
             this.transpilers.push(ApplicationTranspile);
 
             if (this.transpilers.length > 0) {
