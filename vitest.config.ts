@@ -14,5 +14,6 @@ export default defineConfig({
     test: {
         globals: true,
         environment: 'node',
+        setupFiles: ['reflect-metadata'],
     },
 });
