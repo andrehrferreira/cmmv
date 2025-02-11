@@ -237,6 +237,38 @@ export class Application {
         if (compile) this.logger.log(`Compilation process complete!`);
     }
 
+    protected async execProcess(settings: IApplicationSettings) {
+        try {
+            await Hooks.execute(HooksType.onPreInitialize);
+            this.loadModules(this.modules);
+            await Config.validateConfigs(this.configs);
+            this.processContracts();
+            this.transpilers.push(ApplicationTranspile);
+
+            if (this.transpilers.length > 0) {
+                const transpile = new Transpile(this.transpilers);
+                await transpile.transpile();
+                this.logger.log('All transpilers executed successfully.');
+            } else {
+                this.logger.log('No transpilers provided.');
+            }
+
+            const servicesLoad = [];
+
+            settings.services?.forEach(async service => {
+                if (service && typeof service.loadConfig === 'function')
+                    servicesLoad.push(service?.loadConfig(this));
+            });
+
+            await Promise.all(servicesLoad);
+            await Hooks.execute(HooksType.onInitialize);
+        } catch (error) {
+            await Hooks.execute(HooksType.onError, { error });
+            console.log(error);
+            this.logger.error(error.message || error);
+        }
+    }
+
     protected async createScriptBundle() {
         const dirBuild = path.resolve('./public/assets');
 
@@ -338,101 +370,104 @@ export class Application {
     }
 
     protected processContracts(): void {
-        this.contracts.forEach(contract => {
-            const target = contract.constructor || contract;
-            const prototype = target.prototype || contract.prototype;
+        if (Array.isArray(this.contracts) && this.contracts.length > 0) {
+            this.contracts.forEach(contract => {
+                const target = contract.constructor || contract;
+                const prototype = target.prototype || contract.prototype;
 
-            const controllerName = Reflect.getMetadata(
-                CONTROLLER_NAME_METADATA,
-                contract.constructor,
-            );
-            const subPath = Reflect.getMetadata(
-                SUB_PATH_METADATA,
-                contract.constructor,
-            );
-            const protoPath = Reflect.getMetadata(
-                PROTO_PATH_METADATA,
-                contract.constructor,
-            );
-            const protoPackage = Reflect.getMetadata(
-                PROTO_PACKAGE_METADATA,
-                contract.constructor,
-            );
-            const fields = Reflect.getMetadata(FIELD_METADATA, prototype) || [];
-            const messages =
-                Reflect.getMetadata(MESSAGE_METADATA, prototype) || [];
-            const services =
-                Reflect.getMetadata(SERVICE_METADATA, prototype) || [];
-            const directMessage = Reflect.getMetadata(
-                DIRECTMESSAGE_METADATA,
-                contract.constructor,
-            );
-            const generateController = Reflect.getMetadata(
-                GENERATE_CONTROLLER_METADATA,
-                contract.constructor,
-            );
-            const generateEntities = Reflect.getMetadata(
-                GENERATE_ENTITIES_METADATA,
-                contract.constructor,
-            );
-            const auth = Reflect.getMetadata(
-                AUTH_METADATA,
-                contract.constructor,
-            );
-            const controllerCustomPath = Reflect.getMetadata(
-                CONTROLLER_CUSTOM_PATH_METADATA,
-                contract.constructor,
-            );
-            const imports = Reflect.getMetadata(
-                CONTROLLER_IMPORTS,
-                contract.constructor,
-            );
-            const indexs = Reflect.getMetadata(
-                CONTROLLER_INDEXS,
-                contract.constructor,
-            );
-            const cache = Reflect.getMetadata(
-                CONTROLLER_CACHE,
-                contract.constructor,
-            );
-            const options = Reflect.getMetadata(
-                CONTROLLER_OPTIONS,
-                contract.constructor,
-            );
-            const viewForm = Reflect.getMetadata(
-                CONTROLLER_VIEWFORM,
-                contract.constructor,
-            );
-            const viewPage = Reflect.getMetadata(
-                CONTROLLER_VIEWPAGE,
-                contract.constructor,
-            );
+                const controllerName = Reflect.getMetadata(
+                    CONTROLLER_NAME_METADATA,
+                    contract.constructor,
+                );
+                const subPath = Reflect.getMetadata(
+                    SUB_PATH_METADATA,
+                    contract.constructor,
+                );
+                const protoPath = Reflect.getMetadata(
+                    PROTO_PATH_METADATA,
+                    contract.constructor,
+                );
+                const protoPackage = Reflect.getMetadata(
+                    PROTO_PACKAGE_METADATA,
+                    contract.constructor,
+                );
+                const fields =
+                    Reflect.getMetadata(FIELD_METADATA, prototype) || [];
+                const messages =
+                    Reflect.getMetadata(MESSAGE_METADATA, prototype) || [];
+                const services =
+                    Reflect.getMetadata(SERVICE_METADATA, prototype) || [];
+                const directMessage = Reflect.getMetadata(
+                    DIRECTMESSAGE_METADATA,
+                    contract.constructor,
+                );
+                const generateController = Reflect.getMetadata(
+                    GENERATE_CONTROLLER_METADATA,
+                    contract.constructor,
+                );
+                const generateEntities = Reflect.getMetadata(
+                    GENERATE_ENTITIES_METADATA,
+                    contract.constructor,
+                );
+                const auth = Reflect.getMetadata(
+                    AUTH_METADATA,
+                    contract.constructor,
+                );
+                const controllerCustomPath = Reflect.getMetadata(
+                    CONTROLLER_CUSTOM_PATH_METADATA,
+                    contract.constructor,
+                );
+                const imports = Reflect.getMetadata(
+                    CONTROLLER_IMPORTS,
+                    contract.constructor,
+                );
+                const indexs = Reflect.getMetadata(
+                    CONTROLLER_INDEXS,
+                    contract.constructor,
+                );
+                const cache = Reflect.getMetadata(
+                    CONTROLLER_CACHE,
+                    contract.constructor,
+                );
+                const options = Reflect.getMetadata(
+                    CONTROLLER_OPTIONS,
+                    contract.constructor,
+                );
+                const viewForm = Reflect.getMetadata(
+                    CONTROLLER_VIEWFORM,
+                    contract.constructor,
+                );
+                const viewPage = Reflect.getMetadata(
+                    CONTROLLER_VIEWPAGE,
+                    contract.constructor,
+                );
 
-            const contractStructure = {
-                controllerName,
-                subPath,
-                protoPath,
-                protoPackage,
-                fields,
-                messages,
-                services,
-                directMessage,
-                generateController,
-                generateEntities,
-                auth,
-                controllerCustomPath,
-                imports,
-                indexs,
-                cache,
-                customProto: contract.customProto,
-                customTypes: contract.customTypes,
-                options,
-                viewForm,
-                viewPage,
-            };
+                const contractStructure = {
+                    controllerName,
+                    subPath,
+                    protoPath,
+                    protoPackage,
+                    fields,
+                    messages,
+                    services,
+                    directMessage,
+                    generateController,
+                    generateEntities,
+                    auth,
+                    controllerCustomPath,
+                    imports,
+                    indexs,
+                    cache,
+                    customProto: contract.customProto,
+                    customTypes: contract.customTypes,
+                    options,
+                    viewForm,
+                    viewPage,
+                };
 
-            Scope.addToArray('__contracts', contractStructure);
-        });
+                Scope.addToArray('__contracts', contractStructure);
+            });
+        }
     }
 
     public static awaitModule(moduleName: string, cb: Function, context: any) {
@@ -532,6 +567,10 @@ export let ApplicationModule = new Module("app", {
 
     public static compile(settings?: IApplicationSettings): Application {
         return new Application(settings, true);
+    }
+
+    public static exec(settings?: IApplicationSettings) {
+        return new Application(settings, true).execProcess(settings);
     }
 
     public static setHTTPMiddleware(cb: Function) {

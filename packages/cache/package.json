@@ -1,6 +1,6 @@
 {
     "name": "@cmmv/cache",
-    "version": "0.8.12",
+    "version": "0.8.14",
     "description": "Cache module using cache-manager for CMMV",
     "keywords": [
         "cmmv",

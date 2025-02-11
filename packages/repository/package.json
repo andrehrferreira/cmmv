@@ -1,6 +1,6 @@
 {
     "name": "@cmmv/repository",
-    "version": "0.8.12",
+    "version": "0.8.14",
     "description": "Repository module using TypeORM for CMMV",
     "keywords": [
         "cmmv",
