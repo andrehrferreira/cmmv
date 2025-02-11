@@ -237,7 +237,7 @@ export class Application {
         if (compile) this.logger.log(`Compilation process complete!`);
     }
 
-    protected async exec(settings: IApplicationSettings) {
+    protected async execProcess(settings: IApplicationSettings) {
         try {
             await Hooks.execute(HooksType.onPreInitialize);
             this.loadModules(this.modules);
@@ -567,6 +567,10 @@ export let ApplicationModule = new Module("app", {
 
     public static compile(settings?: IApplicationSettings): Application {
         return new Application(settings, true);
+    }
+
+    public static exec(settings?: IApplicationSettings) {
+        return new Application(settings, true).execProcess(settings);
     }
 
     public static setHTTPMiddleware(cb: Function) {
