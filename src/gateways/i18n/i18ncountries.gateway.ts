@@ -7,31 +7,30 @@
 **/
 
 import { Rpc, Message, Data, Socket, RpcUtils } from '@cmmv/ws';
-import { plainToClass } from 'class-transformer';
-import { I18nCountriesEntity } from '../../entities/i18n/i18ncountries.entity';
-import { Cache, CacheService } from '@cmmv/cache';
 
 import {
     AddI18nCountriesRequest,
     UpdateI18nCountriesRequest,
     DeleteI18nCountriesRequest,
-} from '../../protos/i18n/i18ncountries.d';
+} from '@protos/i18n/i18ncountries.d';
 
-import { I18nCountriesService } from '../../services/i18n/i18ncountries.service';
+import { I18nCountries } from '@models/i18n/i18ncountries.model';
+
+import { I18nCountriesService } from '@services/i18n/i18ncountries.service';
 
 @Rpc('i18ncountries')
 export class I18nCountriesGateway {
     constructor(private readonly i18ncountriesservice: I18nCountriesService) {}
 
     @Message('GetAllI18nCountriesRequest')
-    @Cache('country:getAll', { ttl: 600, compress: true })
     async getAll(@Socket() socket) {
         try {
             const items = await this.i18ncountriesservice.getAll();
+
             const response = await RpcUtils.pack(
                 'i18ncountries',
                 'GetAllI18nCountriesResponse',
-                items,
+                items.data,
             );
 
             if (response) socket.send(response);
@@ -39,22 +38,16 @@ export class I18nCountriesGateway {
     }
 
     @Message('AddI18nCountriesRequest')
-    async add(@Data() data: AddI18nCountriesRequest, @Socket() socket) {
+    async insert(@Data() data: AddI18nCountriesRequest, @Socket() socket) {
         try {
-            const entity = plainToClass(I18nCountriesEntity, data.item);
-            const result = await this.i18ncountriesservice.add(entity);
+            const i18ncountries = I18nCountries.fromPartial(data.item);
+            const result =
+                await this.i18ncountriesservice.insert(i18ncountries);
             const response = await RpcUtils.pack(
                 'i18ncountries',
                 'AddI18nCountriesResponse',
                 { item: result, id: result._id },
             );
-
-            CacheService.set(
-                `country:${result._id}`,
-                JSON.stringify(result),
-                600,
-            );
-            CacheService.del('country:getAll');
 
             if (response) socket.send(response);
         } catch (e) {}
@@ -63,10 +56,9 @@ export class I18nCountriesGateway {
     @Message('UpdateI18nCountriesRequest')
     async update(@Data() data: UpdateI18nCountriesRequest, @Socket() socket) {
         try {
-            const entity = plainToClass(I18nCountriesEntity, data.item);
             const result = await this.i18ncountriesservice.update(
                 data.id,
-                entity,
+                data.item,
             );
             const response = await RpcUtils.pack(
                 'i18ncountries',
@@ -76,12 +68,6 @@ export class I18nCountriesGateway {
                     affected: result.affected,
                 },
             );
-            CacheService.set(
-                `country:${result._id}`,
-                JSON.stringify(result),
-                600,
-            );
-            CacheService.del('country:getAll');
 
             if (response) socket.send(response);
         } catch (e) {}
@@ -99,8 +85,6 @@ export class I18nCountriesGateway {
                     affected: result.affected,
                 },
             );
-            CacheService.del(`country:${data.id}`);
-            CacheService.del('country:getAll');
 
             if (response) socket.send(response);
         } catch (e) {}

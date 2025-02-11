@@ -18,9 +18,10 @@ import {
     BeforeInsert,
 } from 'typeorm';
 
-import { II18nCountries } from '../../models/i18n/i18ncountries.model';
-import { UserEntity } from '../../entities/auth/user.entity';
-import { I18nCoinsEntity } from './i18ncoins.entity';
+import { II18nCountries } from '@models/i18n/i18ncountries.model';
+
+import { UserEntity } from '@entities/auth/user.entity';
+import { I18nCoinsEntity } from '@entities/i18n/i18ncoins.entity';
 
 @Entity('i18n_countries')
 @Index('idx_i18ncountries_code', ['code'], { unique: true })
@@ -28,16 +29,28 @@ export class I18nCountriesEntity implements II18nCountries {
     @ObjectIdColumn()
     _id: ObjectId;
 
-    @Column({ type: 'varchar' })
+    @Column({
+        type: 'varchar',
+        nullable: false,
+    })
     code: string;
 
-    @Column({ type: 'varchar' })
+    @Column({
+        type: 'varchar',
+        nullable: false,
+    })
     name: string;
 
-    @ManyToOne(() => I18nCoinsEntity, coins => coins._id, { nullable: false })
-    currency: I18nCoinsEntity;
+    @Column({
+        type: 'string',
+        nullable: true,
+    })
+    currency?: I18nCoinsEntity | string | ObjectId | null;
 
-    @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+    @CreateDateColumn({
+        type: 'timestamp',
+        default: () => 'CURRENT_TIMESTAMP',
+    })
     createdAt: Date;
 
     @UpdateDateColumn({
@@ -47,16 +60,11 @@ export class I18nCountriesEntity implements II18nCountries {
     })
     updatedAt: Date;
 
-    @ManyToOne(() => UserEntity, { nullable: false })
-    @ObjectIdColumn({ nullable: false })
+    @ManyToOne(() => UserEntity, { nullable: true })
+    @ObjectIdColumn({ nullable: true })
     userCreator: ObjectId;
 
     @ManyToOne(() => UserEntity, { nullable: true })
     @ObjectIdColumn({ nullable: true })
     userLastUpdate: ObjectId;
-
-    @BeforeInsert()
-    checkUserCreator() {
-        if (!this.userCreator) throw new Error('userCreator is required');
-    }
 }

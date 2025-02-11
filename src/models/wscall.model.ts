@@ -62,11 +62,15 @@ export class WsCall implements IWsCall {
     }
 }
 
-// Schema for fast-json-stringify
+// Schema
 export const WsCallFastSchemaStructure = {
     title: 'WsCall Schema',
     type: 'object',
     properties: {
+        id: {
+            type: 'string',
+            nullable: false,
+        },
         contract: {
             type: 'integer',
             nullable: false,
@@ -80,7 +84,7 @@ export const WsCallFastSchemaStructure = {
             nullable: false,
         },
     },
-    required: ['contract', 'message', 'data'],
+    required: ['id', 'contract', 'message', 'data'],
 };
 
 export const WsCallFastSchema = fastJson(WsCallFastSchemaStructure);

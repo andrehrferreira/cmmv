@@ -7,16 +7,16 @@
 **/
 
 import { Rpc, Message, Data, Socket, RpcUtils } from '@cmmv/ws';
-import { plainToClass } from 'class-transformer';
-import { RolesEntity } from '../../entities/auth/roles.entity';
 
 import {
     AddRolesRequest,
     UpdateRolesRequest,
     DeleteRolesRequest,
-} from '../../protos/auth/roles.d';
+} from '@protos/auth/roles.d';
 
-import { RolesService } from '../../services/auth/roles.service';
+import { Roles } from '@models/auth/roles.model';
+
+import { RolesService } from '@services/auth/roles.service';
 
 @Rpc('roles')
 export class RolesGateway {
@@ -26,10 +26,11 @@ export class RolesGateway {
     async getAll(@Socket() socket) {
         try {
             const items = await this.rolesservice.getAll();
+
             const response = await RpcUtils.pack(
                 'roles',
                 'GetAllRolesResponse',
-                items,
+                items.data,
             );
 
             if (response) socket.send(response);
@@ -37,10 +38,10 @@ export class RolesGateway {
     }
 
     @Message('AddRolesRequest')
-    async add(@Data() data: AddRolesRequest, @Socket() socket) {
+    async insert(@Data() data: AddRolesRequest, @Socket() socket) {
         try {
-            const entity = plainToClass(RolesEntity, data.item);
-            const result = await this.rolesservice.add(entity);
+            const roles = Roles.fromPartial(data.item);
+            const result = await this.rolesservice.insert(roles);
             const response = await RpcUtils.pack('roles', 'AddRolesResponse', {
                 item: result,
                 id: result._id,
@@ -53,8 +54,7 @@ export class RolesGateway {
     @Message('UpdateRolesRequest')
     async update(@Data() data: UpdateRolesRequest, @Socket() socket) {
         try {
-            const entity = plainToClass(RolesEntity, data.item);
-            const result = await this.rolesservice.update(data.id, entity);
+            const result = await this.rolesservice.update(data.id, data.item);
             const response = await RpcUtils.pack(
                 'roles',
                 'UpdateRolesResponse',

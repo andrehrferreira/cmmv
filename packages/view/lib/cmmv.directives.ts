@@ -11,7 +11,7 @@ export const ssrLoadData: Directive = async (
     data: Record<string, any>,
     template: Template,
 ): Promise<string> => {
-    const sDirectiveRegex = /\s+s:([\w\d_]+)\s*=\s*["']([^"']+)["']/g;
+    const sDirectiveRegex = /\s+s:([\w\d_]+)\s*=\s*[""]([^""]+)[""]/g;
     let match: RegExpExecArray | null;
 
     while ((match = sDirectiveRegex.exec(templateText)) !== null) {
@@ -22,7 +22,7 @@ export const ssrLoadData: Directive = async (
             templateText = templateText.replace(fullMatch, '');
         } catch (error) {
             console.error(
-                `Error evaluating expression '${expression}':`,
+                `Error evaluating expression "${expression}":`,
                 error,
             );
         }
@@ -37,7 +37,7 @@ export const sData: Directive = async (
     template: Template,
 ): Promise<string> => {
     return templateText.replace(
-        /<([^>]+)\s([^>]+)s-data=["'](.+?)["']([^>]*)>(.*?)<\/\1>/g,
+        /<([^>]+)\s([^>]+)s-data=[""](.+?)[""]([^>]*)>(.*?)<\/\1>/g,
         (match, tagName, attributesBefore, key, attributesAfter, innerHTML) => {
             const value = getValueFromKey(data, key.trim());
 
@@ -54,7 +54,7 @@ export const sAttr: Directive = (
     template: Template,
 ): string => {
     return templateText.replace(
-        /<([^>]+)\s+s-attr=["'](.+?)["']([^>]*)>/g,
+        /<([^>]+)\s+s-attr=[""](.+?)[""]([^>]*)>/g,
         (match, tagName, key, attributes) => {
             const value = getValueFromKey(data, key.trim());
 
@@ -101,7 +101,7 @@ export const i18n: Directive = (
     const translations = loadLocaleFile(locale);
 
     return templateText.replace(
-        /<(\w+)([^>]*)\s+s-i18n=["'](.+?)["']([^>]*)>(.*?)<\/\1>/g,
+        /<(\w+)([^>]*)\s+s-i18n=[""](.+?)[""]([^>]*)>(.*?)<\/\1>/g,
         (match, tagName, beforeAttrs, key, afterAttrs, innerHTML) => {
             const translation = getValueFromKey(translations, key?.trim());
 
@@ -127,9 +127,9 @@ async function resolveImport(filename): Promise<string> {
             const templateMatch = src.match(/<template>([\s\S]*?)<\/template>/);
             const scriptMatch = src.match(/<script.*?>([\s\S]*?)<\/script>/);
             const styleMatch = src.match(/<style.*?>([\s\S]*?)<\/style>/);
-            const importRegex = /import\s+([^;]+?)\s+from\s+['"]([^'"]+)['"];/g;
+            const importRegex = /import\s+([^;]+?)\s+from\s+[""]([^""]+)[""];/g;
             const importMatch = src.match(
-                /import\s+([^;]+?)\s+from\s+['"]([^'"]+)['"];/g,
+                /import\s+([^;]+?)\s+from\s+[""]([^""]+)[""];/g,
             );
 
             const template = templateMatch ? templateMatch[1].trim() : '';
@@ -220,7 +220,7 @@ export const extractSetupScript = async (
     templateText: string,
 ): Promise<object | string> => {
     const regex = /<script\s+[^>]*s-setup[^>]*>([\s\S]*?)<\/script>/;
-    const importRegex = /import\s+([^;]+?)\s+from\s+['"]([^'"]+)['"];/g;
+    const importRegex = /import\s+([^;]+?)\s+from\s+[""]([^""]+)[""];/g;
     const scriptMatch = templateText.match(regex);
     let scriptObject = null;
 
@@ -288,9 +288,9 @@ export const extractSetupScript = async (
 //SSR
 async function forSSR(templateText: string, template: Template) {
     const forDirectiveRegex =
-        /<(\w[-\w]*)([^>]*)\s+(c-for)\s*=\s*["'](.*?)["']([^>]*)>(.*?)<\/\1>/gs;
+        /<(\w[-\w]*)([^>]*)\s+(c-for)\s*=\s*[""](.*?)[""]([^>]*)>(.*?)<\/\1>/gs;
     const attrDirectiveRegex =
-        /\s+(c-text|c-html|:ref)\s*=\s*["']([^"']+)["']/g;
+        /\s+(c-text|c-html|:ref)\s*=\s*[""]([^""]+)[""]/g;
     const placeholder = 'c-ssr-for';
     let match: RegExpExecArray | null;
 
@@ -310,10 +310,10 @@ async function forSSR(templateText: string, template: Template) {
         const [itemVar, keyVar] = variables
             ? variables.split(',').map(v => v.trim())
             : [variables, null];
-        const listName = exp.match(/\b(?:in|of)\s+([^\s"']+)/i)?.[1];
+        const listName = exp.match(/\b(?:in|of)\s+([^\s""]+)/i)?.[1];
         const context = template.getContext();
         const items = listName ? getValueFromKey(context, listName) : null;
-        const renderTagMatch = /render-tag\s*=\s*["']([^"']+)["']/i.exec(
+        const renderTagMatch = /render-tag\s*=\s*[""]([^""]+)[""]/i.exec(
             fullMatch,
         );
         const renderTag = renderTagMatch ? renderTagMatch[1] : 'div';
@@ -334,11 +334,11 @@ async function forSSR(templateText: string, template: Template) {
                 );
 
                 const beforeAttrsParsed = beforeAttrs.replace(
-                    /render-tag\s*=\s*["']([^"']+)["']/i,
+                    /render-tag\s*=\s*[""]([^""]+)[""]/i,
                     '',
                 );
                 const afterAttrsParsed = afterAttrs.replace(
-                    /render-tag\s*=\s*["']([^"']+)["']/i,
+                    /render-tag\s*=\s*[""]([^""]+)[""]/i,
                     '',
                 );
 
@@ -376,7 +376,7 @@ async function forSSR(templateText: string, template: Template) {
                     new RegExp(`(<\\/?\\s*)${tagName}(\\s*>)`, 'gi'),
                     `$1${renderTag}$2`,
                 )
-                .replace(/render-tag\s*=\s*["']([^"']+)["']/i, '')
+                .replace(/render-tag\s*=\s*[""]([^""]+)[""]/i, '')
                 .replace(directive, placeholder)}</div>
             `,
         );
@@ -389,7 +389,7 @@ async function forSSR(templateText: string, template: Template) {
 }
 
 async function ifSSR(templateText: string, data: Record<string, any>) {
-    const sIfRegex = /<s-if\s+exp=["']([^"']+)["']>(.*?)<\/s-if>/gs;
+    const sIfRegex = /<s-if\s+exp=[""]([^""]+)[""]>(.*?)<\/s-if>/gs;
     const sElseRegex = /<s-else>(.*?)<\/s-else>/gs;
 
     return templateText.replace(sIfRegex, (match, exp, innerHTML) => {

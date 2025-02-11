@@ -7,16 +7,16 @@
 **/
 
 import { Rpc, Message, Data, Socket, RpcUtils } from '@cmmv/ws';
-import { plainToClass } from 'class-transformer';
-import { UserEntity } from '../../entities/auth/user.entity';
 
 import {
     AddUserRequest,
     UpdateUserRequest,
     DeleteUserRequest,
-} from '../../protos/auth/user.d';
+} from '@protos/auth/user.d';
 
-import { UserService } from '../../services/auth/user.service';
+import { User } from '@models/auth/user.model';
+
+import { UserService } from '@services/auth/user.service';
 
 @Rpc('user')
 export class UserGateway {
@@ -26,10 +26,11 @@ export class UserGateway {
     async getAll(@Socket() socket) {
         try {
             const items = await this.userservice.getAll();
+
             const response = await RpcUtils.pack(
                 'user',
                 'GetAllUserResponse',
-                items,
+                items.data,
             );
 
             if (response) socket.send(response);
@@ -37,10 +38,10 @@ export class UserGateway {
     }
 
     @Message('AddUserRequest')
-    async add(@Data() data: AddUserRequest, @Socket() socket) {
+    async insert(@Data() data: AddUserRequest, @Socket() socket) {
         try {
-            const entity = plainToClass(UserEntity, data.item);
-            const result = await this.userservice.add(entity);
+            const user = User.fromPartial(data.item);
+            const result = await this.userservice.insert(user);
             const response = await RpcUtils.pack('user', 'AddUserResponse', {
                 item: result,
                 id: result._id,
@@ -53,8 +54,7 @@ export class UserGateway {
     @Message('UpdateUserRequest')
     async update(@Data() data: UpdateUserRequest, @Socket() socket) {
         try {
-            const entity = plainToClass(UserEntity, data.item);
-            const result = await this.userservice.update(data.id, entity);
+            const result = await this.userservice.update(data.id, data.item);
             const response = await RpcUtils.pack('user', 'UpdateUserResponse', {
                 success: result.success,
                 affected: result.affected,

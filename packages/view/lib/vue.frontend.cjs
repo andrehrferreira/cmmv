@@ -18,11 +18,11 @@ export default {
         connectWebSocket() {
             const socketUrl = window.location.href.replace("https", "wss").replace("http", "ws");
             this.socket = new WebSocket(socketUrl);
-            this.socket.binaryType = 'arraybuffer';
+            this.socket.binaryType = "arraybuffer";
 
             this.socket.addEventListener("message", this.parseMessage);
             this.socket.addEventListener("open", () => {
-               //console.log('WebSocket Initialization');
+               //console.log("WebSocket Initialization");
             });
 
             this.socket.addEventListener("close", () => {

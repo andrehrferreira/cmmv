@@ -1,3 +1,5 @@
+import { validate } from 'class-validator';
+
 export abstract class AbstractService {
     name?: string; //compatibility
 
@@ -7,7 +9,7 @@ export abstract class AbstractService {
         );
     }
 
-    fixIds(item: any): any {
+    fixIds(item: any, subtree: boolean = false): any {
         if (item && typeof item === 'object') {
             if (item._id) {
                 item.id = item._id.toString();
@@ -19,8 +21,8 @@ export abstract class AbstractService {
                     item[key] = item[key].map((element: any) =>
                         this.fixIds(element),
                     );
-                } else if (typeof item[key] === 'object') {
-                    item[key] = this.fixIds(item[key]);
+                } else if (typeof item[key] === 'object' && !subtree) {
+                    item[key] = this.fixIds(item[key], true);
 
                     if (item.userCreator)
                         item.userCreator = item.userCreator.toString();
@@ -42,5 +44,20 @@ export abstract class AbstractService {
     appendUpdateUser(payload: any, userId: any) {
         payload.userLastUpdate = userId;
         return payload;
+    }
+
+    async validate<T>(item: object, partial: boolean = false): Promise<T> {
+        const errors = await validate(item, {
+            forbidUnknownValues: false,
+            skipNullProperties: partial,
+            skipMissingProperties: partial,
+            stopAtFirstError: true,
+        });
+
+        if (errors.length > 0)
+            throw new Error(Object.values(errors[0].constraints).join(', '));
+
+        item = this.removeUndefined(item);
+        return item as T;
     }
 }

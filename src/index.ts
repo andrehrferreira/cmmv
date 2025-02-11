@@ -6,8 +6,10 @@ import { ViewModule } from '@cmmv/view';
 import { RepositoryModule, Repository } from '@cmmv/repository';
 import { SchedulingModule, SchedulingService } from '@cmmv/scheduling';
 import { AuthModule } from '@cmmv/auth';
-import { IndexModule } from './modules/index.module';
-import { MainModule } from './modules/main.module';
+import { FormModule } from '@cmmv/form';
+
+import { IndexModule } from '@modules/index.module';
+import { MainModule } from '@modules/main.module';
 
 Application.create({
     httpAdapter: DefaultAdapter,
@@ -20,6 +22,7 @@ Application.create({
         RepositoryModule,
         SchedulingModule,
         AuthModule,
+        FormModule,
         IndexModule,
         MainModule,
     ],

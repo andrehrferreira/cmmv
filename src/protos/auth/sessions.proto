@@ -1,0 +1,68 @@
+/**                                                                               
+    **********************************************
+    This script was generated automatically by CMMV.
+    It is recommended not to modify this file manually, 
+    as it may be overwritten by the application.
+    **********************************************
+**/
+
+syntax = "proto3";
+package auth;
+
+import "./user.proto";
+
+message Sessions {
+   string uuid = 1;
+   string fingerprint = 2;
+   User user = 3;
+   string ipAddress = 4;
+   string device = 5;
+   string browser = 6;
+   string os = 7;
+   bool revoked = 8;
+   string userAgent = 9;
+}
+
+message SessionsList {
+    repeated Sessions items = 1;
+}
+
+message AddSessionsRequest {
+    Sessions item = 1;
+}
+
+message AddSessionsResponse {
+    string id = 1;
+    Sessions item = 2;
+}
+
+message UpdateSessionsRequest {
+    string id = 1;
+    Sessions item = 2;
+}
+
+message UpdateSessionsResponse {
+    bool success = 1;
+    int32 affected = 2;
+}
+
+message DeleteSessionsRequest {
+    string id = 1;
+}
+
+message DeleteSessionsResponse {
+    bool success = 1;
+    int32 affected = 2;
+}
+
+message GetAllSessionsRequest {}
+
+message GetAllSessionsResponse {
+    SessionsList items = 1;
+}
+service SessionsService {
+   rpc AddSessions (AddSessionsRequest) returns (AddSessionsResponse);
+   rpc UpdateSessions (UpdateSessionsRequest) returns (UpdateSessionsResponse);
+   rpc DeleteSessions (DeleteSessionsRequest) returns (DeleteSessionsResponse);
+   rpc GetAllSessions (GetAllSessionsRequest) returns (GetAllSessionsResponse);
+}

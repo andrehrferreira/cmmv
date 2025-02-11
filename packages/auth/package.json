@@ -1,6 +1,6 @@
 {
     "name": "@cmmv/auth",
-    "version": "0.8.9",
+    "version": "0.8.11",
     "description": "Authentication module for CMMV",
     "keywords": [
         "cmmv",
@@ -23,7 +23,10 @@
     },
     "homepage": "https://cmmv.io",
     "dependencies": {
-        "jsonwebtoken": "^9.0.2"
+        "@loskir/styled-qr-code-node": "^1.5.2",
+        "jsonwebtoken": "^9.0.2",
+        "qrcode": "^1.5.4",
+        "speakeasy": "^2.0.0"
     },
     "gitHead": "9b28f002268080dc8d283263da48e07aa754581f"
 }

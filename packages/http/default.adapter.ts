@@ -1,4 +1,3 @@
-import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as http from 'node:http';
 import * as https from 'node:https';
@@ -14,21 +13,23 @@ import etag from '@cmmv/etag';
 import helmet from '@cmmv/helmet';
 
 import {
+    Logger,
     AbstractHttpAdapter,
     IHTTPSettings,
     Application,
     Telemetry,
     Config,
-    ServiceRegistry,
-    Module,
 } from '@cmmv/core';
 
 import { ControllerRegistry } from './controller.registry';
+
+import { ResponseSchema } from './http.schema';
 
 export class DefaultAdapter extends AbstractHttpAdapter<
     http.Server | https.Server
 > {
     protected readonly openConnections = new Set<Duplex>();
+    protected readonly logger = new Logger('HTTP');
 
     constructor(protected instance?: any) {
         super(instance || cmmv());
@@ -102,7 +103,14 @@ export class DefaultAdapter extends AbstractHttpAdapter<
         this.instance.use(json({ limit: '50mb' }));
         this.instance.use(urlencoded({ limit: '50mb', extended: true }));
 
-        if (Config.get<boolean>('server.cors', true)) this.instance.use(cors());
+        if (Config.get<boolean>('server.cors', true)) {
+            this.instance.use(
+                cors({
+                    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+                    allowedHeaders: ['Content-Type', 'Authorization'],
+                }),
+            );
+        }
 
         if (Config.get<boolean>('server.helmet.enabled', true)) {
             this.instance.use(
@@ -156,7 +164,7 @@ export class DefaultAdapter extends AbstractHttpAdapter<
                         .map(value => {
                             if (headerName === 'Content-Security-Policy')
                                 return value.indexOf('style-src') == -1
-                                    ? `${value} 'nonce-${res.locals.nonce}'`
+                                    ? `${value} "nonce-${res.locals.nonce}"`
                                     : value;
 
                             return value;
@@ -166,7 +174,7 @@ export class DefaultAdapter extends AbstractHttpAdapter<
                     if (headerName === 'Content-Security-Policy')
                         headerValue =
                             headerValue.indexOf('style-src') == -1
-                                ? `${headerValue} 'nonce-${res.locals.nonce}'`
+                                ? `${headerValue} "nonce-${res.locals.nonce}"`
                                 : headerValue;
                 }
 
@@ -199,11 +207,9 @@ export class DefaultAdapter extends AbstractHttpAdapter<
                 }
             }
 
+            res.setHeader('cross-origin-resource-policy', 'cross-origin');
+
             Telemetry.start('Request Process', req.requestId);
-            const publicDir = path.join(process.cwd(), 'public/views');
-            const requestPath =
-                req.path === '/' ? 'index' : req.path.substring(1);
-            const ext = path.extname(req.path);
 
             if (
                 (req.path.indexOf('.html') === -1 &&
@@ -221,39 +227,6 @@ export class DefaultAdapter extends AbstractHttpAdapter<
             ) {
                 return null;
             }
-
-            /*const possiblePaths = [
-                path.join(publicDir, `${requestPath}.html`),
-                path.join(publicDir, requestPath, 'index.html'),
-                path.join(publicDir, `${requestPath}`),
-                path.join(publicDir, requestPath, 'index.html'),
-                path.join(publicDir, requestPath, 'views', 'index.html'),
-            ];
-
-            let fileFound = false;
-
-            for (const filePath of possiblePaths) { 
-                if (fs.existsSync(filePath)) {
-                    fileFound = true;
-                    const config = Config.getAll();
-
-                    try {           
-                                    
-                        res.render(filePath, {
-                            nonce: res.locals.nonce,
-                            services: ServiceRegistry.getServicesArr(),
-                            requestId: req.requestId,
-                            config,
-                        });
-
-                        return false;
-                    } catch(e) {
-                        console.error(e);
-                    }
-                }
-            }*/
-
-            //if (!fileFound) res.code(404).end('Page not found');
 
             if (typeof done === 'function') done(req, res, payload);
         });
@@ -334,15 +307,18 @@ export class DefaultAdapter extends AbstractHttpAdapter<
                             );
 
                             if (this.isJson(result)) {
-                                const response = {
+                                const raw = {
                                     status: 200,
                                     processingTime,
-                                    data: result,
+                                    result: {
+                                        success: true,
+                                        ...result,
+                                    },
                                 };
 
                                 if (req.query.debug) {
-                                    response['requestId'] = req.requestId;
-                                    response['telemetry'] = telemetry;
+                                    raw['requestId'] = req.requestId;
+                                    raw['telemetry'] = telemetry;
                                 }
 
                                 if (
@@ -359,13 +335,22 @@ export class DefaultAdapter extends AbstractHttpAdapter<
                                                 next,
                                                 handler:
                                                     instance[route.handlerName],
-                                                content: response,
+                                                content: raw,
                                             },
                                         );
                                     }
                                 }
 
-                                res.json(response);
+                                this.printLog(
+                                    'log',
+                                    method,
+                                    req.path,
+                                    Telemetry.getProcessTimer(req.requestId),
+                                    200,
+                                );
+
+                                if (typeof result === 'object') res.json(raw);
+                                else res.send(result);
                             } else if (result) {
                                 if (
                                     Application.appModule.httpAfterRender
@@ -387,33 +372,52 @@ export class DefaultAdapter extends AbstractHttpAdapter<
                                     }
                                 }
 
+                                this.printLog(
+                                    'log',
+                                    method,
+                                    req.path,
+                                    Telemetry.getProcessTimer(req.requestId),
+                                    200,
+                                );
+
                                 res.send(result);
                             }
                         } catch (error) {
-                            console.error(error);
+                            this.logger.error(
+                                error.message || 'Internal Server Error',
+                            );
                             const processingTime = Date.now() - startTime;
                             Telemetry.end('Request Process', req.requestId);
                             const telemetry = Telemetry.getTelemetry(
                                 req.requestId,
                             );
 
-                            const response = {
+                            const response = ResponseSchema({
                                 status: 500,
                                 processingTime,
-                                data: {
+                                result: {
                                     message:
                                         error.message ||
                                         'Internal Server Error',
                                     success: false,
                                 },
-                            };
+                            });
 
                             if (req.query.debug) {
                                 response['requestId'] = req.requestId;
                                 response['telemetry'] = telemetry;
                             }
 
-                            res.code(500).json(response);
+                            this.printLog(
+                                'error',
+                                method,
+                                req.path,
+                                Telemetry.getProcessTimer(req.requestId),
+                                500,
+                            );
+                            res.set('content-type', 'text/json')
+                                .code(500)
+                                .send(response);
                         }
 
                         Telemetry.clearTelemetry(req.requestId);
@@ -553,5 +557,43 @@ export class DefaultAdapter extends AbstractHttpAdapter<
                 resolve('');
             }
         });
+    }
+
+    public printLog(
+        type: string,
+        method: string,
+        path: string,
+        timer: number,
+        status: number,
+    ) {
+        const logging = Config.get<string>('server.logging', 'all');
+        const logContent = `${method.toUpperCase()} ${path} (${timer}ms) ${status}`;
+
+        switch (type) {
+            case 'error':
+                if (logging === 'all' || logging === 'error')
+                    this.logger.error(logContent);
+                break;
+            case 'warning':
+                if (
+                    logging === 'all' ||
+                    logging === 'error' ||
+                    logging === 'warning'
+                )
+                    this.logger.warning(logContent);
+                break;
+            case 'verbose':
+                if (
+                    logging === 'all' ||
+                    logging === 'error' ||
+                    logging === 'warning' ||
+                    logging === 'verbose'
+                )
+                    this.logger.verbose(logContent);
+                break;
+            default:
+                this.logger.log(logContent);
+                break;
+        }
     }
 }

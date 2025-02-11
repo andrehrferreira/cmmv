@@ -7,7 +7,7 @@ import { I18nCoinsContract } from './coins.contract';
     controllerCustomPath: '/i18n/countries',
     subPath: '/i18n',
     protoPackage: 'i18n',
-    auth: false,
+    auth: true,
     options: {
         databaseSchemaName: 'i18n_countries',
         databaseTimestamps: true,
@@ -41,9 +41,10 @@ export class I18nCountryContract extends AbstractContract {
 
     @ContractField({
         protoType: 'string',
-        objectType: 'object',
+        objectType: 'string',
         entityType: 'I18nCoinsEntity',
-        entityNullable: false,
+        entityNullable: true,
+        nullable: true,
         validations: [
             {
                 type: 'IsString',
@@ -58,5 +59,5 @@ export class I18nCountryContract extends AbstractContract {
             },
         ],
     })
-    currency: object;
+    currency: string;
 }

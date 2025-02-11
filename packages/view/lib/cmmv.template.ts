@@ -1,5 +1,3 @@
-'use strict';
-
 import { Config, Telemetry } from '@cmmv/core';
 
 import * as fs from 'node:fs';
@@ -51,7 +49,7 @@ export class Template {
     private async loadIncludes(templateText: string): Promise<string> {
         Telemetry.start('Load Includes', this.context.requestId);
         const includeRegex =
-            /<!--\s*include\(\s*['"]([^'"]+)['"]\s*\);?\s*-->/g;
+            /<!--\s*include\(\s*[""]([^""]+)[""]\s*\);?\s*-->/g;
         let match;
         let resultText = templateText;
 
@@ -388,7 +386,7 @@ export class Template {
             <title>${title}</title>\n
             ${headers}\n
             <script nonce="${this.nonce}">
-                var process = { env: { NODE_ENV: '${process.env.NODE_ENV}' } };
+                var process = { env: { NODE_ENV: "${process.env.NODE_ENV}" } };
                 ${Config.get<boolean>('view.vue3', false) ? 'window.Vue = {}' : ''}
             </script>
         `;

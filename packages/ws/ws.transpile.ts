@@ -8,6 +8,7 @@ import {
     ITranspile,
     Scope,
     IContract,
+    Module,
 } from '@cmmv/core';
 
 export class WSTranspile extends AbstractTranspile implements ITranspile {
@@ -20,12 +21,15 @@ export class WSTranspile extends AbstractTranspile implements ITranspile {
     }
 
     private generateGateway(contract: IContract) {
+        const hasCacheModule = Module.hasModule('cache');
         const gatewayName = `${contract.controllerName}Gateway`;
         const serviceName = `${contract.controllerName}Service`;
         const gatewayFileName = `${contract.controllerName.toLowerCase()}.gateway.ts`;
 
         const hasCache =
-            contract.cache !== undefined && contract.cache !== null;
+            hasCacheModule &&
+            contract.cache !== undefined &&
+            contract.cache !== null;
         const cacheKeyPrefix = hasCache
             ? contract.cache?.key || `${contract.controllerName.toLowerCase()}:`
             : '';
@@ -43,30 +47,35 @@ export class WSTranspile extends AbstractTranspile implements ITranspile {
     **********************************************
 **/
     
-import { Rpc, Message, Data, Socket, RpcUtils } from "@cmmv/ws";
-import { plainToClass } from 'class-transformer';
-import { ${contract.controllerName}Entity } from "${this.getImportPath(contract, 'entities', contract.controllerName.toLowerCase() + '.entity')}";${hasCache ? `\nimport { Cache, CacheService } from "@cmmv/cache";` : ''}
+import { Rpc, Message, Data, Socket, RpcUtils } from "@cmmv/ws";${hasCache ? `\nimport { Cache, CacheService } from "@cmmv/cache";` : ''}
 
 import { 
     Add${contract.controllerName}Request, 
     Update${contract.controllerName}Request,   
     Delete${contract.controllerName}Request 
-} from "${this.getImportPath(contract, 'protos', contract.controllerName.toLowerCase())}.d";
+} from "${this.getImportPath(contract, 'protos', contract.controllerName.toLowerCase(), '@protos')}.d";
 
-import { ${serviceName} } from "${this.getImportPath(contract, 'services', contract.controllerName.toLowerCase() + '.service')}";
+import { 
+    ${contract.controllerName} 
+} from "${this.getImportPath(contract, 'models', contract.controllerName.toLowerCase() + '.model', '@models')}";
+
+import { 
+    ${serviceName} 
+} from "${this.getImportPath(contract, 'services', contract.controllerName.toLowerCase() + '.service', '@services')}";
 
 @Rpc("${contract.controllerName.toLowerCase()}")
 export class ${gatewayName} {
     constructor(private readonly ${serviceName.toLowerCase()}: ${serviceName}) {}
 
-    @Message("GetAll${contract.controllerName}Request")${hasCache ? `@Cache("${cacheKeyPrefix}getAll", { ttl: ${cacheTtl}, compress: ${cacheCompress} })` : ''}
+    @Message("GetAll${contract.controllerName}Request")
     async getAll(@Socket() socket){
         try{
             const items = await this.${serviceName.toLowerCase()}.getAll();
+
             const response = await RpcUtils.pack(
                 "${contract.controllerName.toLowerCase()}", 
                 "GetAll${contract.controllerName}Response", 
-                items
+                items.data
             );
 
             if(response)
@@ -76,17 +85,17 @@ export class ${gatewayName} {
     }
 
     @Message("Add${contract.controllerName}Request")
-    async add(@Data() data: Add${contract.controllerName}Request, @Socket() socket){
+    async insert(@Data() data: Add${contract.controllerName}Request, @Socket() socket){
         try{
-            const entity = plainToClass(${contract.controllerName}Entity, data.item);
-            const result = await this.${serviceName.toLowerCase()}.add(entity);
+            const ${contract.controllerName.toLocaleLowerCase()} = ${contract.controllerName}.fromPartial(data.item);
+            const result = await this.${serviceName.toLowerCase()}.insert(${contract.controllerName.toLocaleLowerCase()});
             const response = await RpcUtils.pack(
                 "${contract.controllerName.toLowerCase()}", 
                 "Add${contract.controllerName}Response", 
                 { item: result, id: ${Config.get('repository.type') === 'mongodb' ? `result._id` : `result.id`} }
             );
 
-            ${hasCache ? `CacheService.set(\`${cacheKeyPrefix}\${${Config.get('repository.type') === 'mongodb' ? `result._id` : `result.id`}}\`, JSON.stringify(result), ${cacheTtl});` : ''}
+            ${hasCache ? `\n            CacheService.set(\`${cacheKeyPrefix}\${${Config.get('repository.type') === 'mongodb' ? `result._id` : `result.id`}}\`, JSON.stringify(result), ${cacheTtl});` : ''}
             ${hasCache ? `CacheService.del("${cacheKeyPrefix}getAll");` : ''}
 
             if(response)
@@ -98,8 +107,7 @@ export class ${gatewayName} {
     @Message("Update${contract.controllerName}Request")
     async update(@Data() data: Update${contract.controllerName}Request, @Socket() socket){
         try{
-            const entity = plainToClass(${contract.controllerName}Entity, data.item);
-            const result = await this.${serviceName.toLowerCase()}.update(data.id, entity);
+            const result = await this.${serviceName.toLowerCase()}.update(data.id, data.item);
             const response = await RpcUtils.pack(
                 "${contract.controllerName.toLowerCase()}", 
                 "Update${contract.controllerName}Response", 
@@ -108,7 +116,7 @@ export class ${gatewayName} {
                     affected: result.affected 
                 }
             );
-            ${hasCache ? `CacheService.set(\`${cacheKeyPrefix}\${${Config.get('repository.type') === 'mongodb' ? `result._id` : `result.id`}}\`, JSON.stringify(result), ${cacheTtl});` : ''}
+            ${hasCache ? `\n            CacheService.set(\`${cacheKeyPrefix}\${data.id}\`, JSON.stringify(result), ${cacheTtl});` : ''}
             ${hasCache ? `CacheService.del("${cacheKeyPrefix}getAll");` : ''}
 
             if(response)
@@ -129,7 +137,7 @@ export class ${gatewayName} {
                     affected: result.affected
                 }
             );
-            ${hasCache ? `CacheService.del(\`${cacheKeyPrefix}\${data.id}\`);` : ''}
+            ${hasCache ? `\n            CacheService.del(\`${cacheKeyPrefix}\${data.id}\`);` : ''}
             ${hasCache ? `CacheService.del("${cacheKeyPrefix}getAll");` : ''}
             
             if(response)

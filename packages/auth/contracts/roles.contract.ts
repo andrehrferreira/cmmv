@@ -6,6 +6,9 @@ import { AbstractContract, Contract, ContractField } from '@cmmv/core';
     subPath: '/auth',
     generateController: true,
     auth: true,
+    options: {
+        databaseSchemaName: 'auth_roles',
+    },
 })
 export class RolesContract extends AbstractContract {
     @ContractField({

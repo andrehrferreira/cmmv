@@ -31,11 +31,13 @@ export class I18nCoins implements II18nCoins {
     id: string;
 
     @Expose()
+    @IsNotEmpty()
     @IsString({ message: 'Invalid currency code' })
     @IsNotEmpty({ message: 'Currency code is required' })
     code: string;
 
     @Expose()
+    @IsNotEmpty()
     @IsString({ message: 'Invalid currency name' })
     @IsNotEmpty({ message: 'Currency name is required' })
     name: string;
@@ -73,11 +75,15 @@ export class I18nCoins implements II18nCoins {
     }
 }
 
-// Schema for fast-json-stringify
+// Schema
 export const I18nCoinsFastSchemaStructure = {
     title: 'I18nCoins Schema',
     type: 'object',
     properties: {
+        id: {
+            type: 'string',
+            nullable: false,
+        },
         code: {
             type: 'string',
             nullable: false,
@@ -91,7 +97,7 @@ export const I18nCoinsFastSchemaStructure = {
             nullable: false,
         },
     },
-    required: ['code', 'name', 'format'],
+    required: ['id', 'code', 'name', 'format'],
 };
 
 export const I18nCoinsFastSchema = fastJson(I18nCoinsFastSchemaStructure);

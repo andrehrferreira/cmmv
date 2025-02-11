@@ -75,7 +75,7 @@ describe('Singleton', () => {
 
     it('should not fail when clearing a non-existent instance', () => {
         const AnotherSingleton = class extends Singleton {};
-        AnotherSingleton.clearInstance(); // No instance exists, but shouldn't throw
+        AnotherSingleton.clearInstance(); // No instance exists, but shouldn"t throw
         const instance = AnotherSingleton.getInstance();
         expect(instance).toBeInstanceOf(AnotherSingleton);
     });

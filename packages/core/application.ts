@@ -1,12 +1,21 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-//import * as os from 'os';
+//import * as os from "os";
 import * as fg from 'fast-glob';
 import * as Terser from 'terser';
-//import { build } from 'esbuild';
+//import { build } from "esbuild";
 
 import { IHTTPSettings, ConfigSchema } from './interfaces';
-import { ITranspile, Logger, Scope, Transpile, Module, Config } from '.';
+import {
+    ITranspile,
+    Logger,
+    Scope,
+    Transpile,
+    Module,
+    Config,
+    Hooks,
+    HooksType,
+} from '.';
 import { AbstractHttpAdapter, AbstractWSAdapter } from './abstracts';
 
 import {
@@ -71,13 +80,13 @@ export class Application {
     protected contracts: Array<any> = [];
     protected configs: Array<ConfigSchema> = [];
     public providersMap = new Map<string, any>();
+    public static models = new Map<string, new () => any>();
 
     protected host: string;
     protected port: number;
 
     constructor(settings: IApplicationSettings, compile: boolean = false) {
         this.logger.log('Initialize application');
-
         Config.loadConfig();
 
         const env = Config.get<string>('env');
@@ -117,6 +126,7 @@ export class Application {
         compile: boolean = false,
     ): Promise<void> {
         try {
+            await Hooks.execute(HooksType.onPreInitialize);
             const env = Config.get<string>('env', process.env.NODE_ENV);
             this.loadModules(this.modules);
             await Config.validateConfigs(this.configs);
@@ -164,9 +174,28 @@ export class Application {
             settings.services?.forEach(async service => {
                 if (service && typeof service.loadConfig === 'function')
                     servicesLoad.push(service?.loadConfig(this));
+
+                if (Scope.has(`_await_service_${service.name}`)) {
+                    servicesLoad.push(
+                        new Promise(async resolve => {
+                            const actions = Scope.getArray(
+                                `_await_service_${service.name}`,
+                            );
+
+                            if (actions.length > 0) {
+                                actions.map(({ cb, context }) => {
+                                    cb.bind(context).call(context);
+                                });
+                            }
+
+                            resolve(true);
+                        }),
+                    );
+                }
             });
 
             await Promise.all(servicesLoad);
+            await Hooks.execute(HooksType.onInitialize);
 
             if (this.httpAdapter && !compile) {
                 await this.httpAdapter.init(this, this.httpOptions);
@@ -184,6 +213,8 @@ export class Application {
                 await this.httpAdapter
                     .listen(`${this.host}:${this.port}`)
                     .then(() => {
+                        Hooks.execute(HooksType.onListen);
+
                         this.logger.log(
                             `Server HTTP successfully started on ${this.host}:${this.port}`,
                         );
@@ -195,6 +226,7 @@ export class Application {
                     });
             }
         } catch (error) {
+            await Hooks.execute(HooksType.onError, { error });
             console.log(error);
 
             this.logger.error(
@@ -279,6 +311,7 @@ export class Application {
 
     protected loadModules(modules: Array<Module>): void {
         modules.forEach(module => {
+            //if(module){
             this.transpilers.push(...module.getTranspilers());
             this.controllers.push(...module.getControllers());
             this.submodules.push(...module.getSubmodules());
@@ -286,12 +319,21 @@ export class Application {
             this.configs.push(...module.getConfigsSchemas());
 
             module.getProviders().forEach(provider => {
-                const providerInstance = new provider();
+                const paramTypes =
+                    Reflect.getMetadata('design:paramtypes', provider) || [];
+                const instances = paramTypes.map(
+                    (paramType: any) =>
+                        this.providersMap.get(paramType.name) ||
+                        new paramType(),
+                );
+
+                const providerInstance = new provider(...instances);
                 this.providersMap.set(provider.name, providerInstance);
             });
 
             if (module.getSubmodules().length > 0)
                 this.loadModules(module.getSubmodules());
+            //}
         });
     }
 
@@ -393,24 +435,33 @@ export class Application {
         });
     }
 
-    public getHttpAdapter(): AbstractHttpAdapter {
-        return this.httpAdapter as AbstractHttpAdapter;
+    public static awaitModule(moduleName: string, cb: Function, context: any) {
+        if (Module.hasModule(moduleName)) {
+            cb.bind(context).call(context);
+        } else {
+            Scope.addToArray(`_await_module_${moduleName}`, {
+                cb,
+                context,
+            });
+        }
     }
 
-    public getUnderlyingHttpServer() {
-        this.httpAdapter.getHttpServer();
+    public static awaitService(
+        serviceName: string,
+        cb: Function,
+        context: any,
+    ) {
+        Scope.addToArray(`_await_service_${serviceName}`, {
+            cb,
+            context,
+        });
     }
 
-    public getWSServer(): AbstractWSAdapter {
-        return this.wsServer as AbstractWSAdapter;
-    }
+    public static getModel(modelName: string): new () => any {
+        if (Application.models.has(modelName))
+            return Application.models.get(modelName);
 
-    public static create(settings?: IApplicationSettings): Application {
-        return new Application(settings);
-    }
-
-    public static compile(settings?: IApplicationSettings): Application {
-        return new Application(settings, true);
+        throw new Error(`Could not load model '${modelName}'`);
     }
 
     protected static async generateModule(): Promise<Module> {
@@ -425,18 +476,18 @@ export class Application {
     **********************************************
 **/
 
-import 'reflect-metadata';
+import "reflect-metadata";
 
 import { 
     Module, ApplicationTranspile,
     ApplicationConfig 
-} from '@cmmv/core';
+} from "@cmmv/core";
 
 //Controllers
-${Application.appModule.controllers.map(controller => `import { ${controller.name} } from '${controller.path}';`).join('\n')}
+${Application.appModule.controllers.map(controller => `import { ${controller.name} } from "${controller.path}";`).join('\n')}
 
 //Providers
-${Application.appModule.providers.map(provider => `import { ${provider.name} } from '${provider.path}';`).join('\n')}
+${Application.appModule.providers.map(provider => `import { ${provider.name} } from "${provider.path}";`).join('\n')}
 
 export let ApplicationModule = new Module("app", {
     configs: [ApplicationConfig],
@@ -461,6 +512,26 @@ export let ApplicationModule = new Module("app", {
             new Logger('Application').error(e.message, 'generateModule');
             return null;
         }
+    }
+
+    public getHttpAdapter(): AbstractHttpAdapter {
+        return this.httpAdapter as AbstractHttpAdapter;
+    }
+
+    public getUnderlyingHttpServer() {
+        this.httpAdapter.getHttpServer();
+    }
+
+    public getWSServer(): AbstractWSAdapter {
+        return this.wsServer as AbstractWSAdapter;
+    }
+
+    public static create(settings?: IApplicationSettings): Application {
+        return new Application(settings);
+    }
+
+    public static compile(settings?: IApplicationSettings): Application {
+        return new Application(settings, true);
     }
 
     public static setHTTPMiddleware(cb: Function) {

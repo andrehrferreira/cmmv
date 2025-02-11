@@ -15,13 +15,13 @@
                             "type": "string",
                             "id": 2
                         },
-                        "googleId": {
+                        "provider": {
                             "type": "string",
                             "id": 3
                         },
                         "groups": {
                             "rule": "repeated",
-                            "type": "string",
+                            "type": "Groups",
                             "id": 4
                         },
                         "roles": {
@@ -32,6 +32,38 @@
                         "root": {
                             "type": "bool",
                             "id": 6
+                        },
+                        "blocked": {
+                            "type": "bool",
+                            "id": 7
+                        },
+                        "validated": {
+                            "type": "bool",
+                            "id": 8
+                        },
+                        "verifyEmail": {
+                            "type": "bool",
+                            "id": 9
+                        },
+                        "verifyEmailCode": {
+                            "type": "int32",
+                            "id": 10
+                        },
+                        "verifySMS": {
+                            "type": "bool",
+                            "id": 11
+                        },
+                        "verifySMSCode": {
+                            "type": "int32",
+                            "id": 12
+                        },
+                        "optSecret": {
+                            "type": "string",
+                            "id": 13
+                        },
+                        "optSecretVerify": {
+                            "type": "bool",
+                            "id": 14
                         }
                     }
                 },
@@ -228,6 +260,123 @@
                         "Register": {
                             "requestType": "RegisterRequest",
                             "responseType": "RegisterResponse"
+                        }
+                    }
+                },
+                "Groups": {
+                    "fields": {
+                        "name": {
+                            "type": "string",
+                            "id": 1
+                        },
+                        "roles": {
+                            "rule": "repeated",
+                            "type": "Roles",
+                            "id": 2
+                        }
+                    }
+                },
+                "GroupsList": {
+                    "fields": {
+                        "items": {
+                            "rule": "repeated",
+                            "type": "Groups",
+                            "id": 1
+                        }
+                    }
+                },
+                "AddGroupsRequest": {
+                    "fields": {
+                        "item": {
+                            "type": "Groups",
+                            "id": 1
+                        }
+                    }
+                },
+                "AddGroupsResponse": {
+                    "fields": {
+                        "id": {
+                            "type": "string",
+                            "id": 1
+                        },
+                        "item": {
+                            "type": "Groups",
+                            "id": 2
+                        }
+                    }
+                },
+                "UpdateGroupsRequest": {
+                    "fields": {
+                        "id": {
+                            "type": "string",
+                            "id": 1
+                        },
+                        "item": {
+                            "type": "Groups",
+                            "id": 2
+                        }
+                    }
+                },
+                "UpdateGroupsResponse": {
+                    "fields": {
+                        "success": {
+                            "type": "bool",
+                            "id": 1
+                        },
+                        "affected": {
+                            "type": "int32",
+                            "id": 2
+                        }
+                    }
+                },
+                "DeleteGroupsRequest": {
+                    "fields": {
+                        "id": {
+                            "type": "string",
+                            "id": 1
+                        }
+                    }
+                },
+                "DeleteGroupsResponse": {
+                    "fields": {
+                        "success": {
+                            "type": "bool",
+                            "id": 1
+                        },
+                        "affected": {
+                            "type": "int32",
+                            "id": 2
+                        }
+                    }
+                },
+                "GetAllGroupsRequest": {
+                    "fields": {}
+                },
+                "GetAllGroupsResponse": {
+                    "fields": {
+                        "items": {
+                            "type": "GroupsList",
+                            "id": 1
+                        }
+                    }
+                },
+                "GroupsService": {
+                    "methods": {
+                        "AddGroups": {
+                            "requestType": "AddGroupsRequest",
+                            "responseType": "AddGroupsResponse"
+                        },
+                        "UpdateGroups": {
+                            "requestType": "UpdateGroupsRequest",
+                            "responseType": "UpdateGroupsResponse"
+                        },
+                        "DeleteGroups": {
+                            "requestType": "DeleteGroupsRequest",
+                            "responseType": "DeleteGroupsResponse"
+                        },
+                        "GetAllGroups": {
+                            "requestType": "GetAllGroupsRequest",
+                            "responseType": "GetAllGroupsResponse"
                         }
                     }
                 },

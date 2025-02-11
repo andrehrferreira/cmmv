@@ -8,14 +8,17 @@
 
 import { Entity, ObjectIdColumn, Column, Index, ObjectId } from 'typeorm';
 
-import { IRoles } from '../../models/auth/roles.model';
+import { IRoles } from '@models/auth/roles.model';
 
-@Entity('roles')
+@Entity('auth_roles')
 @Index('idx_roles_name', ['name'], { unique: true })
 export class RolesEntity implements IRoles {
     @ObjectIdColumn()
     _id: ObjectId;
 
-    @Column({ type: 'varchar' })
+    @Column({
+        type: 'varchar',
+        nullable: false,
+    })
     name: string;
 }

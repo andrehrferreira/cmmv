@@ -1,6 +1,6 @@
 import { Controller } from '@cmmv/http';
 
-import { RolesControllerGenerated } from './roles.controller.generated';
+import { RolesControllerGenerated } from '@generated/controllers/auth/roles.controller';
 
 @Controller('roles')
 export class RolesController extends RolesControllerGenerated {

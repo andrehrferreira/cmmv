@@ -9,6 +9,8 @@ type TelemetryRecord = {
 
 export class Telemetry extends Singleton {
     private records: Map<string, TelemetryRecord[]> = new Map();
+    private processTimer: Map<string, { start: number; end: number }> =
+        new Map();
     public plugins: any[] = [];
 
     public static registerPlugin(plugin: any): void {
@@ -23,13 +25,17 @@ export class Telemetry extends Singleton {
             if (!telemetry.records.has(requestId))
                 telemetry.records.set(requestId, []);
 
-            telemetry.records
-                .get(requestId)
-                ?.push({
-                    id: telemetry.generateId(),
-                    label,
-                    startTime: Date.now(),
+            if (!telemetry.processTimer.has(requestId))
+                telemetry.processTimer.set(requestId, {
+                    start: Date.now(),
+                    end: 0,
                 });
+
+            telemetry.records.get(requestId)?.push({
+                id: telemetry.generateId(),
+                label,
+                startTime: Date.now(),
+            });
         }
     }
 
@@ -40,8 +46,27 @@ export class Telemetry extends Singleton {
                 .get(requestId)
                 ?.find(r => r.label === label && !r.endTime);
 
+            if (telemetry.processTimer.has(requestId)) {
+                const timer = telemetry.processTimer.get(requestId);
+                timer.end = Date.now();
+                telemetry.processTimer.set(requestId, timer);
+            }
+
             if (record) record.endTime = Date.now();
         }
+    }
+
+    public static getProcessTimer(requestId?: string) {
+        if (requestId) {
+            const telemetry = Telemetry.getInstance();
+
+            if (telemetry.processTimer.has(requestId)) {
+                const timer = telemetry.processTimer.get(requestId);
+                return timer.end - timer.start;
+            }
+        }
+
+        return 0;
     }
 
     public static getTelemetry(requestId?: string): TelemetryRecord[] | null {
@@ -58,7 +83,12 @@ export class Telemetry extends Singleton {
             const telemetry = Telemetry.getInstance();
 
             if (telemetry.records.has(requestId))
-                return telemetry.records.delete(requestId);
+                telemetry.records.delete(requestId);
+
+            if (telemetry.processTimer.has(requestId))
+                telemetry.processTimer.delete(requestId);
+
+            return true;
         }
 
         return false;

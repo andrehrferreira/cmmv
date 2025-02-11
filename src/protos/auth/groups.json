@@ -1,0 +1,240 @@
+{
+    "options": {
+        "syntax": "proto3"
+    },
+    "nested": {
+        "auth": {
+            "nested": {
+                "Groups": {
+                    "fields": {
+                        "name": {
+                            "type": "string",
+                            "id": 1
+                        },
+                        "roles": {
+                            "rule": "repeated",
+                            "type": "Roles",
+                            "id": 2
+                        }
+                    }
+                },
+                "GroupsList": {
+                    "fields": {
+                        "items": {
+                            "rule": "repeated",
+                            "type": "Groups",
+                            "id": 1
+                        }
+                    }
+                },
+                "AddGroupsRequest": {
+                    "fields": {
+                        "item": {
+                            "type": "Groups",
+                            "id": 1
+                        }
+                    }
+                },
+                "AddGroupsResponse": {
+                    "fields": {
+                        "id": {
+                            "type": "string",
+                            "id": 1
+                        },
+                        "item": {
+                            "type": "Groups",
+                            "id": 2
+                        }
+                    }
+                },
+                "UpdateGroupsRequest": {
+                    "fields": {
+                        "id": {
+                            "type": "string",
+                            "id": 1
+                        },
+                        "item": {
+                            "type": "Groups",
+                            "id": 2
+                        }
+                    }
+                },
+                "UpdateGroupsResponse": {
+                    "fields": {
+                        "success": {
+                            "type": "bool",
+                            "id": 1
+                        },
+                        "affected": {
+                            "type": "int32",
+                            "id": 2
+                        }
+                    }
+                },
+                "DeleteGroupsRequest": {
+                    "fields": {
+                        "id": {
+                            "type": "string",
+                            "id": 1
+                        }
+                    }
+                },
+                "DeleteGroupsResponse": {
+                    "fields": {
+                        "success": {
+                            "type": "bool",
+                            "id": 1
+                        },
+                        "affected": {
+                            "type": "int32",
+                            "id": 2
+                        }
+                    }
+                },
+                "GetAllGroupsRequest": {
+                    "fields": {}
+                },
+                "GetAllGroupsResponse": {
+                    "fields": {
+                        "items": {
+                            "type": "GroupsList",
+                            "id": 1
+                        }
+                    }
+                },
+                "GroupsService": {
+                    "methods": {
+                        "AddGroups": {
+                            "requestType": "AddGroupsRequest",
+                            "responseType": "AddGroupsResponse"
+                        },
+                        "UpdateGroups": {
+                            "requestType": "UpdateGroupsRequest",
+                            "responseType": "UpdateGroupsResponse"
+                        },
+                        "DeleteGroups": {
+                            "requestType": "DeleteGroupsRequest",
+                            "responseType": "DeleteGroupsResponse"
+                        },
+                        "GetAllGroups": {
+                            "requestType": "GetAllGroupsRequest",
+                            "responseType": "GetAllGroupsResponse"
+                        }
+                    }
+                },
+                "Roles": {
+                    "fields": {
+                        "name": {
+                            "type": "string",
+                            "id": 1
+                        }
+                    }
+                },
+                "RolesList": {
+                    "fields": {
+                        "items": {
+                            "rule": "repeated",
+                            "type": "Roles",
+                            "id": 1
+                        }
+                    }
+                },
+                "AddRolesRequest": {
+                    "fields": {
+                        "item": {
+                            "type": "Roles",
+                            "id": 1
+                        }
+                    }
+                },
+                "AddRolesResponse": {
+                    "fields": {
+                        "id": {
+                            "type": "string",
+                            "id": 1
+                        },
+                        "item": {
+                            "type": "Roles",
+                            "id": 2
+                        }
+                    }
+                },
+                "UpdateRolesRequest": {
+                    "fields": {
+                        "id": {
+                            "type": "string",
+                            "id": 1
+                        },
+                        "item": {
+                            "type": "Roles",
+                            "id": 2
+                        }
+                    }
+                },
+                "UpdateRolesResponse": {
+                    "fields": {
+                        "success": {
+                            "type": "bool",
+                            "id": 1
+                        },
+                        "affected": {
+                            "type": "int32",
+                            "id": 2
+                        }
+                    }
+                },
+                "DeleteRolesRequest": {
+                    "fields": {
+                        "id": {
+                            "type": "string",
+                            "id": 1
+                        }
+                    }
+                },
+                "DeleteRolesResponse": {
+                    "fields": {
+                        "success": {
+                            "type": "bool",
+                            "id": 1
+                        },
+                        "affected": {
+                            "type": "int32",
+                            "id": 2
+                        }
+                    }
+                },
+                "GetAllRolesRequest": {
+                    "fields": {}
+                },
+                "GetAllRolesResponse": {
+                    "fields": {
+                        "items": {
+                            "type": "RolesList",
+                            "id": 1
+                        }
+                    }
+                },
+                "RolesService": {
+                    "methods": {
+                        "AddRoles": {
+                            "requestType": "AddRolesRequest",
+                            "responseType": "AddRolesResponse"
+                        },
+                        "UpdateRoles": {
+                            "requestType": "UpdateRolesRequest",
+                            "responseType": "UpdateRolesResponse"
+                        },
+                        "DeleteRoles": {
+                            "requestType": "DeleteRolesRequest",
+                            "responseType": "DeleteRolesResponse"
+                        },
+                        "GetAllRoles": {
+                            "requestType": "GetAllRolesRequest",
+                            "responseType": "GetAllRolesResponse"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

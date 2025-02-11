@@ -1,11 +1,13 @@
 import { AbstractContract, Contract, ContractField } from '@cmmv/core';
 
+import { I18nCoinsForm } from './coins.form';
+
 @Contract({
     controllerName: 'I18nCoins',
     controllerCustomPath: '/i18n/coins',
     subPath: '/i18n',
     protoPackage: 'i18n',
-    auth: true,
+    auth: false,
     options: {
         databaseSchemaName: 'i18n_coins',
         databaseTimestamps: true,
@@ -16,11 +18,13 @@ import { AbstractContract, Contract, ContractField } from '@cmmv/core';
         ttl: 3000,
         compress: true,
     },
+    viewForm: I18nCoinsForm,
 })
 export class I18nCoinsContract extends AbstractContract {
     @ContractField({
         protoType: 'string',
         unique: true,
+        nullable: false,
         validations: [
             { type: 'IsString', message: 'Invalid currency code' },
             { type: 'IsNotEmpty', message: 'Currency code is required' },
@@ -30,6 +34,7 @@ export class I18nCoinsContract extends AbstractContract {
 
     @ContractField({
         protoType: 'string',
+        nullable: false,
         validations: [
             { type: 'IsString', message: 'Invalid currency name' },
             { type: 'IsNotEmpty', message: 'Currency name is required' },

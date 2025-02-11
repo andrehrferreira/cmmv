@@ -70,17 +70,21 @@ export class Roles implements IRoles {
     }
 }
 
-// Schema for fast-json-stringify
+// Schema
 export const RolesFastSchemaStructure = {
     title: 'Roles Schema',
     type: 'object',
     properties: {
+        id: {
+            type: 'string',
+            nullable: false,
+        },
         name: {
             type: 'string',
             nullable: false,
         },
     },
-    required: ['name'],
+    required: ['id', 'name'],
 };
 
 export const RolesFastSchema = fastJson(RolesFastSchemaStructure);

@@ -18,7 +18,7 @@ export class ProtobufTranspile extends AbstractTranspile implements ITranspile {
     private logger: Logger = new Logger('ProtobufTranspile');
     private imports: Set<string> = new Set();
 
-    run(): void {
+    async run(): Promise<void> {
         const contracts = Scope.getArray<any>('__contracts');
         const contractsJson: { [key: string]: any } = {};
 
@@ -150,11 +150,10 @@ export class ProtobufTranspile extends AbstractTranspile implements ITranspile {
 
                     const entityName = controllerName;
                     const importPath = this.getImportPathRelative(
-                        contractInstance,
+                        link.contract,
                         contract,
                         'protos',
                         `${entityName.toLowerCase()}.proto`,
-                        outputFilePath,
                     );
 
                     if (importPath) {
@@ -346,11 +345,11 @@ ${Object.entries(contract.messages[key].properties)
 
                     const entityName = controllerName;
                     const importPath = this.getImportPathRelative(
-                        contractInstance,
+                        link.contract,
                         contract,
                         'protos',
                         `${entityName.toLowerCase()}.d`,
-                        outputFilePath,
+                        '@protos',
                     );
 
                     if (importPath) {
@@ -469,27 +468,33 @@ ${Object.entries(contract.messages[key].properties)
         let pointer = 0;
 
         for (const key in contracts) {
-            const contract = ProtoRegistry.retrieve(key);
-            const jsonProtoFile = contractsJson[key].path;
-            contractsList[key] = contract.toJSON();
+            if (returnResult) console.log(key, contractsJson[key].path);
 
-            fs.writeFileSync(
-                jsonProtoFile,
-                JSON.stringify(contractsList[key], null, 4),
-            );
+            if (contractsJson[key] && contractsJson[key].path) {
+                const contract = ProtoRegistry.retrieve(key);
+                const jsonProtoFile = contractsJson[key].path;
+                contractsList[key] = contract.toJSON();
 
-            const types = {};
-            let pointerTypes = 0;
-
-            for (const namespace of contract.nestedArray) {
-                for (const type in namespace.toJSON().nested) {
-                    types[type] = pointerTypes;
-                    pointerTypes++;
+                if (!returnResult) {
+                    fs.writeFileSync(
+                        jsonProtoFile,
+                        JSON.stringify(contractsList[key], null, 4),
+                    );
                 }
-            }
 
-            index[key] = { index: pointer, types };
-            pointer++;
+                const types = {};
+                let pointerTypes = 0;
+
+                for (const namespace of contract.nestedArray) {
+                    for (const type in namespace.toJSON().nested) {
+                        types[type] = pointerTypes;
+                        pointerTypes++;
+                    }
+                }
+
+                index[key] = { index: pointer, types };
+                pointer++;
+            }
         }
 
         const data = {
@@ -500,7 +505,13 @@ ${Object.entries(contract.messages[key].properties)
         if (returnResult) {
             return JSON.stringify(data);
         } else {
-            let jsContent = '// Generated automatically by CMMV\n';
+            let jsContent = `/**                                                                               
+    **********************************************
+    This script was generated automatically by CMMV.
+    It is recommended not to modify this file manually, 
+    as it may be overwritten by the application.
+    **********************************************
+**/\n`;
             jsContent += '(function(global) {\n';
             jsContent += '  try {\n';
             jsContent +=
@@ -517,7 +528,7 @@ ${Object.entries(contract.messages[key].properties)
         }
     }
 
-    /*public async returnContractJs(): Promise<string> {
+    public async returnContractJs(): Promise<string> {
         const contracts = Scope.getArray<any>('__contracts');
         const contractsJson: { [key: string]: any } = {};
 
@@ -542,10 +553,18 @@ ${Object.entries(contract.messages[key].properties)
                         );
 
                         const entityName = controllerName;
-                        const protoOutputDir = this.getRootPath(contract, 'protos');
-                        const importPath = path.relative(protoOutputDir, path.join(this.getRootPath(contractInstance, 'protos'), `${entityName.toLowerCase()}.proto`));
+                        const protoOutputDir = this.getRootPath(
+                            contract,
+                            'protos',
+                        );
+                        const importPath = path.relative(
+                            protoOutputDir,
+                            path.join(
+                                this.getRootPath(contractInstance, 'protos'),
+                                `${entityName.toLowerCase()}.proto`,
+                            ),
+                        );
 
-                        // Only add import if there is a correlation
                         if (importPath) {
                             const linkedEntityImport = `import \"${importPath}\";`;
                             this.addImport(linkedEntityImport);
@@ -566,7 +585,19 @@ ${Object.entries(contract.messages[key].properties)
 
             protoNamespace.add(itemMessage);
             const contractJSON = root.toJSON();
-            contractsJson[contract.controllerName] = contractJSON;
+            const outputDir = path.resolve(
+                this.getRootPath(contract, 'protos'),
+            );
+            const protoFileName = `${contract.controllerName.toLowerCase()}.proto`;
+            const outputFilePath = path.join(outputDir, protoFileName);
+
+            const contractMeta = {
+                content: contractJSON,
+                path: outputFilePath.replace('.proto', '.json'),
+            };
+
+            contractsJson[contract.controllerName] = contractMeta;
+            contractsJson[contract.controllerName.toLowerCase()] = contractMeta;
         });
 
         const parseContract = await this.generateContractsJs(
@@ -575,7 +606,7 @@ ${Object.entries(contract.messages[key].properties)
         );
 
         return typeof parseContract == 'string' ? parseContract : '';
-    }*/
+    }
 
     private mapToProtoType(type: string): string {
         const typeMapping: { [key: string]: string } = {
