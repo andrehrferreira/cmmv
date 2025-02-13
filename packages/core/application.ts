@@ -5,7 +5,10 @@ import * as fg from 'fast-glob';
 import * as Terser from 'terser';
 //import { build } from "esbuild";
 
-import { IHTTPSettings, ConfigSchema } from './interfaces';
+import { IHTTPSettings, ConfigSchema, IContract } from './interfaces';
+
+import { AbstractHttpAdapter, AbstractWSAdapter } from './abstracts';
+
 import {
     ITranspile,
     Logger,
@@ -16,7 +19,6 @@ import {
     Hooks,
     HooksType,
 } from '.';
-import { AbstractHttpAdapter, AbstractWSAdapter } from './abstracts';
 
 import {
     CONTROLLER_NAME_METADATA,
@@ -477,7 +479,41 @@ export class Application {
 
                 Scope.addToArray('__contracts', contractStructure);
             });
+
+            const contracts = Scope.getArray<any>('__contracts');
+            contracts?.forEach((contract: any) => this.loadModels(contract));
         }
+    }
+
+    protected async loadModels(contract: IContract) {
+        const modelName = `${contract.controllerName}`;
+        const modelFileName = `${modelName.toLowerCase()}.model.ts`;
+        const outputDir = this.getRootPath(contract, 'models');
+        const outputFilePath = path.join(outputDir, modelFileName);
+        const modelImport = await import(path.resolve(outputFilePath));
+        Application.models.set(modelName, modelImport[modelName]);
+    }
+
+    protected getRootPath(contract: any, context: string): string {
+        let outputDir = contract.subPath
+            ? path.join('src', context, contract.subPath)
+            : path.join('src', context);
+
+        if (!fs.existsSync(outputDir))
+            fs.mkdirSync(outputDir, { recursive: true });
+
+        return outputDir;
+    }
+
+    protected getGeneratedPath(contract: any, context: string): string {
+        let outputDir = contract.subPath
+            ? path.join('.generated', context, contract.subPath)
+            : path.join('.generated', context);
+
+        if (!fs.existsSync(outputDir))
+            fs.mkdirSync(outputDir, { recursive: true });
+
+        return outputDir;
     }
 
     public static awaitModule(moduleName: string, cb: Function, context: any) {

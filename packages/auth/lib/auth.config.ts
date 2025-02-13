@@ -398,5 +398,20 @@ export const AuthConfig: ConfigSchema = {
                 },
             },
         },
+        recaptcha: {
+            required: false,
+            type: 'object',
+            properties: {
+                required: {
+                    required: false,
+                    type: 'boolean',
+                    default: false,
+                },
+                secret: {
+                    required: false,
+                    type: 'string',
+                },
+            },
+        },
     },
 };

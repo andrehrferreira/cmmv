@@ -25,6 +25,7 @@
     "dependencies": {
         "@loskir/styled-qr-code-node": "^1.5.2",
         "jsonwebtoken": "^9.0.2",
+        "node-fetch": "^3.3.2",
         "qrcode": "^1.5.4",
         "speakeasy": "^2.0.0"
     },

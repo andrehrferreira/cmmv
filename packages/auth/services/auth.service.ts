@@ -23,11 +23,16 @@ import {
     decryptJWTData,
 } from '../lib/auth.utils';
 
+import { LoginPayload } from '../lib/auth.interface';
 import { AuthSessionsService } from '../services/sessions.service';
+import { AuthRecaptchaService } from '../services/recaptcha.service';
 
 @Service('auth')
 export class AuthService extends AbstractService {
-    constructor(private readonly sessionsService: AuthSessionsService) {
+    constructor(
+        private readonly sessionsService: AuthSessionsService,
+        private readonly recaptchaService: AuthRecaptchaService,
+    ) {
         super();
     }
 
@@ -69,7 +74,12 @@ export class AuthService extends AbstractService {
         return localIPs.includes(clientIP);
     }
 
-    public async login(payload, req?: any, res?: any, session?: any) {
+    public async login(
+        payload: LoginPayload,
+        req?: any,
+        res?: any,
+        session?: any,
+    ) {
         const UserEntity = Repository.getEntity('UserEntity');
         const env = Config.get<string>('env', process.env.NODE_ENV);
         const jwtSecret = Config.get<string>('auth.jwtSecret');
@@ -99,6 +109,24 @@ export class AuthService extends AbstractService {
             'server.session.options.cookie.secure',
             process.env.NODE_ENV !== 'dev',
         );
+        const recaptchaRequired = Config.get<boolean>(
+            'recaptcha.required',
+            false,
+        );
+        const recaptchaSecret = Config.get<boolean>('recaptcha.secret');
+
+        if (recaptchaRequired) {
+            if (
+                !(await this.recaptchaService.validateRecaptcha(
+                    recaptchaSecret,
+                    payload.token,
+                ))
+            )
+                throw new HttpException(
+                    'Invalid reCAPTCHA',
+                    HttpStatus.FORBIDDEN,
+                );
+        }
 
         const usernameHashed = crypto
             .createHash('sha1')
