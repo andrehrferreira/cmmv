@@ -81,7 +81,7 @@ export class AuthGateway {
 
         Application.appModule.providers.push({
             name: 'AuthGateway',
-            path: `./gateways/auth/auth.gateway`,
+            path: `@gateways/auth/auth.gateway`,
         });
     }
 

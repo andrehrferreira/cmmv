@@ -84,6 +84,12 @@ export class SessionsEntity implements ISessions {
     })
     userAgent?: string;
 
+    @Column({
+        type: 'varchar',
+        nullable: false,
+    })
+    refreshToken: string;
+
     @CreateDateColumn({
         type: 'timestamp',
         default: () => 'CURRENT_TIMESTAMP',

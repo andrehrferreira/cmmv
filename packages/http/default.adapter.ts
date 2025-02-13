@@ -24,6 +24,7 @@ import {
 import { ControllerRegistry } from './controller.registry';
 
 import { ResponseSchema } from './http.schema';
+import { HttpException } from './http.exception';
 
 export class DefaultAdapter extends AbstractHttpAdapter<
     http.Server | https.Server
@@ -391,9 +392,13 @@ export class DefaultAdapter extends AbstractHttpAdapter<
                             const telemetry = Telemetry.getTelemetry(
                                 req.requestId,
                             );
+                            let statusCode = 500;
+
+                            if (error instanceof HttpException)
+                                statusCode = error.status;
 
                             const response = ResponseSchema({
-                                status: 500,
+                                status: statusCode,
                                 processingTime,
                                 result: {
                                     message:
@@ -413,10 +418,11 @@ export class DefaultAdapter extends AbstractHttpAdapter<
                                 method,
                                 req.path,
                                 Telemetry.getProcessTimer(req.requestId),
-                                500,
+                                statusCode,
                             );
+
                             res.set('content-type', 'text/json')
-                                .code(500)
+                                .code(statusCode)
                                 .send(response);
                         }
 

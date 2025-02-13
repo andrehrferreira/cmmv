@@ -67,4 +67,9 @@ export class AuthController {
         );
         res.type('text/json').send(exists.toString());
     }
+
+    @Post('refresh')
+    async handlerRefreshToken(@Request() req) {
+        return this.authService.refreshToken(req);
+    }
 }

@@ -42,6 +42,10 @@
                         "userAgent": {
                             "type": "string",
                             "id": 9
+                        },
+                        "refreshToken": {
+                            "type": "string",
+                            "id": 10
                         }
                     }
                 },

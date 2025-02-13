@@ -69,8 +69,6 @@ export class GenericRegistry<T> {
 
             handler.params = handler.params || [];
             handler.params.push({ paramType, index });
-        } else {
-            console.log(`${target.constructor.name} not found`);
         }
     }
 

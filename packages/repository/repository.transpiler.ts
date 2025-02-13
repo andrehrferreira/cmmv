@@ -116,13 +116,13 @@ export class ${serviceName}Generated extends AbstractRepositoryService {
     }
 
     async insert(payload: Partial<${modelName}>, req?: any) {
-        let newItem: any = this.fromPartial(${modelName}, payload, req);
+        const newItem: any = this.fromPartial(${modelName}, payload, req);
         const validatedData = await this.validate<${modelName}>(newItem);
         return await this.schema.insert(validatedData);
     }
 
     async update(id: string, payload: Partial<${modelName}>, req?: any) {
-        let updateItem: any = this.fromPartial(${modelName}, payload, req);
+        const updateItem: any = this.fromPartial(${modelName}, payload, req);
         const validatedData = await this.validate<${modelName}>(updateItem, true);
         return await this.schema.update(id, validatedData);
     }

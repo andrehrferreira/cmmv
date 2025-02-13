@@ -349,31 +349,34 @@ export class Application {
     }
 
     protected loadModules(modules: Array<Module>): void {
-        modules.forEach(module => {
-            //if(module){
-            this.transpilers.push(...module.getTranspilers());
-            this.controllers.push(...module.getControllers());
-            this.submodules.push(...module.getSubmodules());
-            this.contracts.push(...module.getContracts());
-            this.configs.push(...module.getConfigsSchemas());
+        if (modules && modules.length > 0) {
+            modules.forEach(module => {
+                //if(module){
+                this.transpilers.push(...module.getTranspilers());
+                this.controllers.push(...module.getControllers());
+                this.submodules.push(...module.getSubmodules());
+                this.contracts.push(...module.getContracts());
+                this.configs.push(...module.getConfigsSchemas());
 
-            module.getProviders().forEach(provider => {
-                const paramTypes =
-                    Reflect.getMetadata('design:paramtypes', provider) || [];
-                const instances = paramTypes.map(
-                    (paramType: any) =>
-                        this.providersMap.get(paramType.name) ||
-                        new paramType(),
-                );
+                module.getProviders().forEach(provider => {
+                    const paramTypes =
+                        Reflect.getMetadata('design:paramtypes', provider) ||
+                        [];
+                    const instances = paramTypes.map(
+                        (paramType: any) =>
+                            this.providersMap.get(paramType.name) ||
+                            new paramType(),
+                    );
 
-                const providerInstance = new provider(...instances);
-                this.providersMap.set(provider.name, providerInstance);
+                    const providerInstance = new provider(...instances);
+                    this.providersMap.set(provider.name, providerInstance);
+                });
+
+                if (module.getSubmodules().length > 0)
+                    this.loadModules(module.getSubmodules());
+                //}
             });
-
-            if (module.getSubmodules().length > 0)
-                this.loadModules(module.getSubmodules());
-            //}
-        });
+        }
     }
 
     protected processContracts(): void {
@@ -508,7 +511,7 @@ export class Application {
 
     protected static async generateModule(): Promise<Module> {
         try {
-            const outputPath = path.resolve('src', `app.module.ts`);
+            const outputPath = path.resolve('.generated', `app.module.ts`);
 
             const moduleTemplate = `/**                                                                               
     **********************************************

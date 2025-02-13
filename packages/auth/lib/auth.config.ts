@@ -17,6 +17,16 @@ export const AuthConfig: ConfigSchema = {
             type: 'string',
             default: 'secret',
         },
+        jwtSecretRefresh: {
+            required: true,
+            type: 'string',
+            default: 'refreshsecret',
+        },
+        refreshCookieName: {
+            required: false,
+            type: 'string',
+            default: 'refreshToken',
+        },
         expiresIn: {
             required: true,
             type: 'number',

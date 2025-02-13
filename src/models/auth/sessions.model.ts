@@ -26,6 +26,7 @@ export interface ISessions {
     os?: string;
     revoked: boolean;
     userAgent?: string;
+    refreshToken: string;
 }
 
 //Model
@@ -69,6 +70,10 @@ export class Sessions implements ISessions {
 
     @Expose()
     userAgent?: string;
+
+    @Expose()
+    @IsNotEmpty()
+    refreshToken: string;
 
     constructor(partial: Partial<Sessions>) {
         Object.assign(this, partial);
@@ -145,8 +150,20 @@ export const SessionsFastSchemaStructure = {
             type: 'string',
             nullable: true,
         },
+        refreshToken: {
+            type: 'string',
+            nullable: false,
+        },
     },
-    required: ['id', 'uuid', 'fingerprint', 'user', 'ipAddress', 'revoked'],
+    required: [
+        'id',
+        'uuid',
+        'fingerprint',
+        'user',
+        'ipAddress',
+        'revoked',
+        'refreshToken',
+    ],
 };
 
 export const SessionsFastSchema = fastJson(SessionsFastSchemaStructure);

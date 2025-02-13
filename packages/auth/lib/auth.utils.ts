@@ -22,6 +22,46 @@ export async function jwtVerify(token: string): Promise<IJWTDecoded> {
     }
 }
 
+export function encryptJWTData(text: string, secret: string): string {
+    try {
+        const iv = crypto.randomBytes(12);
+        const cipher = crypto.createCipheriv(
+            'aes-256-gcm',
+            crypto.createHash('sha256').update(secret).digest(),
+            iv,
+        );
+        let encrypted = cipher.update(text, 'utf8', 'hex');
+        encrypted += cipher.final('hex');
+        const authTag = cipher.getAuthTag().toString('hex');
+        return `${iv.toString('hex')}:${encrypted}:${authTag}`;
+    } catch {
+        return '';
+    }
+}
+
+export function decryptJWTData(encryptedText: string, secret: string) {
+    try {
+        const [iv, encrypted, authTag] = encryptedText
+            .split(':')
+            .map(part => Buffer.from(part, 'hex'));
+        const decipher = crypto.createDecipheriv(
+            'aes-256-gcm',
+            crypto.createHash('sha256').update(secret).digest(),
+            iv,
+        );
+        decipher.setAuthTag(authTag);
+        let decrypted = decipher.update(
+            encrypted.toString('hex'),
+            'hex',
+            'utf8',
+        );
+        decrypted += decipher.final('utf8');
+        return decrypted;
+    } catch {
+        return '';
+    }
+}
+
 export function generateFingerprint(req, usernameHashed) {
     const userAgent = req.headers['user-agent'] || '';
     const ip = req.ip || req.connection.remoteAddress || '';

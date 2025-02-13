@@ -7,5 +7,5 @@
         "src/protos", "src/app.module.ts", 
         "src/gateways", "src/entities"
     ],
-    "exec": "set \"VITE_CJS_TRACE=true\" && node -r @swc-node/register ./src/index.ts" 
+    "exec": "node -r @swc-node/register ./src/index.ts" 
 }

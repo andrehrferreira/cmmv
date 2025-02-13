@@ -25,7 +25,9 @@ import { RolesEntity } from '@entities/auth/roles.entity';
 @Entity('auth_users')
 @Index('idx_user_username', ['username'], { unique: true })
 @Index('idx_user_provider', ['provider'])
-@Index('idx_user_login', ['username', 'password'])
+@Index('idx_user_blocked', ['blocked'])
+@Index('idx_user_validated', ['validated'])
+@Index('idx_user_login', ['username', 'password', 'blocked'])
 export class UserEntity implements IUser {
     @ObjectIdColumn()
     _id: ObjectId;

@@ -149,7 +149,7 @@ export class ${gatewayName} {
 
         Application.appModule.providers.push({
             name: gatewayName,
-            path: `./gateways${contract.subPath}/${contract.controllerName.toLowerCase()}.gateway`,
+            path: `@gateways${contract.subPath}/${contract.controllerName.toLowerCase()}.gateway`,
         });
 
         const outputDir = this.getRootPath(contract, 'gateways');

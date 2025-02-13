@@ -11,10 +11,10 @@ import {
     FindManyOptions,
     FindOptionsSelect,
     FindOptionsOrder,
+    FindOneOptions,
 } from 'typeorm';
 
 import { Config, Logger, Singleton } from '@cmmv/core';
-
 import { IFindResponse, IInsertResponse } from './repository.interface';
 import { ObjectId } from 'mongodb';
 
@@ -110,26 +110,16 @@ export class Repository extends Singleton {
     public static async findBy<Entity>(
         entity: new () => Entity,
         criteria: FindOptionsWhere<Entity>,
-    ): Promise<IFindResponse | null> {
+        options: FindOneOptions<Entity> = {},
+    ): Promise<Entity | null> {
         try {
             const repository = this.getRepository(entity);
-            const registry = await repository.findOne({ where: criteria });
+            const registry = await repository.findOne({
+                where: criteria,
+                ...options,
+            });
 
-            return registry
-                ? {
-                      data: registry,
-                      count: 1,
-                      pagination: {
-                          limit: 1,
-                          offset: 0,
-                          sortBy: 'id',
-                          sort: 'ASC',
-                          search: '',
-                          searchField: '',
-                          filters: {},
-                      },
-                  }
-                : null;
+            return registry ? registry : null;
         } catch (e) {
             if (process.env.NODE_ENV === 'dev')
                 Repository.logger.error(e.message);
@@ -142,6 +132,7 @@ export class Repository extends Singleton {
         entity: new () => Entity,
         queries?: any,
         relations?: [],
+        options?: FindManyOptions<Entity>,
     ): Promise<IFindResponse | null> {
         try {
             const isMongoDB = Config.get('repository.type') === 'mongodb';
@@ -169,13 +160,15 @@ export class Repository extends Singleton {
 
             if (search && searchField) {
                 if (isMongoDB)
-                    where[searchField] = { $regex: new RegExp(search, 'i') }; // Case-insensitive
+                    where[searchField] = { $regex: new RegExp(search, 'i') };
                 else where[searchField] = Like(`%${search}%`);
             }
 
             Object.entries(filters).forEach(([key, value]) => {
                 where[key] = this.escape(value);
             });
+
+            if (!options) options = {};
 
             const order: FindOptionsOrder<Entity> = {
                 [sortBy]: sort,
@@ -187,6 +180,7 @@ export class Repository extends Singleton {
                 take: limit,
                 skip: offset,
                 order,
+                ...options,
             };
 
             const total = await repository.count(queryOptions.where as any);

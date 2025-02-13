@@ -1,5 +1,6 @@
 import * as crypto from 'node:crypto';
 import * as jwt from 'jsonwebtoken';
+import { promisify } from 'util';
 import { v4 as uuidv4 } from 'uuid';
 
 import {
@@ -14,8 +15,13 @@ import {
 } from '@cmmv/core';
 
 import { Repository } from '@cmmv/repository';
+import { HttpException, HttpCode, HttpStatus } from '@cmmv/http';
 
-import { generateFingerprint } from '../lib/auth.utils';
+import {
+    generateFingerprint,
+    encryptJWTData,
+    decryptJWTData,
+} from '../lib/auth.utils';
 
 import { AuthSessionsService } from '../services/sessions.service';
 
@@ -66,8 +72,17 @@ export class AuthService extends AbstractService {
     public async login(payload, req?: any, res?: any, session?: any) {
         const UserEntity = Repository.getEntity('UserEntity');
         const env = Config.get<string>('env', process.env.NODE_ENV);
-        const jwtToken = Config.get<string>('auth.jwtSecret');
+        const jwtSecret = Config.get<string>('auth.jwtSecret');
+        const jwtSecretRefresh = Config.get<string>(
+            'auth.jwtSecretRefresh',
+            jwtSecret,
+        );
         const expiresIn = Config.get<number>('auth.expiresIn', 60 * 60 * 24);
+        const refreshCookieName = Config.get<string>(
+            'auth.refreshCookieName',
+            'refreshToken',
+        );
+
         const sessionEnabled = Config.get<boolean>(
             'server.session.enabled',
             true,
@@ -91,6 +106,7 @@ export class AuthService extends AbstractService {
             .digest('hex');
 
         let user: any = await Repository.findBy(UserEntity, {
+            blocked: false,
             username: usernameHashed,
             password: crypto
                 .createHash('sha256')
@@ -118,38 +134,45 @@ export class AuthService extends AbstractService {
                 username: payload.username,
                 root: true,
             };
-        } else {
-            user = user.data;
         }
 
-        if (!user) {
-            return {
-                result: {
-                    success: false,
-                    token: '',
-                    message: 'Invalid credentials',
-                },
-                user: null,
-            };
-        }
+        if (!user)
+            throw new HttpException(
+                'Invalid credentials',
+                HttpStatus.UNAUTHORIZED,
+            );
+        else if (user.blocked)
+            throw new HttpException('User Blocked', HttpStatus.FORBIDDEN);
 
         const sesssionId = uuidv4();
         const fingerprint = generateFingerprint(req, usernameHashed);
 
         // Creating JWT token
-        const token = jwt.sign(
+        const accessToken = jwt.sign(
             {
                 id:
                     Config.get('repository.type') === 'mongodb'
                         ? user._id
                         : user.id,
-                username: payload.username,
+                username: encryptJWTData(payload.username, jwtSecret),
                 fingerprint,
                 root: user.root || false,
                 roles: user.roles || [],
                 groups: user.groups || [],
             },
-            jwtToken,
+            jwtSecret,
+            { expiresIn: '15m' },
+        );
+
+        const refreshToken = jwt.sign(
+            {
+                u:
+                    Config.get('repository.type') === 'mongodb'
+                        ? user._id.toString()
+                        : user.id,
+                f: fingerprint,
+            },
+            jwtSecretRefresh,
             { expiresIn },
         );
 
@@ -159,6 +182,7 @@ export class AuthService extends AbstractService {
             req,
             fingerprint,
             Config.get('repository.type') === 'mongodb' ? user._id : user.id,
+            refreshToken,
         );
 
         // Preparing session cookie
@@ -167,6 +191,13 @@ export class AuthService extends AbstractService {
             secure: cookieSecure,
             sameSite: 'strict',
             maxAge: cookieTTL,
+        });
+
+        res.cookie(refreshCookieName, refreshToken, {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'strict',
+            maxAge: 604800,
         });
 
         // Creating a session if a session plugin is active
@@ -178,7 +209,8 @@ export class AuthService extends AbstractService {
                         : user.id,
                 username: payload.username,
                 fingerprint,
-                token,
+                token: accessToken,
+                refreshToken: refreshToken,
                 root: user.root || false,
                 roles: user.roles || [],
                 groups: user.groups || [],
@@ -190,7 +222,8 @@ export class AuthService extends AbstractService {
         return {
             result: {
                 success: true,
-                token,
+                token: accessToken,
+                refreshToken,
                 message: 'Login successful',
             },
             user,
@@ -225,6 +258,130 @@ export class AuthService extends AbstractService {
             });
         } else {
             return false;
+        }
+    }
+
+    public async refreshToken(request: any) {
+        try {
+            const { authorization } = request.req.headers;
+
+            if (!authorization)
+                throw new HttpException(
+                    'Authorization header missing',
+                    HttpStatus.UNAUTHORIZED,
+                );
+
+            const refreshCookieName = Config.get<string>(
+                'auth.refreshCookieName',
+                'refreshToken',
+            );
+            const jwtSecret = Config.get<string>('auth.jwtSecret');
+            const jwtSecretRefresh = Config.get<string>(
+                'auth.jwtSecretRefresh',
+                jwtSecret,
+            );
+            const UserEntity = Repository.getEntity('UserEntity');
+
+            const token = authorization.split(' ')[1] || null;
+            const refreshTokenHeader = request.req.headers['refreshToken'];
+            const refreshToken =
+                request.cookies?.[refreshCookieName] || refreshTokenHeader;
+
+            if (!refreshToken || !token)
+                throw new HttpException(
+                    'Invalid credentials',
+                    HttpStatus.UNAUTHORIZED,
+                );
+
+            if (!(await AuthSessionsService.validateRefreshToken(refreshToken)))
+                throw new HttpException(
+                    'Invalid refresh token',
+                    HttpStatus.UNAUTHORIZED,
+                );
+
+            const verifyAsync = promisify(jwt.verify);
+            const decoded = (await verifyAsync(
+                refreshToken,
+                jwtSecretRefresh,
+            )) as { f: string; u: string };
+            const tokenDecoded = jwt.decode(token) as any;
+
+            if (!tokenDecoded)
+                throw new HttpException(
+                    'Invalid access token',
+                    HttpStatus.UNAUTHORIZED,
+                );
+
+            if (
+                tokenDecoded.fingerprint !== decoded.f ||
+                tokenDecoded.id !== decoded.u
+            )
+                throw new HttpException(
+                    'Token mismatch',
+                    HttpStatus.UNAUTHORIZED,
+                );
+
+            const user = await Repository.findBy(
+                UserEntity,
+                Repository.queryBuilder({
+                    id: decoded.u,
+                    blocked: false,
+                }),
+            );
+
+            if (!user)
+                throw new HttpException(
+                    'User not found',
+                    HttpStatus.UNAUTHORIZED,
+                );
+
+            const usernameHashed = crypto
+                .createHash('sha1')
+                .update(tokenDecoded.username)
+                .digest('hex');
+
+            const fingerprint = generateFingerprint(
+                request.req,
+                usernameHashed,
+            );
+
+            const accessToken = jwt.sign(
+                {
+                    id:
+                        Config.get('repository.type') === 'mongodb'
+                            ? user._id
+                            : user.id,
+                    username: encryptJWTData(tokenDecoded.username, jwtSecret),
+                    fingerprint,
+                    root: user.root || false,
+                    roles: user.roles || [],
+                    groups: user.groups || [],
+                },
+                jwtSecret,
+                { expiresIn: '15m' },
+            );
+
+            return {
+                result: {
+                    success: true,
+                    token: accessToken,
+                    message: 'Refresh successful',
+                },
+            };
+        } catch (error) {
+            console.error('Refresh Token Error:', error.message);
+
+            return {
+                result: {
+                    success: false,
+                    token: '',
+                    message:
+                        error instanceof HttpException
+                            ? error.message
+                            : 'Internal server error',
+                },
+                user: null,
+            };
         }
     }
 }
