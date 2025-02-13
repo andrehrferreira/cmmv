@@ -19,12 +19,10 @@ import {
     IsNotEmpty,
 } from 'class-validator';
 
-import { Roles, RolesFastSchemaStructure } from '@models/auth/roles.model';
-
 export interface IGroups {
     _id?: ObjectId;
     name: string;
-    roles?: object | string | string[] | ObjectId;
+    roles?: string;
 }
 
 //Model
@@ -45,7 +43,7 @@ export class Groups implements IGroups {
     name: string;
 
     @Expose()
-    roles?: Roles[] | string[] | ObjectId[] | null;
+    roles?: string = [];
 
     constructor(partial: Partial<Groups>) {
         Object.assign(this, partial);
@@ -63,7 +61,7 @@ export class Groups implements IGroups {
         });
     }
 
-    public static fromEntity(entity: any): Groups {
+    public static fromEntity(entity: any): any {
         return plainToInstance(this, entity, {
             exposeUnsetFields: false,
             enableImplicitConversion: true,
@@ -92,7 +90,9 @@ export const GroupsFastSchemaStructure = {
         roles: {
             type: 'array',
             nullable: true,
-            items: RolesFastSchemaStructure,
+            items: {
+                type: 'string',
+            },
         },
     },
     required: ['id', 'name'],

@@ -61,7 +61,7 @@ export class ProtobufTranspile extends AbstractTranspile implements ITranspile {
             }
 
             const outputDir = path.resolve(
-                this.getRootPath(contract, 'protos'),
+                this.getGeneratedPath(contract, 'protos'),
             );
             const protoFileName = `${contract.controllerName.toLowerCase()}.proto`;
             const outputFilePath = path.join(outputDir, protoFileName);
@@ -553,14 +553,17 @@ ${Object.entries(contract.messages[key].properties)
                         );
 
                         const entityName = controllerName;
-                        const protoOutputDir = this.getRootPath(
+                        const protoOutputDir = this.getGeneratedPath(
                             contract,
                             'protos',
                         );
                         const importPath = path.relative(
                             protoOutputDir,
                             path.join(
-                                this.getRootPath(contractInstance, 'protos'),
+                                this.getGeneratedPath(
+                                    contractInstance,
+                                    'protos',
+                                ),
                                 `${entityName.toLowerCase()}.proto`,
                             ),
                         );
@@ -586,7 +589,7 @@ ${Object.entries(contract.messages[key].properties)
             protoNamespace.add(itemMessage);
             const contractJSON = root.toJSON();
             const outputDir = path.resolve(
-                this.getRootPath(contract, 'protos'),
+                this.getGeneratedPath(contract, 'protos'),
             );
             const protoFileName = `${contract.controllerName.toLowerCase()}.proto`;
             const outputFilePath = path.join(outputDir, protoFileName);

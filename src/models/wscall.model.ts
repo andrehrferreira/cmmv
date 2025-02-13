@@ -49,7 +49,7 @@ export class WsCall implements IWsCall {
         });
     }
 
-    public static fromEntity(entity: any): WsCall {
+    public static fromEntity(entity: any): any {
         return plainToInstance(this, entity, {
             exposeUnsetFields: false,
             enableImplicitConversion: true,

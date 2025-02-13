@@ -81,7 +81,7 @@ ${contract.fields?.map((field: any) => this.generateClassField(field)).join('\n\
         })
     }
 
-    public static fromEntity(entity: any) : ${modelName} {
+    public static fromEntity(entity: any) : any {
         return plainToInstance(this, entity, {
             exposeUnsetFields: false,
             enableImplicitConversion: true,

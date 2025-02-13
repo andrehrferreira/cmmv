@@ -1,7 +1,5 @@
 import { AbstractContract, Contract, ContractField } from '@cmmv/core';
 
-import { RolesContract } from './roles.contract';
-
 @Contract({
     controllerName: 'Groups',
     protoPackage: 'auth',
@@ -39,20 +37,11 @@ export class GroupsContract extends AbstractContract {
     name: string;
 
     @ContractField({
-        protoType: 'Roles',
-        defaultValue: 'null',
-        objectType: 'object',
-        entityType: 'RolesEntity',
+        protoType: 'string',
+        defaultValue: '[]',
+        objectType: 'string',
         protoRepeated: true,
         nullable: true,
-        link: [
-            {
-                contract: RolesContract,
-                entityName: 'roles',
-                field: '_id',
-                array: true,
-            },
-        ],
     })
-    roles: Array<any>;
+    roles: Array<string>;
 }

@@ -298,8 +298,7 @@ ${contract.services
         if (contract.options?.databaseTimestamps)
             extraImport.push('CreateDateColumn', 'UpdateDateColumn');
 
-        if (contract.options?.databaseUserAction)
-            extraImport.push('ManyToOne', 'BeforeInsert');
+        if (contract.options?.databaseUserAction) extraImport.push('ManyToOne');
 
         contract.fields.map(field => {
             if (field.link && field.link.length > 0)

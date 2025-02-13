@@ -15,13 +15,11 @@ import {
     CreateDateColumn,
     UpdateDateColumn,
     ManyToOne,
-    BeforeInsert,
 } from 'typeorm';
 
 import { IGroups } from '@models/auth/groups.model';
 
 import { UserEntity } from '@entities/auth/user.entity';
-import { RolesEntity } from '@entities/auth/roles.entity';
 
 @Entity('auth_groups')
 @Index('idx_groups_name', ['name'], { unique: true })
@@ -36,10 +34,11 @@ export class GroupsEntity implements IGroups {
     name: string;
 
     @Column({
-        type: 'simple-array',
+        type: 'varchar',
+        default: [],
         nullable: true,
     })
-    roles?: RolesEntity[] | string[] | ObjectId[] | null;
+    roles?: string;
 
     @CreateDateColumn({
         type: 'timestamp',

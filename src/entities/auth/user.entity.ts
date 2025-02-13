@@ -20,7 +20,6 @@ import {
 import { IUser } from '@models/auth/user.model';
 
 import { GroupsEntity } from '@entities/auth/groups.entity';
-import { RolesEntity } from '@entities/auth/roles.entity';
 
 @Entity('auth_users')
 @Index('idx_user_username', ['username'], { unique: true })
@@ -57,10 +56,11 @@ export class UserEntity implements IUser {
     groups?: GroupsEntity[] | string[] | ObjectId[] | null;
 
     @Column({
-        type: 'simple-array',
+        type: 'varchar',
+        default: [],
         nullable: true,
     })
-    roles?: RolesEntity[] | string[] | ObjectId[] | null;
+    roles?: string;
 
     @Column({
         type: 'boolean',

@@ -91,7 +91,7 @@ export class Sessions implements ISessions {
         });
     }
 
-    public static fromEntity(entity: any): Sessions {
+    public static fromEntity(entity: any): any {
         return plainToInstance(this, entity, {
             exposeUnsetFields: false,
             enableImplicitConversion: true,

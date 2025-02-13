@@ -8,7 +8,6 @@ import {
     ContractService,
 } from '@cmmv/core';
 
-import { RolesContract } from './roles.contract';
 import { GroupsContract } from './groups.contract';
 
 @Contract({
@@ -92,20 +91,11 @@ export class UserContract extends AbstractContract {
     groups: Array<string>;
 
     @ContractField({
-        protoType: 'Roles',
-        defaultValue: 'null',
-        objectType: 'object',
-        entityType: 'RolesEntity',
+        protoType: 'string',
+        defaultValue: '[]',
+        objectType: 'string',
         protoRepeated: true,
         nullable: true,
-        link: [
-            {
-                contract: RolesContract,
-                entityName: 'roles',
-                field: '_id',
-                array: true,
-            },
-        ],
     })
     roles: Array<string>;
 

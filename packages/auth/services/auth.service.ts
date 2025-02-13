@@ -29,6 +29,8 @@ import { AuthRecaptchaService } from '../services/recaptcha.service';
 
 @Service('auth')
 export class AuthService extends AbstractService {
+    public static roles = new Set<string>();
+
     constructor(
         private readonly sessionsService: AuthSessionsService,
         private readonly recaptchaService: AuthRecaptchaService,
@@ -38,13 +40,9 @@ export class AuthService extends AbstractService {
 
     @Hook(HooksType.onListen)
     public async syncRoles() {
-        const instance = Repository.getInstance();
-        const RolesEntity = Repository.getEntity('RolesEntity');
         const contracts = Scope.getArray<any>('__contracts');
         const rolesSufixs = ['get', 'insert', 'update', 'delete', 'export'];
         const rolesNames = new Set<string>();
-
-        if (!instance.dataSource) await Repository.loadConfig();
 
         contracts?.forEach((contract: IContract) => {
             if (contract.auth && contract.generateController) {
@@ -56,13 +54,9 @@ export class AuthService extends AbstractService {
             }
         });
 
-        rolesNames.forEach((roleName: string) => {
-            Repository.insertIfNotExists(
-                RolesEntity,
-                { name: roleName },
-                'name',
-            );
-        });
+        rolesNames.forEach((roleName: string) =>
+            AuthService.roles.add(roleName),
+        );
     }
 
     private isLocalhost(req: any): boolean {
