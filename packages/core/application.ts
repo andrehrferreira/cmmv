@@ -495,9 +495,11 @@ export class Application {
     }
 
     protected getRootPath(contract: any, context: string): string {
+        const rootDir = Config.get<string>('app.sourceDir', 'src');
+
         let outputDir = contract.subPath
-            ? path.join('src', context, contract.subPath)
-            : path.join('src', context);
+            ? path.join(rootDir, context, contract.subPath)
+            : path.join(rootDir, context);
 
         if (!fs.existsSync(outputDir))
             fs.mkdirSync(outputDir, { recursive: true });
