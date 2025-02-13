@@ -110,10 +110,10 @@ export class AuthService extends AbstractService {
             process.env.NODE_ENV !== 'dev',
         );
         const recaptchaRequired = Config.get<boolean>(
-            'recaptcha.required',
+            'auth.recaptcha.required',
             false,
         );
-        const recaptchaSecret = Config.get<boolean>('recaptcha.secret');
+        const recaptchaSecret = Config.get<boolean>('auth.recaptcha.secret');
 
         if (recaptchaRequired) {
             if (
@@ -121,11 +121,12 @@ export class AuthService extends AbstractService {
                     recaptchaSecret,
                     payload.token,
                 ))
-            )
+            ) {
                 throw new HttpException(
                     'Invalid reCAPTCHA',
                     HttpStatus.FORBIDDEN,
                 );
+            }
         }
 
         const usernameHashed = crypto

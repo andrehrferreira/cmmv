@@ -9,13 +9,16 @@ export class ViewTranspile implements ITranspile {
     private logger: Logger = new Logger('ViewTranspile');
 
     run(): void {
-        // Frontend Controller
         const content = fs.readFileSync(
             path.resolve(__dirname, './lib/cmmv.frontend.cjs'),
             'utf-8',
         );
+        const outputDir = path.resolve('public/core');
 
-        const outputFile = path.resolve('public/core/1-cmmv.min.js');
+        if (!fs.existsSync(outputDir))
+            fs.mkdirSync(outputDir, { recursive: true });
+
+        const outputFile = path.resolve('public/core/1-cmmv.min.cjs');
         const currentDate = new Date().toUTCString();
         const minifiedJsContent = UglifyJS.minify(content).code;
         fs.writeFileSync(

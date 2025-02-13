@@ -14,17 +14,8 @@ export class AuthRecaptchaService extends AbstractService {
     ): Promise<boolean> {
         try {
             const response = await fetch(
-                'https://www.google.com/recaptcha/api/siteverify',
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: new URLSearchParams({
-                        secret,
-                        response: validation,
-                    }).toString(),
-                },
+                `https://www.google.com/recaptcha/api/siteverify?secret=${secret}&response=${validation}`,
+                { method: 'POST' },
             );
 
             const data = await response.json();
