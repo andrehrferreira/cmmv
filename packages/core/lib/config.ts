@@ -5,24 +5,51 @@ import { Singleton } from '../abstracts';
 
 import { ConfigSchema, ConfigSubPropsSchemas } from '../interfaces';
 
+import { Logger } from './logger';
+
 export class Config extends Singleton {
     private config: Record<string, any> = {};
+    private static readonly logger = new Logger('Config');
 
     public static loadConfig(): void {
         const rootDir = process.cwd();
-        const configPath = path.join(rootDir, '.cmmv.config.js');
-        const configPathTest = path.join(rootDir, '.cmmv.test.js');
+        const configFiles = ['.cmmv.config', '.cmmv.test'];
+        const extensions = ['.js', '.cjs', '.ts'];
 
-        if (fs.existsSync(configPath)) {
-            const configModule = require(configPath);
-            const instance = Config.getInstance();
-            instance.config = configModule.default || configModule;
-        }
+        configFiles.forEach(configName => {
+            for (const ext of extensions) {
+                const filePath = path.join(rootDir, `${configName}${ext}`);
 
-        if (fs.existsSync(configPathTest)) {
-            const configModuleTest = require(configPathTest);
-            Config.assign(configModuleTest);
-        }
+                if (fs.existsSync(filePath)) {
+                    let configModule;
+
+                    try {
+                        if (ext === '.ts') {
+                            require('ts-node').register();
+                            configModule = require(filePath);
+                        } else {
+                            configModule = require(filePath);
+                        }
+
+                        if (configName.includes('config')) {
+                            const instance = Config.getInstance();
+                            instance.config =
+                                configModule.default || configModule;
+                        } else if (configName.includes('test')) {
+                            Config.assign(configModule);
+                        }
+
+                        this.logger.log(`Loaded config: ${filePath}`);
+                        break;
+                    } catch (error) {
+                        this.logger.error(
+                            `Error loading config from ${filePath}:`,
+                            error,
+                        );
+                    }
+                }
+            }
+        });
     }
 
     public static get<T = any>(
