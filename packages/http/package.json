@@ -1,6 +1,6 @@
 {
     "name": "@cmmv/http",
-    "version": "0.8.15",
+    "version": "0.8.16",
     "description": "HTTP module implementing controllers, using CMMV standard adapter",
     "keywords": [
         "cmmv",
@@ -33,6 +33,6 @@
         "fast-json-stringify": "^6.0.0"
     },
     "devDependencies": {
-        "@cmmv/view": "0.8.15"
+        "@cmmv/view": "0.8.16"
     }
 }
