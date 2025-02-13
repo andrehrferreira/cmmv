@@ -184,7 +184,7 @@ ${contract.services
     }
 
     private generateField(field: any): string {
-        let tsType = this.mapToTsType(field.protoType);
+        let tsType = this.mapToTsType(field.protoType, field);
         const columnOptions = this.generateColumnOptions(field);
         let decorators = [
             `@Column({ 
@@ -204,14 +204,9 @@ ${contract.services
                 );
                 const entityName = controllerName;
 
-                if (Config.get('repository.type') !== 'mongodb') {
-                    decorators.push(
-                        `@ManyToOne(() => ${entityName}Entity, (${link.entityName}) => ${link.entityName}.${link.field}, { nullable: ${link?.entityNullable === true || false ? 'true' : 'false'} })`,
-                    );
-                }
-
                 decorators.push(
-                    `@Column({ 
+                    `@ManyToOne(() => ${entityName}Entity, (${link.entityName}) => ${link.entityName}.${link.field}, { nullable: ${link?.entityNullable === true || false ? 'true' : 'false'} })
+    @Column({ 
         type: "${field.protoRepeated ? 'simple-array' : 'string'}", 
         nullable: true 
     })`,
@@ -228,7 +223,9 @@ ${contract.services
 
     private generateColumnOptions(field: any): string {
         const options = [];
-        options.push(`type: "${this.mapToTypeORMType(field.protoType)}"`);
+        options.push(
+            `type: "${this.mapToTypeORMType(field.protoType, field)}"`,
+        );
 
         if (field.defaultValue !== undefined) {
             options.push(
@@ -243,7 +240,7 @@ ${contract.services
         return options.join(', \n');
     }
 
-    private mapToTsType(protoType: string): string {
+    private mapToTsType(protoType: string, field: any): string {
         const typeMapping: { [key: string]: string } = {
             string: 'string',
             bool: 'boolean',
@@ -254,10 +251,13 @@ ${contract.services
             any: 'any',
         };
 
-        return typeMapping[protoType] || 'string';
+        return (
+            (typeMapping[protoType] || 'string') +
+            (field.protoRepeated ? '[]' : '')
+        );
     }
 
-    private mapToTypeORMType(type: string): string {
+    private mapToTypeORMType(type: string, field: any): string {
         const typeMapping: { [key: string]: string } = {
             string: 'varchar',
             boolean: 'boolean',
@@ -289,7 +289,9 @@ ${contract.services
             any: 'simple-json',
         };
 
-        return typeMapping[type] || 'varchar';
+        return field.protoRepeated
+            ? 'simple-array'
+            : typeMapping[type] || 'varchar';
     }
 
     private generateTypeORMImports(contract: IContract) {

@@ -49,6 +49,7 @@ export class UserEntity implements IUser {
     })
     provider?: string;
 
+    @ManyToOne(() => GroupsEntity, groups => groups._id, { nullable: false })
     @Column({
         type: 'simple-array',
         nullable: true,
@@ -56,11 +57,11 @@ export class UserEntity implements IUser {
     groups?: GroupsEntity[] | string[] | ObjectId[] | null;
 
     @Column({
-        type: 'varchar',
+        type: 'simple-array',
         default: [],
         nullable: true,
     })
-    roles?: string;
+    roles?: string[];
 
     @Column({
         type: 'boolean',

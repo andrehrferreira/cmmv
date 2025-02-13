@@ -39,9 +39,9 @@ export class GroupsContract extends AbstractContract {
     @ContractField({
         protoType: 'string',
         defaultValue: '[]',
-        objectType: 'string',
+        objectType: 'string[]',
         protoRepeated: true,
         nullable: true,
     })
-    roles: Array<string>;
+    roles: string[];
 }

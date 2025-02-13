@@ -28,7 +28,7 @@ export interface IUser {
     password: string;
     provider?: string;
     groups?: object | string | string[] | ObjectId;
-    roles?: string;
+    roles?: string[];
     root: boolean;
     blocked: boolean;
     validated: boolean;
@@ -75,7 +75,7 @@ export class User implements IUser {
     groups?: Groups[] | string[] | ObjectId[] | null;
 
     @Expose()
-    roles?: string = [];
+    roles?: string[] = [];
 
     @Expose()
     root: boolean = false;

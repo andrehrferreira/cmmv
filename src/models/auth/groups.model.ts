@@ -22,7 +22,7 @@ import {
 export interface IGroups {
     _id?: ObjectId;
     name: string;
-    roles?: string;
+    roles?: string[];
 }
 
 //Model
@@ -43,7 +43,7 @@ export class Groups implements IGroups {
     name: string;
 
     @Expose()
-    roles?: string = [];
+    roles?: string[] = [];
 
     constructor(partial: Partial<Groups>) {
         Object.assign(this, partial);

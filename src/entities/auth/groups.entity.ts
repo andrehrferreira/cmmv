@@ -34,11 +34,11 @@ export class GroupsEntity implements IGroups {
     name: string;
 
     @Column({
-        type: 'varchar',
+        type: 'simple-array',
         default: [],
         nullable: true,
     })
-    roles?: string;
+    roles?: string[];
 
     @CreateDateColumn({
         type: 'timestamp',
