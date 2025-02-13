@@ -1,6 +1,7 @@
 import * as path from 'node:path';
 import * as fs from 'node:fs';
 
+import { Config } from './config';
 import { Logger } from './logger';
 import { SUB_PATH_METADATA } from '../decorators';
 
@@ -12,9 +13,11 @@ export abstract class AbstractTranspile {
     abstract run(): Promise<any> | void;
 
     public getRootPath(contract: any, context: string): string {
+        const rootDir = Config.get<string>('app.sourceDir', 'src');
+
         let outputDir = contract.subPath
-            ? path.join('src', context, contract.subPath)
-            : path.join('src', context);
+            ? path.join(rootDir, context, contract.subPath)
+            : path.join(rootDir, context);
 
         if (!fs.existsSync(outputDir))
             fs.mkdirSync(outputDir, { recursive: true });
@@ -23,9 +26,14 @@ export abstract class AbstractTranspile {
     }
 
     public getGeneratedPath(contract: any, context: string): string {
+        const generatedDir = Config.get<string>(
+            'app.generatedDir',
+            '.generated',
+        );
+
         let outputDir = contract.subPath
-            ? path.join('.generated', context, contract.subPath)
-            : path.join('.generated', context);
+            ? path.join(generatedDir, context, contract.subPath)
+            : path.join(generatedDir, context);
 
         if (!fs.existsSync(outputDir))
             fs.mkdirSync(outputDir, { recursive: true });

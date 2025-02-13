@@ -17,6 +17,16 @@ export const AuthConfig: ConfigSchema = {
             type: 'string',
             default: 'secret',
         },
+        jwtSecretRefresh: {
+            required: true,
+            type: 'string',
+            default: 'refreshsecret',
+        },
+        refreshCookieName: {
+            required: false,
+            type: 'string',
+            default: 'refreshToken',
+        },
         expiresIn: {
             required: true,
             type: 'number',
@@ -385,6 +395,21 @@ export const AuthConfig: ConfigSchema = {
                             },
                         },
                     },
+                },
+            },
+        },
+        recaptcha: {
+            required: false,
+            type: 'object',
+            properties: {
+                required: {
+                    required: false,
+                    type: 'boolean',
+                    default: false,
+                },
+                secret: {
+                    required: false,
+                    type: 'string',
                 },
             },
         },

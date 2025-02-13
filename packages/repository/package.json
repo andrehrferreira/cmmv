@@ -1,6 +1,6 @@
 {
     "name": "@cmmv/repository",
-    "version": "0.8.15",
+    "version": "0.8.16",
     "description": "Repository module using TypeORM for CMMV",
     "keywords": [
         "cmmv",
@@ -24,6 +24,7 @@
     },
     "homepage": "https://cmmv.io",
     "dependencies": {
+        "mongodb": "^6.13.0",
         "typeorm": "^0.3.20"
     },
     "gitHead": "9b28f002268080dc8d283263da48e07aa754581f"

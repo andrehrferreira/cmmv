@@ -21,6 +21,7 @@ message Sessions {
    string os = 7;
    bool revoked = 8;
    string userAgent = 9;
+   string refreshToken = 10;
 }
 
 message SessionsList {

@@ -4,7 +4,9 @@ import * as crypto from 'crypto';
 import { Config, Logger } from '@cmmv/core';
 import { generateFingerprint } from '@cmmv/http';
 
-import { IAuthSettings } from './auth.interface';
+import { IAuthSettings, IJWTDecoded } from './auth.interface';
+import { AuthSessionsService } from '../services/sessions.service';
+import { decryptJWTData } from './auth.utils';
 
 export function Auth(
     rolesOrSettings?: string[] | string | IAuthSettings,
@@ -21,17 +23,24 @@ export function Auth(
                 'server.session.enabled',
                 true,
             );
+            const refreshCookieName = Config.get<string>(
+                'auth.refreshCookieName',
+                'refreshToken',
+            );
             const logging = Config.get<string>('server.logging', 'all');
 
-            let sessionId = request.req.cookies
-                ? request.req.cookies[cookieName]
+            let sessionId = request.cookies
+                ? request.cookies[cookieName]
+                : null;
+
+            let refreshToken = request.cookies
+                ? request.cookies[refreshCookieName]
                 : null;
 
             let token = null;
 
             if (sessionEnabled && request.session) {
                 const session = await request.session.get(sessionId);
-
                 if (session) token = session.user.token;
             }
 
@@ -45,32 +54,54 @@ export function Auth(
                     logging === 'all' ||
                     logging === 'error' ||
                     logging === 'warning'
-                )
+                ) {
                     logger.warning(
                         `${request.method.toUpperCase()} ${request.path} (0ms) 401 - ${request.req.socket.remoteAddress}`,
                     );
+                }
 
                 return response.code(401).end('Unauthorized');
             }
 
+            const jwtSecret = Config.get('auth.jwtSecret');
+
             jwt.verify(
                 token,
-                Config.get('auth.jwtSecret'),
-                (err: any, decoded: any) => {
+                jwtSecret,
+                async (err: any, decoded: IJWTDecoded) => {
                     if (err) {
                         if (
                             logging === 'all' ||
                             logging === 'error' ||
                             logging === 'warning'
-                        )
+                        ) {
                             logger.warning(
                                 `${request.method.toUpperCase()} ${request.path} (0ms) 401 - ${request.req.socket.remoteAddress}`,
                             );
+                        }
 
-                        return response.code(401).end('Unauthorized');
+                        if (
+                            !refreshToken ||
+                            !(await AuthSessionsService.validateRefreshToken(
+                                refreshToken,
+                            ))
+                        )
+                            return response.code(401).end('Unauthorized');
                     }
 
+                    decoded.username = decryptJWTData(
+                        decoded.username,
+                        jwtSecret,
+                    );
+
                     if (decoded.root !== true) {
+                        if (
+                            !(await AuthSessionsService.validateSession(
+                                decoded,
+                            ))
+                        )
+                            return response.code(401).end('Unauthorized');
+
                         if (
                             (rolesOrSettings &&
                                 Array.isArray(rolesOrSettings) &&
@@ -85,10 +116,11 @@ export function Auth(
                                 logging === 'all' ||
                                 logging === 'error' ||
                                 logging === 'warning'
-                            )
+                            ) {
                                 logger.warning(
                                     `${request.method.toUpperCase()} ${request.path} (0ms) 401 - ${request.req.socket.remoteAddress}`,
                                 );
+                            }
 
                             return response.code(401).end('Unauthorized');
                         } else if (rolesOrSettings) {
@@ -110,10 +142,11 @@ export function Auth(
                                             logging === 'all' ||
                                             logging === 'error' ||
                                             logging === 'warning'
-                                        )
+                                        ) {
                                             logger.warning(
                                                 `${request.method.toUpperCase()} ${request.path} (0ms) 401 - ${request.req.socket.remoteAddress}`,
                                             );
+                                        }
 
                                         return response
                                             .code(401)

@@ -296,25 +296,25 @@ export class ${controllerName}Generated {
 
     @Get(':id/raw')${this.getControllerDecorators({ authRouter, hasCache: false, contract }, { cacheKeyPrefix, cacheTtl, cacheCompress }, 'get')}
     async getByIdRaw(@Param('id') id: string, @Req() req) {
-        let result = await this.${serviceName.toLowerCase()}.getById(id, req);
+        const result = await this.${serviceName.toLowerCase()}.getById(id, req);
         return ${contract.controllerName}FastSchema(result.data);
     }
 
     @Post()${this.getControllerDecorators({ authRouter, hasCache: false, contract }, { cacheKeyPrefix, cacheTtl, cacheCompress }, 'insert')}
     async insert(@Body() item: ${contract.controllerName}, @Req() req) {
-        let result = await this.${serviceName.toLowerCase()}.insert(item, req);${hasCache ? `\n        await CacheService.del("${cacheKeyPrefix}getAll");` : ''}
+        const result = await this.${serviceName.toLowerCase()}.insert(item, req);${hasCache ? `\n        await CacheService.del("${cacheKeyPrefix}getAll");` : ''}
         return result;
     }
 
     @Put(':id')${this.getControllerDecorators({ authRouter, hasCache: false, contract }, { cacheKeyPrefix, cacheTtl, cacheCompress }, 'update')}
     async update(@Param('id') id: string, @Body() item: ${contract.controllerName}, @Req() req) {
-        let result = await this.${serviceName.toLowerCase()}.update(id, item, req);${hasCache ? `\n        await CacheService.del(\`${cacheKeyPrefix}\${id}\`);\n        await CacheService.del("${cacheKeyPrefix}getAll");` : ''}
+        const result = await this.${serviceName.toLowerCase()}.update(id, item, req);${hasCache ? `\n        await CacheService.del(\`${cacheKeyPrefix}\${id}\`);\n        await CacheService.del("${cacheKeyPrefix}getAll");` : ''}
         return result;
     }
 
     @Delete(':id')${this.getControllerDecorators({ authRouter, hasCache: false, contract }, { cacheKeyPrefix, cacheTtl, cacheCompress }, 'delete')}
     async delete(@Param('id') id: string, @Req() req) {
-        let result = await this.${serviceName.toLowerCase()}.delete(id, req);${hasCache ? `\n        await CacheService.del(\`${cacheKeyPrefix}\${id}\`);\n        await CacheService.del("${cacheKeyPrefix}getAll");` : ''}
+        const result = await this.${serviceName.toLowerCase()}.delete(id, req);${hasCache ? `\n        await CacheService.del(\`${cacheKeyPrefix}\${id}\`);\n        await CacheService.del("${cacheKeyPrefix}getAll");` : ''}
         return result;
     }
 ${contract.services
@@ -349,7 +349,6 @@ ${contract.services
             'utf8',
         );
 
-        //Controller
         const controllerTemplate = `import { 
    Controller
 } from "@cmmv/http";
@@ -360,7 +359,7 @@ import {
 
 @Controller('${controllerPath}')
 export class ${controllerName} extends ${controllerName}Generated {
-        //Function ${controllerName} not implemented
+    //Function ${controllerName} not implemented
 }`;
 
         const outputFilePathFinal = path.join(outputDir, controllerFileName);
@@ -383,7 +382,7 @@ export class ${controllerName} extends ${controllerName}Generated {
             ...controllers.map(({ name, subPath }) => {
                 return {
                     name,
-                    path: `./controllers${subPath}/${name.replace('Controller', '').toLowerCase()}.controller`,
+                    path: `@controllers${subPath}/${name.replace('Controller', '').toLowerCase()}.controller`,
                 };
             }),
         ];
@@ -393,7 +392,7 @@ export class ${controllerName} extends ${controllerName}Generated {
             ...providers.map(({ name, subPath }) => {
                 return {
                     name,
-                    path: `./services${subPath}/${name.replace('Service', '').toLowerCase()}.service`,
+                    path: `@services${subPath}/${name.replace('Service', '').toLowerCase()}.service`,
                 };
             }),
         ];

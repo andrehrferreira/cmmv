@@ -82,4 +82,10 @@ export class SessionsContract extends AbstractContract {
         nullable: true,
     })
     userAgent: string;
+
+    @ContractField({
+        protoType: 'string',
+        nullable: false,
+    })
+    refreshToken: string;
 }

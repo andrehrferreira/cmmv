@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 module.exports = {
     env: process.env.NODE_ENV,
 
@@ -79,6 +81,7 @@ module.exports = {
         localRegister: true,
         localLogin: true,
         jwtSecret: process.env.JWT_SECRET || 'secret',
+        jwtSecretRefresh: process.env.JWT_SECRET_REFRESH || 'secret',
         expiresIn: 60 * 60 * 24,
         google: {
             clientID: process.env.GOOGLE_CLIENT_ID,
@@ -173,6 +176,10 @@ module.exports = {
                     "rotation": "0"
                     }
             }
+        },
+        recaptcha: {
+            required: true,
+            secret: process.env.RECAPTCHA_SECRET
         }
     },
 

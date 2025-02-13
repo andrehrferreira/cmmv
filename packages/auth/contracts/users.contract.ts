@@ -21,7 +21,7 @@ import { GroupsContract } from './groups.contract';
     index: [
         {
             name: 'idx_user_login',
-            fields: ['username', 'password'],
+            fields: ['username', 'password', 'blocked'],
         },
     ],
     options: {
@@ -117,12 +117,14 @@ export class UserContract extends AbstractContract {
 
     @ContractField({
         protoType: 'bool',
+        index: true,
         defaultValue: false,
     })
     blocked: boolean;
 
     @ContractField({
         protoType: 'bool',
+        index: true,
         defaultValue: false,
     })
     validated: boolean;

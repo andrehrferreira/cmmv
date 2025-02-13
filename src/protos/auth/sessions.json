@@ -42,6 +42,10 @@
                         "userAgent": {
                             "type": "string",
                             "id": 9
+                        },
+                        "refreshToken": {
+                            "type": "string",
+                            "id": 10
                         }
                     }
                 },
@@ -407,6 +411,118 @@
                         }
                     }
                 },
+                "Roles": {
+                    "fields": {
+                        "name": {
+                            "type": "string",
+                            "id": 1
+                        }
+                    }
+                },
+                "RolesList": {
+                    "fields": {
+                        "items": {
+                            "rule": "repeated",
+                            "type": "Roles",
+                            "id": 1
+                        }
+                    }
+                },
+                "AddRolesRequest": {
+                    "fields": {
+                        "item": {
+                            "type": "Roles",
+                            "id": 1
+                        }
+                    }
+                },
+                "AddRolesResponse": {
+                    "fields": {
+                        "id": {
+                            "type": "string",
+                            "id": 1
+                        },
+                        "item": {
+                            "type": "Roles",
+                            "id": 2
+                        }
+                    }
+                },
+                "UpdateRolesRequest": {
+                    "fields": {
+                        "id": {
+                            "type": "string",
+                            "id": 1
+                        },
+                        "item": {
+                            "type": "Roles",
+                            "id": 2
+                        }
+                    }
+                },
+                "UpdateRolesResponse": {
+                    "fields": {
+                        "success": {
+                            "type": "bool",
+                            "id": 1
+                        },
+                        "affected": {
+                            "type": "int32",
+                            "id": 2
+                        }
+                    }
+                },
+                "DeleteRolesRequest": {
+                    "fields": {
+                        "id": {
+                            "type": "string",
+                            "id": 1
+                        }
+                    }
+                },
+                "DeleteRolesResponse": {
+                    "fields": {
+                        "success": {
+                            "type": "bool",
+                            "id": 1
+                        },
+                        "affected": {
+                            "type": "int32",
+                            "id": 2
+                        }
+                    }
+                },
+                "GetAllRolesRequest": {
+                    "fields": {}
+                },
+                "GetAllRolesResponse": {
+                    "fields": {
+                        "items": {
+                            "type": "RolesList",
+                            "id": 1
+                        }
+                    }
+                },
+                "RolesService": {
+                    "methods": {
+                        "AddRoles": {
+                            "requestType": "AddRolesRequest",
+                            "responseType": "AddRolesResponse"
+                        },
+                        "UpdateRoles": {
+                            "requestType": "UpdateRolesRequest",
+                            "responseType": "UpdateRolesResponse"
+                        },
+                        "DeleteRoles": {
+                            "requestType": "DeleteRolesRequest",
+                            "responseType": "DeleteRolesResponse"
+                        },
+                        "GetAllRoles": {
+                            "requestType": "GetAllRolesRequest",
+                            "responseType": "GetAllRolesResponse"
+                        }
+                    }
+                },
                 "Groups": {
                     "fields": {
                         "name": {
@@ -521,118 +637,6 @@
                         "GetAllGroups": {
                             "requestType": "GetAllGroupsRequest",
                             "responseType": "GetAllGroupsResponse"
-                        }
-                    }
-                },
-                "Roles": {
-                    "fields": {
-                        "name": {
-                            "type": "string",
-                            "id": 1
-                        }
-                    }
-                },
-                "RolesList": {
-                    "fields": {
-                        "items": {
-                            "rule": "repeated",
-                            "type": "Roles",
-                            "id": 1
-                        }
-                    }
-                },
-                "AddRolesRequest": {
-                    "fields": {
-                        "item": {
-                            "type": "Roles",
-                            "id": 1
-                        }
-                    }
-                },
-                "AddRolesResponse": {
-                    "fields": {
-                        "id": {
-                            "type": "string",
-                            "id": 1
-                        },
-                        "item": {
-                            "type": "Roles",
-                            "id": 2
-                        }
-                    }
-                },
-                "UpdateRolesRequest": {
-                    "fields": {
-                        "id": {
-                            "type": "string",
-                            "id": 1
-                        },
-                        "item": {
-                            "type": "Roles",
-                            "id": 2
-                        }
-                    }
-                },
-                "UpdateRolesResponse": {
-                    "fields": {
-                        "success": {
-                            "type": "bool",
-                            "id": 1
-                        },
-                        "affected": {
-                            "type": "int32",
-                            "id": 2
-                        }
-                    }
-                },
-                "DeleteRolesRequest": {
-                    "fields": {
-                        "id": {
-                            "type": "string",
-                            "id": 1
-                        }
-                    }
-                },
-                "DeleteRolesResponse": {
-                    "fields": {
-                        "success": {
-                            "type": "bool",
-                            "id": 1
-                        },
-                        "affected": {
-                            "type": "int32",
-                            "id": 2
-                        }
-                    }
-                },
-                "GetAllRolesRequest": {
-                    "fields": {}
-                },
-                "GetAllRolesResponse": {
-                    "fields": {
-                        "items": {
-                            "type": "RolesList",
-                            "id": 1
-                        }
-                    }
-                },
-                "RolesService": {
-                    "methods": {
-                        "AddRoles": {
-                            "requestType": "AddRolesRequest",
-                            "responseType": "AddRolesResponse"
-                        },
-                        "UpdateRoles": {
-                            "requestType": "UpdateRolesRequest",
-                            "responseType": "UpdateRolesResponse"
-                        },
-                        "DeleteRoles": {
-                            "requestType": "DeleteRolesRequest",
-                            "responseType": "DeleteRolesResponse"
-                        },
-                        "GetAllRoles": {
-                            "requestType": "GetAllRolesRequest",
-                            "responseType": "GetAllRolesResponse"
                         }
                     }
                 }

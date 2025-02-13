@@ -1,3 +1,7 @@
+import * as crypto from 'node:crypto';
+import * as jwt from 'jsonwebtoken';
+import { promisify } from 'util';
+
 import {
     Service,
     AbstractService,
@@ -8,7 +12,8 @@ import {
 } from '@cmmv/core';
 
 import { Repository } from '@cmmv/repository';
-import { IJWTDecoded } from '../lib';
+import { IJWTDecoded } from '../lib/auth.interface';
+import { decryptJWTData } from '../lib/auth.utils';
 
 @Service('sessions')
 export class AuthSessionsService extends AbstractService {
@@ -36,12 +41,103 @@ export class AuthSessionsService extends AbstractService {
         return 'Unknown';
     }
 
+    public static async validateSession(user: IJWTDecoded): Promise<boolean> {
+        const SessionsEntity = Repository.getEntity('SessionsEntity');
+        let userId: any = user.id;
+
+        if (Config.get('repository.type') === 'mongodb') {
+            const { ObjectId } = await import('mongodb');
+            userId = new ObjectId(userId as string);
+        }
+
+        let session = await Repository.exists(
+            SessionsEntity,
+            Repository.queryBuilder({
+                user: userId,
+                fingerprint: user.fingerprint,
+            }),
+        );
+
+        if (session) return true;
+
+        return false;
+    }
+
+    public static async validateRefreshToken(
+        refreshToken: string,
+    ): Promise<boolean> {
+        try {
+            const jwtSecret = Config.get<string>('auth.jwtSecret');
+            const jwtSecretRefresh = Config.get<string>(
+                'auth.jwtSecretRefresh',
+                jwtSecret,
+            );
+            const SessionsEntity = Repository.getEntity('SessionsEntity');
+            const verifyAsync = promisify(jwt.verify);
+            const decoded = (await verifyAsync(
+                refreshToken,
+                jwtSecretRefresh,
+            )) as { f: string; u: string };
+            let userId: any = decoded.u;
+
+            if (Config.get('repository.type') === 'mongodb') {
+                const { ObjectId } = await import('mongodb');
+                userId = new ObjectId(userId as string);
+            }
+
+            return await Repository.exists(
+                SessionsEntity,
+                Repository.queryBuilder({
+                    user: userId,
+                    fingerprint: decoded.f,
+                    refreshToken,
+                }),
+            );
+        } catch (e) {
+            console.error(e);
+            return false;
+        }
+    }
+
+    public static async getSessionFromRefreshToken(
+        refreshToken: string,
+    ): Promise<any | null> {
+        try {
+            const jwtSecret = Config.get<string>('auth.jwtSecret');
+            const jwtSecretRefresh = Config.get<string>(
+                'auth.jwtSecretRefresh',
+                jwtSecret,
+            );
+            const SessionsEntity = Repository.getEntity('SessionsEntity');
+            const verifyAsync = promisify(jwt.verify);
+            const decoded = (await verifyAsync(
+                refreshToken,
+                jwtSecretRefresh,
+            )) as IJWTDecoded;
+            const usernameDecoded = decryptJWTData(decoded.username, jwtSecret);
+
+            let session = await Repository.findBy(
+                SessionsEntity,
+                Repository.queryBuilder({
+                    user: usernameDecoded,
+                    fingerprint: decoded.fingerprint,
+                    refreshToken,
+                }),
+            );
+
+            return session;
+        } catch {
+            return null;
+        }
+    }
+
     public async registrySession(
         sessionId: string,
         req: any,
         fingerprint: string,
         user: string,
-    ) {
+        refreshToken: string,
+    ): Promise<boolean> {
         const SessionsEntity = Repository.getEntity('SessionsEntity');
         const hasCacheModule = Module.hasModule('cache');
         const ipAddress =
@@ -69,6 +165,7 @@ export class AuthSessionsService extends AbstractService {
                     os,
                     updatedAt: new Date(),
                     userAgent,
+                    refreshToken,
                 },
             );
 
@@ -87,6 +184,7 @@ export class AuthSessionsService extends AbstractService {
             os,
             revoked: false,
             userAgent,
+            refreshToken,
             createdAt: new Date(),
             updatedAt: new Date(),
         };
@@ -97,6 +195,8 @@ export class AuthSessionsService extends AbstractService {
         }
 
         if (!result.success) throw new Error('Failed to create session');
+
+        return true;
     }
 
     public async getSessions(queries: any, user: IJWTDecoded) {

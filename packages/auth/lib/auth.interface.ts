@@ -1,3 +1,9 @@
+export interface LoginPayload {
+    username: string;
+    password: string;
+    token?: string;
+}
+
 export interface IAuthSettings {
     roles: string[];
     groups: string[];
