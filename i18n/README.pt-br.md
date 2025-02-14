@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="https://cmmv.io">Documentação</a> &bull;
+  <a href="https://pt.cmmv.io/docs">Documentação</a> &bull;
   <a href="https://github.com/cmmvio/cmmv/issues">Relatar problema</a>
 </p>
 
