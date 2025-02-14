@@ -293,11 +293,12 @@ export class AuthService extends AbstractService {
         try {
             const { authorization } = request.req.headers;
 
-            if (!authorization)
+            if (!authorization) {
                 throw new HttpException(
                     'Authorization header missing',
                     HttpStatus.UNAUTHORIZED,
                 );
+            }
 
             const refreshCookieName = Config.get<string>(
                 'auth.refreshCookieName',

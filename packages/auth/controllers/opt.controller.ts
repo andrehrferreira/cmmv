@@ -11,7 +11,12 @@ export class AuthOPTController {
         return this.optService.generateOptSecret(token);
     }
 
-    @Post('opt-validate-secret')
+    @Post('opt-enable')
+    async handlerEnable2FA(@Header('authorization') token, @Body() payload) {
+        return this.optService.updateOptSecret(token, payload?.secret);
+    }
+
+    @Post('opt-validate')
     async handlerValidateOptSecret(
         @Header('authorization') token,
         @Body() payload,
