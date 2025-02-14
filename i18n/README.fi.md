@@ -1,3 +1,9 @@
+> Tämä tiedosto on käännetty automaattisesti **ChatGPT**:n avulla.  
+> Alkuperäinen dokumentaatio on kirjoitettu **englanniksi ja portugaliksi**.  
+> Jos huomaat käännösvirheitä ja hallitset sujuvasti suomen kielen,  
+> olet tervetullut tarkistamaan sen ja lähettämään **Pull Request (PR)**:n korjauksia varten.  
+> Koko yhteisö arvostaa panostasi! 🙌  
+
 <p align="center">
   <a href="https://cmmv.io/" target="blank"><img src="https://raw.githubusercontent.com/cmmvio/docs.cmmv.io/main/public/assets/logo_CMMV2_icon.png" width="300" alt="CMMV Logo" /></a>
 </p>
@@ -13,12 +19,6 @@
   <a href="https://github.com/cmmvio/cmmv/issues">Ilmoita ongelmasta</a>
 </p>
  
-> Tämä tiedosto on käännetty automaattisesti **ChatGPT**:n avulla.  
-> Alkuperäinen dokumentaatio on kirjoitettu **englanniksi ja portugaliksi**.  
-> Jos huomaat käännösvirheitä ja hallitset sujuvasti suomen kielen,  
-> olet tervetullut tarkistamaan sen ja lähettämään **Pull Request (PR)**:n korjauksia varten.  
-> Koko yhteisö arvostaa panostasi! 🙌  
-
 ## Kuvaus
 
 CMMV (Contract Model View) on mullistus verkkosovelluskehityksessä, joka rikkoo perinteisiä paradigmoja ja määrittelee uudelleen, miten luomme, ylläpidämme ja skaalautuvia digitaalisia projekteja. Se pohjautuu parhaisiin käytäntöihin ja innovatiivisiin käsitteisiin yhdistäen sopimusten voiman, jotta se voi automaattisesti luoda vankkoja ja turvallisia rakenteita. Tämä eliminoi manuaalisen koodin monimutkaisuuden ja tarjoaa ennennäkemättömän kehityskokemuksen.

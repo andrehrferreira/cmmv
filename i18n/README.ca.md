@@ -1,3 +1,9 @@
+> Aquest fitxer ha estat traduït automàticament per **ChatGPT**.  
+> La documentació original està escrita en **anglès i portuguès**.  
+> Si detectes algun error en la traducció i domines el català,  
+> no dubtis a revisar-lo i enviar un **Pull Request (PR)** per corregir-lo.  
+> Tota la comunitat t'estarà molt agraïda! 🙌  
+
 <p align="center">
   <a href="https://cmmv.io/" target="blank"><img src="https://raw.githubusercontent.com/cmmvio/docs.cmmv.io/main/public/assets/logo_CMMV2_icon.png" width="300" alt="CMMV Logo" /></a>
 </p>
@@ -12,12 +18,6 @@
   <a href="https://cmmv.io">Documentació</a> &bull;
   <a href="https://github.com/cmmvio/cmmv/issues">Informar d'un problema</a>
 </p>
-
-> Aquest fitxer ha estat traduït automàticament per **ChatGPT**.  
-> La documentació original està escrita en **anglès i portuguès**.  
-> Si detectes algun error en la traducció i domines el català,  
-> no dubtis a revisar-lo i enviar un **Pull Request (PR)** per corregir-lo.  
-> Tota la comunitat t'estarà molt agraïda! 🙌  
 
 ## Descripció
 

@@ -1,3 +1,9 @@
+> Ce fichier a été **traduit automatiquement** par **ChatGPT**.  
+> La documentation originale a été rédigée en **anglais et portugais**.  
+> Si vous trouvez des erreurs dans la traduction et que vous maîtrisez le français,  
+> n'hésitez pas à les corriger et à soumettre une **Pull Request (PR)**.  
+> Toute la communauté vous sera reconnaissante pour votre contribution ! 🙌  
+
 <p align="center">
   <a href="https://cmmv.io/" target="blank"><img src="https://raw.githubusercontent.com/cmmvio/docs.cmmv.io/main/public/assets/logo_CMMV2_icon.png" width="300" alt="CMMV Logo" /></a>
 </p>
@@ -12,12 +18,6 @@
   <a href="https://cmmv.io">Documentation</a> &bull;
   <a href="https://github.com/cmmvio/cmmv/issues">Signaler un problème</a>
 </p>
-
-> Ce fichier a été **traduit automatiquement** par **ChatGPT**.  
-> La documentation originale a été rédigée en **anglais et portugais**.  
-> Si vous trouvez des erreurs dans la traduction et que vous maîtrisez le français,  
-> n'hésitez pas à les corriger et à soumettre une **Pull Request (PR)**.  
-> Toute la communauté vous sera reconnaissante pour votre contribution ! 🙌  
 
 ## Description
 

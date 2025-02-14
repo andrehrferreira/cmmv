@@ -1,3 +1,9 @@
+> Denne fil er automatisk oversat ved hjælp af **ChatGPT**.  
+> Den oprindelige dokumentation blev skrevet på **engelsk og portugisisk**.  
+> Hvis du finder en fejl i oversættelsen og har kendskab til dansk,  
+> er du velkommen til at rette den og indsende en **Pull Request (PR)** for at forbedre den.  
+> Hele fællesskabet vil være meget taknemmeligt! 🙌 
+
 <p align="center">
   <a href="https://cmmv.io/" target="blank"><img src="https://raw.githubusercontent.com/cmmvio/docs.cmmv.io/main/public/assets/logo_CMMV2_icon.png" width="300" alt="CMMV Logo" /></a>
 </p>
@@ -12,12 +18,6 @@
   <a href="https://cmmv.io">Dokumentation</a> &bull;
   <a href="https://github.com/cmmvio/cmmv/issues">Rapportér problem</a>
 </p>
-
-> Denne fil er automatisk oversat ved hjælp af **ChatGPT**.  
-> Den oprindelige dokumentation blev skrevet på **engelsk og portugisisk**.  
-> Hvis du finder en fejl i oversættelsen og har kendskab til dansk,  
-> er du velkommen til at rette den og indsende en **Pull Request (PR)** for at forbedre den.  
-> Hele fællesskabet vil være meget taknemmeligt! 🙌 
 
 ## Beskrivelse
 

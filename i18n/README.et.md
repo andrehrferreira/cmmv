@@ -1,3 +1,9 @@
+> See fail on automaatselt tõlgitud **ChatGPT** abil.  
+> Algne dokumentatsioon kirjutati **inglise ja portugali keeles**.  
+> Kui märkate tõlkes vigu ja valdate eesti keelt,  
+> olete teretulnud seda üle vaatama ja esitama **Pull Request (PR)** parandamiseks.  
+> Kogu kogukond on teie panuse eest tänulik! 🙌  
+
 <p align="center">
   <a href="https://cmmv.io/" target="blank"><img src="https://raw.githubusercontent.com/cmmvio/docs.cmmv.io/main/public/assets/logo_CMMV2_icon.png" width="300" alt="CMMV Logo" /></a>
 </p>
@@ -12,12 +18,6 @@
   <a href="https://cmmv.io">Dokumentatsioon</a> &bull;
   <a href="https://github.com/cmmvio/cmmv/issues">Teata probleemist</a>
 </p>
-
-> See fail on automaatselt tõlgitud **ChatGPT** abil.  
-> Algne dokumentatsioon kirjutati **inglise ja portugali keeles**.  
-> Kui märkate tõlkes vigu ja valdate eesti keelt,  
-> olete teretulnud seda üle vaatama ja esitama **Pull Request (PR)** parandamiseks.  
-> Kogu kogukond on teie panuse eest tänulik! 🙌  
 
 ## Kirjeldus
 
