@@ -6,11 +6,11 @@
     **********************************************
 **/
 
-import * as fastJson from 'fast-json-stringify';
+import { fastJson } from '@cmmv/core';
 
-import { Expose, instanceToPlain, plainToInstance } from 'class-transformer';
+import { Expose, instanceToPlain, plainToInstance } from '@cmmv/core';
 
-import { IsOptional } from 'class-validator';
+import { IsOptional } from '@cmmv/core';
 
 export interface IWsCall {
     contract: number;

@@ -6,12 +6,12 @@
     **********************************************
 **/
 
-import * as fastJson from 'fast-json-stringify';
-import { ObjectId } from 'mongodb';
+import { fastJson } from '@cmmv/core';
+import { ObjectId } from '@cmmv/repository';
 
-import { Expose, instanceToPlain, plainToInstance } from 'class-transformer';
+import { Expose, instanceToPlain, plainToInstance } from '@cmmv/core';
 
-import { IsOptional, IsNotEmpty } from 'class-validator';
+import { IsOptional, IsNotEmpty } from '@cmmv/core';
 
 import { User, UserFastSchemaStructure } from '@models/auth/user.model';
 

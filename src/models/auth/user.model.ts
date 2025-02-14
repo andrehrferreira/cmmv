@@ -6,9 +6,9 @@
     **********************************************
 **/
 
-import * as fastJson from 'fast-json-stringify';
+import { fastJson } from '@cmmv/core';
 import * as crypto from 'crypto';
-import { ObjectId } from 'mongodb';
+import { ObjectId } from '@cmmv/repository';
 
 import {
     Expose,
@@ -16,9 +16,9 @@ import {
     plainToInstance,
     Exclude,
     Transform,
-} from 'class-transformer';
+} from '@cmmv/core';
 
-import { IsOptional, IsString, MinLength, MaxLength } from 'class-validator';
+import { IsOptional, IsString, MinLength, MaxLength } from '@cmmv/core';
 
 import { Groups, GroupsFastSchemaStructure } from '@models/auth/groups.model';
 
