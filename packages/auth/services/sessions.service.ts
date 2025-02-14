@@ -3,8 +3,8 @@ import * as jwt from 'jsonwebtoken';
 import { promisify } from 'util';
 
 import { Service, AbstractService, Config, Module } from '@cmmv/core';
-
 import { Repository } from '@cmmv/repository';
+
 import { IJWTDecoded } from '../lib/auth.interface';
 import { decryptJWTData } from '../lib/auth.utils';
 
