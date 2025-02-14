@@ -9,11 +9,9 @@ import {
     Get,
     User,
     Session,
-    Header,
 } from '@cmmv/http';
 
 import { AuthService } from '../services/auth.service';
-
 import { Auth } from '../lib/auth.decorator';
 
 @Controller('auth')

@@ -178,7 +178,7 @@ module.exports = {
             }
         },
         recaptcha: {
-            required: true,
+            required: false,
             secret: process.env.RECAPTCHA_SECRET
         }
     },

@@ -176,10 +176,6 @@ import {
    ${serviceName}Generated 
 } from "${this.getImportPath(contract, 'services', contract.controllerName.toLowerCase() + '.service', '@generated/services')}";
 
-import {
-   ${importsFromModel.join(', \n   ')}
-} from "${this.getImportPath(contract, 'models', modelName.toLowerCase() + '.model', '@models')}";
-
 @Service("${contract.controllerName.toLowerCase()}")
 export class ${serviceName} extends ${serviceName}Generated {
 ${contract.services
@@ -194,12 +190,13 @@ ${contract.services
 
         const outputFilePathFinal = path.join(outputDir, serviceFileName);
 
-        if (!fs.existsSync(outputFilePathFinal))
+        if (!fs.existsSync(outputFilePathFinal)) {
             fs.writeFileSync(
                 outputFilePathFinal,
                 this.removeExtraSpaces(serviceTemplate),
                 'utf8',
             );
+        }
     }
 
     private getControllerDecorators(

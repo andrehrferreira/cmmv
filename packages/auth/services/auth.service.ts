@@ -29,6 +29,8 @@ import { AuthRecaptchaService } from '../services/recaptcha.service';
 
 @Service('auth')
 export class AuthService extends AbstractService {
+    public static roles = new Set<string>();
+
     constructor(
         private readonly sessionsService: AuthSessionsService,
         private readonly recaptchaService: AuthRecaptchaService,
@@ -38,13 +40,9 @@ export class AuthService extends AbstractService {
 
     @Hook(HooksType.onListen)
     public async syncRoles() {
-        const instance = Repository.getInstance();
-        const RolesEntity = Repository.getEntity('RolesEntity');
         const contracts = Scope.getArray<any>('__contracts');
         const rolesSufixs = ['get', 'insert', 'update', 'delete', 'export'];
         const rolesNames = new Set<string>();
-
-        if (!instance.dataSource) await Repository.loadConfig();
 
         contracts?.forEach((contract: IContract) => {
             if (contract.auth && contract.generateController) {
@@ -56,13 +54,9 @@ export class AuthService extends AbstractService {
             }
         });
 
-        rolesNames.forEach((roleName: string) => {
-            Repository.insertIfNotExists(
-                RolesEntity,
-                { name: roleName },
-                'name',
-            );
-        });
+        rolesNames.forEach((roleName: string) =>
+            AuthService.roles.add(roleName),
+        );
     }
 
     private isLocalhost(req: any): boolean {
@@ -259,14 +253,19 @@ export class AuthService extends AbstractService {
         };
     }
 
-    public async register(payload, req?: any) {
+    public async register(payload: any) {
         const User = Application.getModel('User');
         const UserEntity = Repository.getEntity('UserEntity');
         //@ts-ignore
         const newUser = User.fromPartial(payload);
-
-        const data = await this.validate(newUser);
-        const result = await Repository.insert(UserEntity, data);
+        const data: any = await this.validate(newUser);
+        const result = await Repository.insert(UserEntity, {
+            username: data.username,
+            password: data.password,
+            root: false,
+            blocked: false,
+            validated: false,
+        });
 
         return result.success
             ? { success: true, message: 'User registered successfully!' }
@@ -294,11 +293,12 @@ export class AuthService extends AbstractService {
         try {
             const { authorization } = request.req.headers;
 
-            if (!authorization)
+            if (!authorization) {
                 throw new HttpException(
                     'Authorization header missing',
                     HttpStatus.UNAUTHORIZED,
                 );
+            }
 
             const refreshCookieName = Config.get<string>(
                 'auth.refreshCookieName',
@@ -335,6 +335,11 @@ export class AuthService extends AbstractService {
             )) as { f: string; u: string };
             const tokenDecoded = jwt.decode(token) as any;
 
+            tokenDecoded.username = decryptJWTData(
+                tokenDecoded.username,
+                jwtSecret,
+            );
+
             if (!tokenDecoded)
                 throw new HttpException(
                     'Invalid access token',
@@ -344,11 +349,12 @@ export class AuthService extends AbstractService {
             if (
                 tokenDecoded.fingerprint !== decoded.f ||
                 tokenDecoded.id !== decoded.u
-            )
+            ) {
                 throw new HttpException(
                     'Token mismatch',
                     HttpStatus.UNAUTHORIZED,
                 );
+            }
 
             const user = await Repository.findBy(
                 UserEntity,

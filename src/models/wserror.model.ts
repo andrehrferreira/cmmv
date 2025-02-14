@@ -49,7 +49,7 @@ export class WsError implements IWsError {
         });
     }
 
-    public static fromEntity(entity: any): WsError {
+    public static fromEntity(entity: any): any {
         return plainToInstance(this, entity, {
             exposeUnsetFields: false,
             enableImplicitConversion: true,

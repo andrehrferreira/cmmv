@@ -8,8 +8,7 @@ import { SchedulingModule, SchedulingService } from '@cmmv/scheduling';
 import { AuthModule } from '@cmmv/auth';
 import { FormModule } from '@cmmv/form';
 
-import { IndexModule } from '@modules/index.module';
-import { MainModule } from '@modules/main.module';
+import { IndexModule } from './index.module';
 
 Application.create({
     httpAdapter: DefaultAdapter,
@@ -24,7 +23,6 @@ Application.create({
         AuthModule,
         FormModule,
         IndexModule,
-        MainModule,
     ],
     services: [Repository, SchedulingService],
 });

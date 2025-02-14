@@ -59,6 +59,11 @@ export const AuthConfig: ConfigSchema = {
             type: 'object',
             default: {},
             properties: {
+                required: {
+                    required: false,
+                    type: 'boolean',
+                    default: false,
+                },
                 issuer: {
                     required: false,
                     type: 'string',

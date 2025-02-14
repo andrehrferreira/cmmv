@@ -81,7 +81,7 @@ ${contract.fields?.map((field: any) => this.generateClassField(field)).join('\n\
         })
     }
 
-    public static fromEntity(entity: any) : ${modelName} {
+    public static fromEntity(entity: any) : any {
         return plainToInstance(this, entity, {
             exposeUnsetFields: false,
             enableImplicitConversion: true,
@@ -249,9 +249,9 @@ import {
     private generateClassField(field: any): string {
         const decorators: string[] = [];
 
-        if (field.exclude && field.toClassOnly) {
+        if (field.exclude) {
             decorators.push(
-                `    @Exclude(${field.toClassOnly ? `{ toClassOnly: true }` : ''})`,
+                `    @Exclude(${field.toClassOnly ? `{ toClassOnly: true }` : ''}${field.toPlainOnly ? `{ toPlainOnly: true }` : ''})`,
             );
         } else {
             decorators.push(`    @Expose()`);

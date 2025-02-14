@@ -5,7 +5,8 @@
         "src/**/*.spec.ts", "src/services", 
         "src/models", "src/controllers", 
         "src/protos", "src/app.module.ts", 
-        "src/gateways", "src/entities"
+        "src/gateways", "src/entities",
+        "src/models/*.ts"
     ],
     "exec": "node -r @swc-node/register ./src/index.ts" 
 }

@@ -24,6 +24,7 @@ export class WSTranspile extends AbstractTranspile implements ITranspile {
         const hasCacheModule = Module.hasModule('cache');
         const gatewayName = `${contract.controllerName}Gateway`;
         const serviceName = `${contract.controllerName}Service`;
+        const gatewayFileNameGenerated = `${contract.controllerName.toLowerCase()}.gateway.ts`;
         const gatewayFileName = `${contract.controllerName.toLowerCase()}.gateway.ts`;
 
         const hasCache =
@@ -39,7 +40,7 @@ export class WSTranspile extends AbstractTranspile implements ITranspile {
 
         const protoPath = path.basename(contract.protoPath);
 
-        const serviceTemplate = `/**                                                                               
+        const gatewayTemplateGenerated = `/**                                                                               
     **********************************************
     This script was generated automatically by CMMV.
     It is recommended not to modify this file manually, 
@@ -53,7 +54,7 @@ import {
     Add${contract.controllerName}Request, 
     Update${contract.controllerName}Request,   
     Delete${contract.controllerName}Request 
-} from "${this.getImportPath(contract, 'protos', contract.controllerName.toLowerCase(), '@protos')}.d";
+} from "${this.getImportPath(contract, 'protos', contract.controllerName.toLowerCase())}.d";
 
 import { 
     ${contract.controllerName} 
@@ -64,7 +65,7 @@ import {
 } from "${this.getImportPath(contract, 'services', contract.controllerName.toLowerCase() + '.service', '@services')}";
 
 @Rpc("${contract.controllerName.toLowerCase()}")
-export class ${gatewayName} {
+export class ${gatewayName}Generated {
     constructor(private readonly ${serviceName.toLowerCase()}: ${serviceName}) {}
 
     @Message("GetAll${contract.controllerName}Request")
@@ -152,12 +153,45 @@ export class ${gatewayName} {
             path: `@gateways${contract.subPath}/${contract.controllerName.toLowerCase()}.gateway`,
         });
 
-        const outputDir = this.getRootPath(contract, 'gateways');
-        const outputFilePath = path.join(outputDir, gatewayFileName);
+        const outputDirGenerated = this.getGeneratedPath(contract, 'gateways');
+        const outputFilePath = path.join(
+            outputDirGenerated,
+            gatewayFileNameGenerated,
+        );
         fs.writeFileSync(
             outputFilePath,
-            this.removeExtraSpaces(serviceTemplate),
+            this.removeExtraSpaces(gatewayTemplateGenerated),
             'utf8',
         );
+
+        //Service
+        const gatewayTemplate = `import { Rpc } from "@cmmv/ws";
+
+import { 
+   ${gatewayName}Generated 
+} from "${this.getImportPath(contract, 'gateway', contract.controllerName.toLowerCase() + '.gateway', '@generated/gateways')}";
+
+@Rpc("${contract.controllerName.toLowerCase()}")
+export class ${gatewayName} extends ${gatewayName}Generated {
+${contract.services
+    .filter(service => service.createBoilerplate === true)
+    .map(service => {
+        return `    override async ${service.functionName}(payload: ${service.request}): Promise<${service.response}> {
+        throw new Error("Function ${service.functionName} not implemented");
+    }`;
+    })
+    .join('\n\n')}
+}`;
+
+        const outputDir = this.getRootPath(contract, 'gateways');
+        const outputFilePathFinal = path.join(outputDir, gatewayFileName);
+
+        if (!fs.existsSync(outputFilePathFinal)) {
+            fs.writeFileSync(
+                outputFilePathFinal,
+                this.removeExtraSpaces(gatewayTemplate),
+                'utf8',
+            );
+        }
     }
 }

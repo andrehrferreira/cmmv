@@ -2,45 +2,14 @@ import * as crypto from 'node:crypto';
 import * as jwt from 'jsonwebtoken';
 import { promisify } from 'util';
 
-import {
-    Service,
-    AbstractService,
-    Config,
-    IContract,
-    Application,
-    Module,
-} from '@cmmv/core';
-
+import { Service, AbstractService, Config, Module } from '@cmmv/core';
 import { Repository } from '@cmmv/repository';
+
 import { IJWTDecoded } from '../lib/auth.interface';
 import { decryptJWTData } from '../lib/auth.utils';
 
 @Service('sessions')
 export class AuthSessionsService extends AbstractService {
-    private extractDevice(userAgent: string): string {
-        if (/mobile/i.test(userAgent)) return 'Mobile';
-        if (/tablet/i.test(userAgent)) return 'Tablet';
-        return 'Desktop';
-    }
-
-    private extractBrowser(userAgent: string): string {
-        if (/chrome/i.test(userAgent)) return 'Chrome';
-        if (/firefox/i.test(userAgent)) return 'Firefox';
-        if (/safari/i.test(userAgent)) return 'Safari';
-        if (/edge/i.test(userAgent)) return 'Edge';
-        if (/opera|opr/i.test(userAgent)) return 'Opera';
-        return 'Unknown';
-    }
-
-    private extractOS(userAgent: string): string {
-        if (/windows/i.test(userAgent)) return 'Windows';
-        if (/mac/i.test(userAgent)) return 'MacOS';
-        if (/linux/i.test(userAgent)) return 'Linux';
-        if (/android/i.test(userAgent)) return 'Android';
-        if (/ios|iphone|ipad/i.test(userAgent)) return 'iOS';
-        return 'Unknown';
-    }
-
     public static async validateSession(user: IJWTDecoded): Promise<boolean> {
         const SessionsEntity = Repository.getEntity('SessionsEntity');
         let userId: any = user.id;
@@ -85,12 +54,17 @@ export class AuthSessionsService extends AbstractService {
                 userId = new ObjectId(userId as string);
             }
 
+            const refreshTokenHash = crypto
+                .createHash('sha1')
+                .update(refreshToken)
+                .digest('hex');
+
             return await Repository.exists(
                 SessionsEntity,
                 Repository.queryBuilder({
                     user: userId,
                     fingerprint: decoded.f,
-                    refreshToken,
+                    refreshToken: refreshTokenHash,
                 }),
             );
         } catch (e) {
@@ -116,12 +90,17 @@ export class AuthSessionsService extends AbstractService {
             )) as IJWTDecoded;
             const usernameDecoded = decryptJWTData(decoded.username, jwtSecret);
 
+            const refreshTokenHash = crypto
+                .createHash('sha1')
+                .update(refreshToken)
+                .digest('hex');
+
             let session = await Repository.findBy(
                 SessionsEntity,
                 Repository.queryBuilder({
                     user: usernameDecoded,
                     fingerprint: decoded.fingerprint,
-                    refreshToken,
+                    refreshToken: refreshTokenHash,
                 }),
             );
 
@@ -154,6 +133,11 @@ export class AuthSessionsService extends AbstractService {
             Repository.queryBuilder({ fingerprint }),
         );
 
+        const refreshTokenHash = crypto
+            .createHash('sha1')
+            .update(refreshToken)
+            .digest('hex');
+
         if (session) {
             const result = await Repository.update(
                 SessionsEntity,
@@ -165,7 +149,7 @@ export class AuthSessionsService extends AbstractService {
                     os,
                     updatedAt: new Date(),
                     userAgent,
-                    refreshToken,
+                    refreshToken: refreshTokenHash,
                 },
             );
 
@@ -184,7 +168,7 @@ export class AuthSessionsService extends AbstractService {
             os,
             revoked: false,
             userAgent,
-            refreshToken,
+            refreshToken: refreshTokenHash,
             createdAt: new Date(),
             updatedAt: new Date(),
         };
@@ -216,5 +200,29 @@ export class AuthSessionsService extends AbstractService {
         if (!session) throw new Error('Unable to load sessions for this user.');
 
         return session;
+    }
+
+    private extractDevice(userAgent: string): string {
+        if (/mobile/i.test(userAgent)) return 'Mobile';
+        if (/tablet/i.test(userAgent)) return 'Tablet';
+        return 'Desktop';
+    }
+
+    private extractBrowser(userAgent: string): string {
+        if (/chrome/i.test(userAgent)) return 'Chrome';
+        if (/firefox/i.test(userAgent)) return 'Firefox';
+        if (/safari/i.test(userAgent)) return 'Safari';
+        if (/edge/i.test(userAgent)) return 'Edge';
+        if (/opera|opr/i.test(userAgent)) return 'Opera';
+        return 'Unknown';
+    }
+
+    private extractOS(userAgent: string): string {
+        if (/windows/i.test(userAgent)) return 'Windows';
+        if (/mac/i.test(userAgent)) return 'MacOS';
+        if (/linux/i.test(userAgent)) return 'Linux';
+        if (/android/i.test(userAgent)) return 'Android';
+        if (/ios|iphone|ipad/i.test(userAgent)) return 'iOS';
+        return 'Unknown';
     }
 }

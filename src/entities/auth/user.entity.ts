@@ -20,7 +20,6 @@ import {
 import { IUser } from '@models/auth/user.model';
 
 import { GroupsEntity } from '@entities/auth/groups.entity';
-import { RolesEntity } from '@entities/auth/roles.entity';
 
 @Entity('auth_users')
 @Index('idx_user_username', ['username'], { unique: true })
@@ -50,6 +49,7 @@ export class UserEntity implements IUser {
     })
     provider?: string;
 
+    @ManyToOne(() => GroupsEntity, groups => groups._id, { nullable: false })
     @Column({
         type: 'simple-array',
         nullable: true,
@@ -58,9 +58,10 @@ export class UserEntity implements IUser {
 
     @Column({
         type: 'simple-array',
+        default: [],
         nullable: true,
     })
-    roles?: RolesEntity[] | string[] | ObjectId[] | null;
+    roles?: string[];
 
     @Column({
         type: 'boolean',
@@ -121,6 +122,13 @@ export class UserEntity implements IUser {
         nullable: false,
     })
     optSecretVerify: boolean;
+
+    @Column({
+        type: 'varchar',
+        default: '{}',
+        nullable: true,
+    })
+    profile?: string;
 
     @CreateDateColumn({
         type: 'timestamp',

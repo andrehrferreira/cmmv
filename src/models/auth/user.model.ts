@@ -22,15 +22,13 @@ import { IsOptional, IsString, MinLength, MaxLength } from 'class-validator';
 
 import { Groups, GroupsFastSchemaStructure } from '@models/auth/groups.model';
 
-import { Roles, RolesFastSchemaStructure } from '@models/auth/roles.model';
-
 export interface IUser {
     _id?: ObjectId;
     username: string;
     password: string;
     provider?: string;
     groups?: object | string | string[] | ObjectId;
-    roles?: object | string | string[] | ObjectId;
+    roles?: string[];
     root: boolean;
     blocked: boolean;
     validated: boolean;
@@ -40,6 +38,7 @@ export interface IUser {
     verifySMSCode?: number;
     optSecret?: string;
     optSecretVerify: boolean;
+    profile?: string;
 }
 
 //Model
@@ -77,7 +76,7 @@ export class User implements IUser {
     groups?: Groups[] | string[] | ObjectId[] | null;
 
     @Expose()
-    roles?: Roles[] | string[] | ObjectId[] | null;
+    roles?: string[] = [];
 
     @Expose()
     root: boolean = false;
@@ -91,20 +90,30 @@ export class User implements IUser {
     @Expose()
     verifyEmail: boolean = false;
 
-    @Expose()
+    @Exclude({ toPlainOnly: true })
     verifyEmailCode?: number;
 
     @Expose()
     verifySMS: boolean = false;
 
-    @Expose()
+    @Exclude({ toPlainOnly: true })
     verifySMSCode?: number;
 
-    @Expose()
+    @Exclude({ toPlainOnly: true })
     optSecret?: string;
 
-    @Expose()
+    @Exclude({ toPlainOnly: true })
     optSecretVerify: boolean = false;
+
+    @Expose()
+    @Transform(
+        value => (typeof value === 'object' ? JSON.stringify(value) : '{}'),
+        { toClassOnly: true },
+    )
+    @Transform(value => (typeof value === 'string' ? JSON.parse(value) : {}), {
+        toPlainOnly: true,
+    })
+    profile?: string = '{}';
 
     constructor(partial: Partial<User>) {
         Object.assign(this, partial);
@@ -122,7 +131,7 @@ export class User implements IUser {
         });
     }
 
-    public static fromEntity(entity: any): User {
+    public static fromEntity(entity: any): any {
         return plainToInstance(this, entity, {
             exposeUnsetFields: false,
             enableImplicitConversion: true,
@@ -164,7 +173,9 @@ export const UserFastSchemaStructure = {
         roles: {
             type: 'array',
             nullable: true,
-            items: RolesFastSchemaStructure,
+            items: {
+                type: 'string',
+            },
         },
         root: {
             type: 'boolean',
@@ -207,6 +218,11 @@ export const UserFastSchemaStructure = {
             type: 'boolean',
             nullable: false,
             default: false,
+        },
+        profile: {
+            type: 'string',
+            nullable: true,
+            default: '{}',
         },
     },
     required: [

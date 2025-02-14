@@ -8,7 +8,6 @@ import {
     ContractService,
 } from '@cmmv/core';
 
-import { RolesContract } from './roles.contract';
 import { GroupsContract } from './groups.contract';
 
 @Contract({
@@ -92,20 +91,12 @@ export class UserContract extends AbstractContract {
     groups: Array<string>;
 
     @ContractField({
-        protoType: 'Roles',
-        defaultValue: 'null',
-        objectType: 'object',
-        entityType: 'RolesEntity',
+        protoType: 'string',
+        defaultValue: '[]',
+        objectType: 'string[]',
+        entityType: 'simple-array',
         protoRepeated: true,
         nullable: true,
-        link: [
-            {
-                contract: RolesContract,
-                entityName: 'roles',
-                field: '_id',
-                array: true,
-            },
-        ],
     })
     roles: Array<string>;
 
@@ -119,6 +110,7 @@ export class UserContract extends AbstractContract {
         protoType: 'bool',
         index: true,
         defaultValue: false,
+        toPlainOnly: true,
     })
     blocked: boolean;
 
@@ -139,6 +131,7 @@ export class UserContract extends AbstractContract {
         protoType: 'int32',
         nullable: true,
         exclude: true,
+        toPlainOnly: true,
     })
     verifyEmailCode: number;
 
@@ -152,6 +145,7 @@ export class UserContract extends AbstractContract {
         protoType: 'int32',
         nullable: true,
         exclude: true,
+        toPlainOnly: true,
     })
     verifySMSCode: number;
 
@@ -159,6 +153,7 @@ export class UserContract extends AbstractContract {
         protoType: 'string',
         nullable: true,
         exclude: true,
+        toPlainOnly: true,
     })
     optSecret: string;
 
@@ -166,8 +161,20 @@ export class UserContract extends AbstractContract {
         protoType: 'bool',
         defaultValue: false,
         exclude: true,
+        toPlainOnly: true,
     })
     optSecretVerify: boolean;
+
+    @ContractField({
+        protoType: 'string',
+        objectType: 'string',
+        defaultValue: "'{}'",
+        nullable: true,
+        transform: value =>
+            typeof value === 'object' ? JSON.stringify(value) : '{}',
+        toPlain: value => (typeof value === 'string' ? JSON.parse(value) : {}),
+    })
+    profile: string;
 
     // Login
     @ContractMessage({
