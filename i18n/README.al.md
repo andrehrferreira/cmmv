@@ -1,3 +1,7 @@
+> Ky përkthim është gjeneruar automatikisht nga ChatGPT. Dokumentacioni origjinal është shkruar në **anglisht dhe portugalisht**.  
+> Nëse gjeni ndonjë informacion të pasaktë dhe keni njohuri të gjuhës përkatëse, ndjehuni të lirë të rishikoni dhe të dërgoni një **Pull Request (PR)** për korrigjim.  
+> E gjithë komuniteti ju falënderon për kontributin tuaj! 🙌 
+
 <p align="center">
   <a href="https://cmmv.io/" target="blank"><img src="https://raw.githubusercontent.com/cmmvio/docs.cmmv.io/main/public/assets/logo_CMMV2_icon.png" width="300" alt="CMMV Logo" /></a>
 </p>
@@ -12,10 +16,6 @@
   <a href="https://cmmv.io">Dokumentacioni</a> &bull;
   <a href="https://github.com/cmmvio/cmmv/issues">Raporto një problem</a>
 </p>
-
-> Ky përkthim është gjeneruar automatikisht nga ChatGPT. Dokumentacioni origjinal është shkruar në **anglisht dhe portugalisht**.  
-> Nëse gjeni ndonjë informacion të pasaktë dhe keni njohuri të gjuhës përkatëse, ndjehuni të lirë të rishikoni dhe të dërgoni një **Pull Request (PR)** për korrigjim.  
-> E gjithë komuniteti ju falënderon për kontributin tuaj! 🙌 
 
 ## Përshkrimi
 
