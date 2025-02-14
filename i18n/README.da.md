@@ -13,6 +13,13 @@
   <a href="https://github.com/cmmvio/cmmv/issues">Rapportér problem</a>
 </p>
 
+> **Ansvarsfraskrivelse**  
+> Denne fil er automatisk oversat ved hjælp af **ChatGPT**.  
+> Den oprindelige dokumentation blev skrevet på **engelsk og portugisisk**.  
+> Hvis du finder en fejl i oversættelsen og har kendskab til dansk,  
+> er du velkommen til at rette den og indsende en **Pull Request (PR)** for at forbedre den.  
+> Hele fællesskabet vil være meget taknemmeligt! 🙌 
+
 ## Beskrivelse
 
 CMMV (Contract Model View) er en revolution inden for webapplikationsudvikling, der bryder paradigmer og omdefinerer, hvordan vi bygger, vedligeholder og skalerer digitale projekter. CMMV bruger kontrakter til automatisk at generere robuste og sikre strukturer, hvilket eliminerer kompleksiteten ved manuel kode og giver en enestående udviklingsoplevelse.

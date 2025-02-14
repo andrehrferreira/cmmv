@@ -13,6 +13,13 @@
   <a href="https://github.com/cmmvio/cmmv/issues">Nahlásit problém</a>
 </p>
 
+> **Zřeknutí se odpovědnosti**  
+> Tento soubor byl automaticky přeložen pomocí **ChatGPT**.  
+> Původní dokumentace byla napsána v **angličtině a portugalštině**.  
+> Pokud najdete jakoukoli chybu v překladu a ovládáte češtinu,  
+> neváhejte ji opravit a odeslat **Pull Request (PR)** pro její nápravu.  
+> Celá komunita vám bude velmi vděčná! 🙌  
+
 ## Popis
 
 CMMV (Contract Model View) je revoluce ve vývoji webových aplikací, která mění paradigmy a předefinuje způsob, jakým vytváříme, spravujeme a škálujeme digitální projekty. CMMV využívá sílu kontraktů k automatickému generování robustních a bezpečných struktur, eliminuje složitost ručního kódu a poskytuje bezprecedentní vývojovou zkušenost.
