@@ -123,7 +123,7 @@ Application.create({
 - [x] Lidhja e ndërsjellë midis kontratave
 
 ## 🗄 Repository
-- [x] Integrimi me SQL, MySQL, PostgreSQL, SQL Server, Oracle dhe MongoDB
+- [x] Integrimi me SQLite, MySQL, PostgreSQL, SQL Server, Oracle dhe MongoDB
 - [x] Krijimi automatik i entiteteve për TypeORM
 - [x] Gjenerimi automatik i indekseve
 - [x] Krijimi automatik i marrëdhënieve midis tabelave

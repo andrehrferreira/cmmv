@@ -125,7 +125,7 @@ Application.create({
 - [x] Lidhja ndër-kontraktuale
 
 ## 🗄 Repository
-- [x] Integrimi me SQL, MySQL, PostgreSQL, SQL Server, Oracle dhe MongoDB
+- [x] Integrimi me SQLite, MySQL, PostgreSQL, SQL Server, Oracle dhe MongoDB
 - [x] Gjenerimi automatik i entiteteve për TypeORM
 - [x] Gjenerimi automatik i indekseve
 - [x] Gjenerimi automatik i lidhjeve

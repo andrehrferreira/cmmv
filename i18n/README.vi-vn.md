@@ -125,7 +125,7 @@ Application.create({
 - [x] Liên kết hợp đồng với nhau
 
 ## 🗄 Kho dữ liệu (Repository)
-- [x] Hỗ trợ SQL, MySQL, PostgreSQL, SQL Server, Oracle và MongoDB
+- [x] Hỗ trợ SQLite, MySQL, PostgreSQL, SQL Server, Oracle và MongoDB
 - [x] Tạo thực thể tự động cho TypeORM
 - [x] Tự động tạo chỉ mục
 - [x] Tự động tạo mối quan hệ

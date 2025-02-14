@@ -125,7 +125,7 @@ Application.create({
 - [x] Līgumu savstarpēja sasaistīšana
 
 ## 🗄 Datu glabātuve (Repository)
-- [x] SQL, MySQL, PostgreSQL, SQL Server, Oracle un MongoDB integrācija
+- [x] SQLite, MySQL, PostgreSQL, SQL Server, Oracle un MongoDB integrācija
 - [x] Automātiska TypeORM entītiju izveide
 - [x] Automātiska indeksu ģenerēšana
 - [x] Automātiska attiecību ģenerēšana

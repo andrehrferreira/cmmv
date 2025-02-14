@@ -125,7 +125,7 @@ Application.create({
 - [x] Interlinking antar-kontrak
 
 ## 🗄 Repositori (Repository)
-- [x] Integrasi dengan SQL, MySQL, PostgreSQL, SQL Server, Oracle, dan MongoDB
+- [x] Integrasi dengan SQLite, MySQL, PostgreSQL, SQL Server, Oracle, dan MongoDB
 - [x] Pembuatan entitas otomatis untuk TypeORM
 - [x] Pembuatan indeks otomatis
 - [x] Pembuatan hubungan otomatis

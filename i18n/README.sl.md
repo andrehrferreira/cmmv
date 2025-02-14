@@ -125,7 +125,7 @@ Application.create({
 - [x] Povezovanje pogodb
 
 ## 🗄 Repozitorij (Repository)
-- [x] Integracija s SQL, MySQL, PostgreSQL, SQL Server, Oracle in MongoDB
+- [x] Integracija s SQLite, MySQL, PostgreSQL, SQL Server, Oracle in MongoDB
 - [x] Samodejno ustvarjanje entitet za TypeORM
 - [x] Samodejno generiranje indeksov
 - [x] Samodejno generiranje relacij

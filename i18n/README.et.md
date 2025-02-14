@@ -125,7 +125,7 @@ Application.create({
 - [x] Lepingute sidumine
 
 ## 🗄 Andmebaas
-- [x] SQL, MySQL, PostgreSQL, SQL Server, Oracle ja MongoDB integratsioon
+- [x] SQLite, MySQL, PostgreSQL, SQL Server, Oracle ja MongoDB integratsioon
 - [x] Automaatne TypeORM üksuste loomine
 - [x] Indeksite automaatne genereerimine
 - [x] Suhete automaatne loomine

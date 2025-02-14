@@ -125,7 +125,7 @@ Application.create({
 - [x] 契約間のリンク機能
 
 ## 🗄 リポジトリ (Repository)
-- [x] SQL、MySQL、PostgreSQL、SQL Server、Oracle、MongoDB との統合
+- [x] SQLite、MySQL、PostgreSQL、SQL Server、Oracle、MongoDB との統合
 - [x] TypeORM のための自動エンティティ生成
 - [x] インデックスの自動生成
 - [x] 関係の自動生成

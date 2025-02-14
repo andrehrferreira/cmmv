@@ -125,7 +125,7 @@ Application.create({
 - [x] Pautan silang antara kontrak
 
 ## 🗄 Repositori (Repository)
-- [x] Integrasi dengan SQL, MySQL, PostgreSQL, SQL Server, Oracle, dan MongoDB
+- [x] Integrasi dengan SQLite, MySQL, PostgreSQL, SQL Server, Oracle, dan MongoDB
 - [x] Penjanaan entiti secara automatik untuk TypeORM
 - [x] Penjanaan indeks secara automatik
 - [x] Penjanaan hubungan secara automatik

@@ -125,7 +125,7 @@ Application.create({
 - [x] Prepájanie kontraktov
 
 ## 🗄 Úložisko (Repository)
-- [x] Integrácia so SQL, MySQL, PostgreSQL, SQL Server, Oracle a MongoDB
+- [x] Integrácia so SQLite, MySQL, PostgreSQL, SQL Server, Oracle a MongoDB
 - [x] Automatické vytváranie entít pre TypeORM
 - [x] Automatická generácia indexov
 - [x] Automatická generácia vzťahov

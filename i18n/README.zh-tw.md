@@ -125,7 +125,7 @@ Application.create({
 - [x] 契約交叉鏈接
 
 ## 🗄 資料庫 (Repository)
-- [x] 與 SQL、MySQL、PostgreSQL、SQL Server、Oracle 和 MongoDB 的集成
+- [x] 與 SQLite、MySQL、PostgreSQL、SQL Server、Oracle 和 MongoDB 的集成
 - [x] 為 TypeORM 自動生成實體
 - [x] 自動生成索引
 - [x] 自動生成關係

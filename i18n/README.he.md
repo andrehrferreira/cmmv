@@ -97,7 +97,7 @@ Application.create({
 - [x] קישור בין חוזים (Contract Interlinking)
 
 ## 🗄 מאגר נתונים (Repository)
-- [x] אינטגרציה עם SQL, MySQL, PostgreSQL, SQL Server, Oracle ו-MongoDB
+- [x] אינטגרציה עם SQLite, MySQL, PostgreSQL, SQL Server, Oracle ו-MongoDB
 - [x] יצירה אוטומטית של ישויות עבור TypeORM
 - [x] יצירה אוטומטית של אינדקסים
 - [x] יצירה אוטומטית של קשרים
