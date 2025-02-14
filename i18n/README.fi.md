@@ -125,7 +125,7 @@ Application.create({
 - [x] Sopimusten yhdistäminen
 
 ## 🗄 Tietovarasto
-- [x] SQL, MySQL, PostgreSQL, SQL Server, Oracle ja MongoDB -integraatio
+- [x] SQLite, MySQL, PostgreSQL, SQL Server, Oracle ja MongoDB -integraatio
 - [x] Automaattinen entiteettien luonti TypeORM:lle
 - [x] Indeksien automaattinen generointi
 - [x] Suhdekaavioiden automaattinen generointi

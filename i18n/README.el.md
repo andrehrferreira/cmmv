@@ -125,7 +125,7 @@ Application.create({
 - [x] Διασύνδεση μεταξύ συμβολαίων
 
 ## 🗄 Repository
-- [x] Ενσωμάτωση με SQL, MySQL, PostgreSQL, SQL Server, Oracle και MongoDB
+- [x] Ενσωμάτωση με SQLite, MySQL, PostgreSQL, SQL Server, Oracle και MongoDB
 - [x] Αυτόματη δημιουργία οντοτήτων για TypeORM
 - [x] Αυτόματη δημιουργία ευρετηρίων
 - [x] Αυτόματη δημιουργία σχέσεων

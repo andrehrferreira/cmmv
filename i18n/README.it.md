@@ -125,7 +125,7 @@ Application.create({
 - [x] Collegamento tra contratti
 
 ## 🗄 Repository
-- [x] Integrazione con SQL, MySQL, PostgreSQL, SQL Server, Oracle e MongoDB
+- [x] Integrazione con SQLite, MySQL, PostgreSQL, SQL Server, Oracle e MongoDB
 - [x] Creazione automatica di entità per TypeORM
 - [x] Generazione automatica degli indici
 - [x] Generazione automatica delle relazioni

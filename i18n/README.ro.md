@@ -125,7 +125,7 @@ Application.create({
 - [x] Interlinking între contracte
 
 ## 🗄 Repository
-- [x] Integrare cu SQL, MySQL, PostgreSQL, SQL Server, Oracle și MongoDB
+- [x] Integrare cu SQLite, MySQL, PostgreSQL, SQL Server, Oracle și MongoDB
 - [x] Generarea automată a entităților pentru TypeORM
 - [x] Generarea automată a indicilor
 - [x] Generarea automată a relațiilor

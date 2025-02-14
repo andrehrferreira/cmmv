@@ -112,20 +112,20 @@ Application.create({
 - [x] API pour récupérer, mettre à jour ou supprimer des données mises en cache
 
 ## 🌐 HTTP
-- [x] API disponible via \`@cmmv/server\` ou d'autres adaptateurs comme Express
+- [x] API disponible via `@cmmv/server` ou d'autres adaptateurs comme Express
 - [x] Génération automatique des contrôleurs et des services
-- [x] Intégration avec \`@cmmv/cache\` et \`@cmmv/auth\`
+- [x] Intégration avec `@cmmv/cache` et `@cmmv/auth`
 - [x] Adaptateur Express
 - [ ] Adaptateur Fastify
 
 ## 📡 Protobuf
-- [x] Génération de fichiers \`.proto\` pour la communication RPC basée sur les contrats
+- [x] Génération de fichiers `.proto` pour la communication RPC basée sur les contrats
 - [x] Génération d'interfaces et de définitions de types pour TypeScript
 - [x] Génération de contrats JSON pour une utilisation frontend
 - [x] Interconnexion entre contrats
 
 ## 🗄 Repository
-- [x] Intégration SQL, MySQL, PostgreSQL, SQL Server, Oracle et MongoDB
+- [x] Intégration SQLite, MySQL, PostgreSQL, SQL Server, Oracle et MongoDB
 - [x] Création automatique d'entités pour TypeORM
 - [x] Auto-génération des index
 - [x] Auto-génération des relations
@@ -133,7 +133,7 @@ Application.create({
 - [x] CRUD pour RPC et REST
 - [x] Filtres de recherche (tri, filtrage par ID, pagination)
 - [x] Surcharge des services pour une intégration directe avec le repository
-- [x] Intégration avec \`@cmmv/cache\`, \`@cmmv/auth\`
+- [x] Intégration avec `@cmmv/cache`, `@cmmv/auth`
 
 ## ⏳ Scheduling
 - [x] Décorateurs pour la création de tâches planifiées (cron)

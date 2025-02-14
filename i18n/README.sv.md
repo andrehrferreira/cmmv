@@ -125,7 +125,7 @@ Application.create({
 - [x] Länkning av kontrakt
 
 ## 🗄 Databas (Repository)
-- [x] Integration med SQL, MySQL, PostgreSQL, SQL Server, Oracle och MongoDB
+- [x] Integration med SQLite, MySQL, PostgreSQL, SQL Server, Oracle och MongoDB
 - [x] Automatisk entitetsgenerering för TypeORM
 - [x] Automatisk indexgenerering
 - [x] Automatisk generering av relationer

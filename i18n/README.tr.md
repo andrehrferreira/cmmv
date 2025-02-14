@@ -125,7 +125,7 @@ Application.create({
 - [x] Sözleşmeler arası bağlantı
 
 ## 🗄 Depo (Repository)
-- [x] SQL, MySQL, PostgreSQL, SQL Server, Oracle ve MongoDB desteği
+- [x] SQLite, MySQL, PostgreSQL, SQL Server, Oracle ve MongoDB desteği
 - [x] TypeORM için otomatik varlık (entity) oluşturma
 - [x] Otomatik indeks oluşturma
 - [x] Otomatik ilişki oluşturma

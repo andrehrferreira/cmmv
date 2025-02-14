@@ -125,7 +125,7 @@ Application.create({
 - [x] Krysskobling mellom kontrakter
 
 ## 🗄 Lagring (Repository)
-- [x] Integrasjon med SQL, MySQL, PostgreSQL, SQL Server, Oracle og MongoDB
+- [x] Integrasjon med SQLite, MySQL, PostgreSQL, SQL Server, Oracle og MongoDB
 - [x] Automatisk generering av enheter for TypeORM
 - [x] Automatisk generering av indekser
 - [x] Automatisk generering av relasjoner

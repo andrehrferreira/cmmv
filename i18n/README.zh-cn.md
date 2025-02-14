@@ -125,7 +125,7 @@ Application.create({
 - [x] 契约交叉链接
 
 ## 🗄 仓库 (Repository)
-- [x] 与 SQL、MySQL、PostgreSQL、SQL Server、Oracle 和 MongoDB 的集成
+- [x] 与 SQLite、MySQL、PostgreSQL、SQL Server、Oracle 和 MongoDB 的集成
 - [x] 为 TypeORM 自动生成实体
 - [x] 自动生成索引
 - [x] 自动生成关系

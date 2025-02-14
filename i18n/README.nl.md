@@ -125,7 +125,7 @@ Application.create({
 - [x] Cross-linking van contracten
 
 ## 🗄 Repository
-- [x] Integratie met SQL, MySQL, PostgreSQL, SQL Server, Oracle en MongoDB
+- [x] Integratie met SQLite, MySQL, PostgreSQL, SQL Server, Oracle en MongoDB
 - [x] Automatische entiteitsgeneratie voor TypeORM
 - [x] Automatische generatie van indexen
 - [x] Automatische generatie van relaties

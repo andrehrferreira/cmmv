@@ -125,7 +125,7 @@ Application.create({
 - [x] Sutarčių tarpusavio susiejimas
 
 ## 🗄 Saugykla (Repository)
-- [x] SQL, MySQL, PostgreSQL, SQL Server, Oracle ir MongoDB integracija
+- [x] SQLite, MySQL, PostgreSQL, SQL Server, Oracle ir MongoDB integracija
 - [x] Automatinis TypeORM subjektų kūrimas
 - [x] Automatinis indeksų generavimas
 - [x] Automatinis ryšių generavimas

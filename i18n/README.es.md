@@ -125,7 +125,7 @@ Application.create({
 - [x] Interconexión entre contratos.
 
 ## 🗄 Repositorio
-- [x] Integración con SQL, MySQL, PostgreSQL, SQL Server, Oracle y MongoDB.
+- [x] Integración con SQLite, MySQL, PostgreSQL, SQL Server, Oracle y MongoDB.
 - [x] Creación automática de entidades para TypeORM.
 - [x] Creación automática de índices.
 - [x] Creación automática de relaciones.

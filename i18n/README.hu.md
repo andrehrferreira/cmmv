@@ -125,7 +125,7 @@ Application.create({
 - [x] Szerződések közötti kapcsolat létrehozása
 
 ## 🗄 Adatbázis-kezelő (Repository)
-- [x] SQL, MySQL, PostgreSQL, SQL Server, Oracle és MongoDB integráció
+- [x] SQLite, MySQL, PostgreSQL, SQL Server, Oracle és MongoDB integráció
 - [x] Automatikus entitásgenerálás TypeORM számára
 - [x] Indexek automatikus generálása
 - [x] Kapcsolatok automatikus generálása

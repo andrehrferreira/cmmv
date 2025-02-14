@@ -125,7 +125,7 @@ Application.create({
 - [x] 계약 간의 상호 연결 지원
 
 ## 🗄 리포지토리 (Repository)
-- [x] SQL, MySQL, PostgreSQL, SQL Server, Oracle, MongoDB 통합
+- [x] SQLite, MySQL, PostgreSQL, SQL Server, Oracle, MongoDB 통합
 - [x] TypeORM을 위한 자동 엔티티 생성
 - [x] 자동 인덱스 생성
 - [x] 자동 관계 설정
