@@ -147,3 +147,17 @@ Application.create({
 - [x] Auto-generation of RPC communication gateways
 - [x] Data packaging abstraction
 - [x] WebSocket communication implementation for both client and server
+
+## 🧩 Modules
+- [x] Swagger: Provides API documentation with Swagger integration.
+- [x] Testing: Now includes unit testing, S2S testing, and mocks.
+- [x] Elastic: Elasticsearch integration for managing indices, documents.
+- [x] Email: Email handling module using SMTP or AWS SES.
+- [x] Encryptor: ECC-based encryption, AES-256-GCM
+- [x] Events: Event-driven architecture for seamless communication
+- [x] Inspector: Debugging and monitoring tools
+- [x] Keyv: Key-value store integration using Keyv
+- [x] Normalizer: Data transformation module for parsing (JSON, XML, YAML, CSV)
+- [x] Queue: Manages job queues (Kafka, RabbitMQ, Redis)
+- [x] UI: UI components for building dynamic applications
+- [x] Vue: Enables integration with Vue.js

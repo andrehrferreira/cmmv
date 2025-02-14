@@ -109,6 +109,8 @@ Application.create({
 - [x] Disponibilização de API por meio do `@cmmv/server` ou outros adaptadores como Express
 - [x] Gerador automático de controllers e services
 - [x] Integração com `@cmmv/cache` e `@cmmv/auth`
+- [x] Express Adapter
+- [ ] Fastify Adapter
 
 ## 📡 Protobuf
 - [x] Geração de arquivos `.proto` para comunicação RPC com base nos contratos
@@ -145,3 +147,17 @@ Application.create({
 - [x] Geração dos gateways de comunicação RPC
 - [x] Abstração do empacotamento de dados
 - [x] Implementação da comunicação WebSocket tanto client quanto server
+
+## 🧩 Módulos  
+- [x] **Swagger**: Fornece documentação da API com integração ao Swagger.  
+- [x] **Testing**: Agora inclui testes unitários, testes S2S e mocks.  
+- [x] **Elastic**: Integração com Elasticsearch para gerenciamento de índices e documentos.  
+- [x] **Email**: Módulo para envio de e-mails usando SMTP ou AWS SES.  
+- [x] **Encryptor**: Criptografia baseada em ECC, AES-256-GCM.  
+- [x] **Events**: Arquitetura orientada a eventos para comunicação eficiente.  
+- [x] **Inspector**: Ferramentas de depuração e monitoramento.  
+- [x] **Keyv**: Integração com armazenamento chave-valor usando Keyv.  
+- [x] **Normalizer**: Módulo para transformação de dados e parsing (JSON, XML, YAML, CSV).  
+- [x] **Queue**: Gerenciamento de filas de jobs (Kafka, RabbitMQ, Redis).  
+- [x] **UI**: Componentes de UI para construção de aplicações dinâmicas.  
+- [x] **Vue**: Habilita integração com Vue.js.  
