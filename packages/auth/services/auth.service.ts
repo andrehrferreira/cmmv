@@ -253,7 +253,7 @@ export class AuthService extends AbstractService {
         };
     }
 
-    public async register(payload: any, req?: any) {
+    public async register(payload: any) {
         const User = Application.getModel('User');
         const UserEntity = Repository.getEntity('UserEntity');
         //@ts-ignore
