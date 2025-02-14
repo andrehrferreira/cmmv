@@ -335,6 +335,11 @@ export class AuthService extends AbstractService {
             )) as { f: string; u: string };
             const tokenDecoded = jwt.decode(token) as any;
 
+            tokenDecoded.username = decryptJWTData(
+                tokenDecoded.username,
+                jwtSecret,
+            );
+
             if (!tokenDecoded)
                 throw new HttpException(
                     'Invalid access token',
@@ -344,11 +349,12 @@ export class AuthService extends AbstractService {
             if (
                 tokenDecoded.fingerprint !== decoded.f ||
                 tokenDecoded.id !== decoded.u
-            )
+            ) {
                 throw new HttpException(
                     'Token mismatch',
                     HttpStatus.UNAUTHORIZED,
                 );
+            }
 
             const user = await Repository.findBy(
                 UserEntity,
