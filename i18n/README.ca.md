@@ -13,7 +13,6 @@
   <a href="https://github.com/cmmvio/cmmv/issues">Informar d'un problema</a>
 </p>
 
-> **Avís de responsabilitat**  
 > Aquest fitxer ha estat traduït automàticament per **ChatGPT**.  
 > La documentació original està escrita en **anglès i portuguès**.  
 > Si detectes algun error en la traducció i domines el català,  

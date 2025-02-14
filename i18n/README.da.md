@@ -13,7 +13,6 @@
   <a href="https://github.com/cmmvio/cmmv/issues">Rapportér problem</a>
 </p>
 
-> **Ansvarsfraskrivelse**  
 > Denne fil er automatisk oversat ved hjælp af **ChatGPT**.  
 > Den oprindelige dokumentation blev skrevet på **engelsk og portugisisk**.  
 > Hvis du finder en fejl i oversættelsen og har kendskab til dansk,  

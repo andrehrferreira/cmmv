@@ -13,7 +13,6 @@
   <a href="https://github.com/cmmvio/cmmv/issues">Teata probleemist</a>
 </p>
 
-> **Lahtiütlus**  
 > See fail on automaatselt tõlgitud **ChatGPT** abil.  
 > Algne dokumentatsioon kirjutati **inglise ja portugali keeles**.  
 > Kui märkate tõlkes vigu ja valdate eesti keelt,  

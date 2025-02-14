@@ -13,7 +13,6 @@
   <a href="https://github.com/cmmvio/cmmv/issues">Raporto një problem</a>
 </p>
 
-> ⚠ **Mohim përgjegjësie**  
 > Ky përkthim është gjeneruar automatikisht nga ChatGPT. Dokumentacioni origjinal është shkruar në **anglisht dhe portugalisht**.  
 > Nëse gjeni ndonjë informacion të pasaktë dhe keni njohuri të gjuhës përkatëse, ndjehuni të lirë të rishikoni dhe të dërgoni një **Pull Request (PR)** për korrigjim.  
 > E gjithë komuniteti ju falënderon për kontributin tuaj! 🙌 

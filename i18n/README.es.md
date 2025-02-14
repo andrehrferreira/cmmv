@@ -12,8 +12,7 @@
   <a href="https://cmmv.io">Documentación</a> &bull;
   <a href="https://github.com/cmmvio/cmmv/issues">Reportar problema</a>
 </p>
-
-> **Descargo de responsabilidad**  
+ 
 > Este archivo ha sido traducido automáticamente por **ChatGPT**.  
 > La documentación original fue escrita en **inglés y portugués**.  
 > Si encuentras algún error en la traducción y dominas el idioma español,  
