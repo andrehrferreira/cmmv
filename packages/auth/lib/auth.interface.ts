@@ -2,6 +2,7 @@ export interface LoginPayload {
     username: string;
     password: string;
     token?: string;
+    opt?: string;
 }
 
 export interface IAuthSettings {

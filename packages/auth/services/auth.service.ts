@@ -253,14 +253,19 @@ export class AuthService extends AbstractService {
         };
     }
 
-    public async register(payload, req?: any) {
+    public async register(payload: any, req?: any) {
         const User = Application.getModel('User');
         const UserEntity = Repository.getEntity('UserEntity');
         //@ts-ignore
         const newUser = User.fromPartial(payload);
-
-        const data = await this.validate(newUser);
-        const result = await Repository.insert(UserEntity, data);
+        const data: any = await this.validate(newUser);
+        const result = await Repository.insert(UserEntity, {
+            username: data.username,
+            password: data.password,
+            root: false,
+            blocked: false,
+            validated: false,
+        });
 
         return result.success
             ? { success: true, message: 'User registered successfully!' }

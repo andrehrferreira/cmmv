@@ -123,6 +123,13 @@ export class UserEntity implements IUser {
     })
     optSecretVerify: boolean;
 
+    @Column({
+        type: 'varchar',
+        default: '{}',
+        nullable: true,
+    })
+    profile?: string;
+
     @CreateDateColumn({
         type: 'timestamp',
         default: () => 'CURRENT_TIMESTAMP',

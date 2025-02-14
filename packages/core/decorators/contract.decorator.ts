@@ -22,6 +22,7 @@ export interface ContractFieldOptions {
     exclude?: boolean;
     nullable?: boolean;
     toClassOnly?: boolean;
+    toPlainOnly?: boolean;
     transform?: Function;
     toObject?: Function;
     toPlain?: Function;

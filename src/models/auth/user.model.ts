@@ -38,6 +38,7 @@ export interface IUser {
     verifySMSCode?: number;
     optSecret?: string;
     optSecretVerify: boolean;
+    profile?: string;
 }
 
 //Model
@@ -89,20 +90,30 @@ export class User implements IUser {
     @Expose()
     verifyEmail: boolean = false;
 
-    @Expose()
+    @Exclude({ toPlainOnly: true })
     verifyEmailCode?: number;
 
     @Expose()
     verifySMS: boolean = false;
 
-    @Expose()
+    @Exclude({ toPlainOnly: true })
     verifySMSCode?: number;
 
-    @Expose()
+    @Exclude({ toPlainOnly: true })
     optSecret?: string;
 
-    @Expose()
+    @Exclude({ toPlainOnly: true })
     optSecretVerify: boolean = false;
+
+    @Expose()
+    @Transform(
+        value => (typeof value === 'object' ? JSON.stringify(value) : '{}'),
+        { toClassOnly: true },
+    )
+    @Transform(value => (typeof value === 'string' ? JSON.parse(value) : {}), {
+        toPlainOnly: true,
+    })
+    profile?: string = '{}';
 
     constructor(partial: Partial<User>) {
         Object.assign(this, partial);
@@ -207,6 +218,11 @@ export const UserFastSchemaStructure = {
             type: 'boolean',
             nullable: false,
             default: false,
+        },
+        profile: {
+            type: 'string',
+            nullable: true,
+            default: '{}',
         },
     },
     required: [

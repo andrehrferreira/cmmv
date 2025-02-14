@@ -249,9 +249,9 @@ import {
     private generateClassField(field: any): string {
         const decorators: string[] = [];
 
-        if (field.exclude && field.toClassOnly) {
+        if (field.exclude) {
             decorators.push(
-                `    @Exclude(${field.toClassOnly ? `{ toClassOnly: true }` : ''})`,
+                `    @Exclude(${field.toClassOnly ? `{ toClassOnly: true }` : ''}${field.toPlainOnly ? `{ toPlainOnly: true }` : ''})`,
             );
         } else {
             decorators.push(`    @Expose()`);
