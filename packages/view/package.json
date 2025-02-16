@@ -27,9 +27,7 @@
         "@cmmv/reactivity": "^0.4.6",
         "fast-glob": "^3.3.2",
         "html-minifier-terser": "^7.2.0",
-        "tailwind": "^4.0.0",
-        "uglify-js": "^3.19.2",
-        "vue": "3"
+        "uglify-js": "^3.19.2"
     },
     "gitHead": "9b28f002268080dc8d283263da48e07aa754581f"
 }

@@ -70,7 +70,7 @@
 	"devDependencies": {
 		"@cmmv/morgan": "^0.0.2",
 		"@cmmv/plugin-vite": "^0.0.4",
-		"@cmmv/view": "^0.8.17",
+		"@cmmv/view": "^0.8.18",
 		"@codechecks/client": "^0.0.50",
 		"@commitlint/cli": "^19.7.1",
 		"@commitlint/config-angular": "^19.7.1",
