@@ -44,7 +44,7 @@ export class RepositoryTranspile
         
 import { 
     ${this.generateTypeORMImports(contract)}
-} from "typeorm";
+} from "@cmmv/repository";
 
 import { 
     I${entityName} 

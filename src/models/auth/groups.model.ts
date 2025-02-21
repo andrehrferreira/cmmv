@@ -6,10 +6,10 @@
     **********************************************
 **/
 
-import * as fastJson from 'fast-json-stringify';
-import { ObjectId } from 'mongodb';
+import { fastJson } from '@cmmv/core';
+import { ObjectId } from '@cmmv/repository';
 
-import { Expose, instanceToPlain, plainToInstance } from 'class-transformer';
+import { Expose, instanceToPlain, plainToInstance } from '@cmmv/core';
 
 import {
     IsOptional,
@@ -17,7 +17,7 @@ import {
     MinLength,
     MaxLength,
     IsNotEmpty,
-} from 'class-validator';
+} from '@cmmv/core';
 
 export interface IGroups {
     _id?: ObjectId;

@@ -291,10 +291,10 @@ export class Application {
         });
 
         const lines: string[] = [];
-        lines.push(`/**                                                                               
+        lines.push(`/**
     **********************************************
     This script was generated automatically by CMMV.
-    It is recommended not to modify this file manually, 
+    It is recommended not to modify this file manually,
     as it may be overwritten by the application.
     **********************************************
 **/`);
@@ -353,30 +353,32 @@ export class Application {
     protected loadModules(modules: Array<Module>): void {
         if (modules && modules.length > 0) {
             modules.forEach(module => {
-                //if(module){
-                this.transpilers.push(...module.getTranspilers());
-                this.controllers.push(...module.getControllers());
-                this.submodules.push(...module.getSubmodules());
-                this.contracts.push(...module.getContracts());
-                this.configs.push(...module.getConfigsSchemas());
+                if (module) {
+                    this.transpilers.push(...module.getTranspilers());
+                    this.controllers.push(...module.getControllers());
+                    this.submodules.push(...module.getSubmodules());
+                    this.contracts.push(...module.getContracts());
+                    this.configs.push(...module.getConfigsSchemas());
 
-                module.getProviders().forEach(provider => {
-                    const paramTypes =
-                        Reflect.getMetadata('design:paramtypes', provider) ||
-                        [];
-                    const instances = paramTypes.map(
-                        (paramType: any) =>
-                            this.providersMap.get(paramType.name) ||
-                            new paramType(),
-                    );
+                    module.getProviders().forEach(provider => {
+                        const paramTypes =
+                            Reflect.getMetadata(
+                                'design:paramtypes',
+                                provider,
+                            ) || [];
+                        const instances = paramTypes.map(
+                            (paramType: any) =>
+                                this.providersMap.get(paramType.name) ||
+                                new paramType(),
+                        );
 
-                    const providerInstance = new provider(...instances);
-                    this.providersMap.set(provider.name, providerInstance);
-                });
+                        const providerInstance = new provider(...instances);
+                        this.providersMap.set(provider.name, providerInstance);
+                    });
 
-                if (module.getSubmodules().length > 0)
-                    this.loadModules(module.getSubmodules());
-                //}
+                    if (module.getSubmodules().length > 0)
+                        this.loadModules(module.getSubmodules());
+                }
             });
         }
     }
@@ -551,19 +553,19 @@ export class Application {
         try {
             const outputPath = path.resolve('.generated', `app.module.ts`);
 
-            const moduleTemplate = `/**                                                                               
+            const moduleTemplate = `/**
     **********************************************
     This script was generated automatically by CMMV.
-    It is recommended not to modify this file manually, 
+    It is recommended not to modify this file manually,
     as it may be overwritten by the application.
     **********************************************
 **/
 
 import "reflect-metadata";
 
-import { 
+import {
     Module, ApplicationTranspile,
-    ApplicationConfig 
+    ApplicationConfig
 } from "@cmmv/core";
 
 //Controllers

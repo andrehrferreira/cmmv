@@ -15,7 +15,7 @@ import {
     CreateDateColumn,
     UpdateDateColumn,
     ManyToOne,
-} from 'typeorm';
+} from '@cmmv/repository';
 
 import { ISessions } from '@models/auth/sessions.model';
 

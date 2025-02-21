@@ -1,6 +1,6 @@
 const META_OPTIONS = Symbol('controller_options');
 
-export class GenericRegistry<T> {
+export class GenericRegistry {
     public static controllers = new Map<
         any,
         {

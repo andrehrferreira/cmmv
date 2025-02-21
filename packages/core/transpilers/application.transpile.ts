@@ -131,7 +131,7 @@ ${this.generateDTOs(contract)}
         outputFilePath?: string,
     ): string {
         let importStatements: string[] = [
-            `import * as fastJson from "fast-json-stringify";`,
+            `import { fastJson } from "@cmmv/core";`,
         ];
 
         if (contract.imports && contract.imports.length > 0) {
@@ -147,7 +147,9 @@ ${this.generateDTOs(contract)}
             modelInterfaceName !== 'IWsError'
         ) {
             if (Config.get('repository.type') === 'mongodb') {
-                importStatements.push(`import { ObjectId } from "mongodb";`);
+                importStatements.push(
+                    `import { ObjectId } from "@cmmv/repository";`,
+                );
             }
         }
 
@@ -175,7 +177,7 @@ ${this.generateDTOs(contract)}
             `
 import { 
     ${imports.join(', ')} 
-} from "class-transformer";\n`,
+} from "@cmmv/core";\n`,
         );
 
         const validationImports = new Set<string>(['IsOptional']);
@@ -228,7 +230,7 @@ import {
                 `
 import { 
     ${Array.from(validationImports).join(', ')} 
-} from "class-validator"; \n`,
+} from "@cmmv/core"; \n`,
             );
         }
 
