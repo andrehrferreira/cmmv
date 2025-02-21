@@ -56,20 +56,21 @@ export class DefaultHTTPTranspiler
 
         importsFromModel = [...new Set(importsFromModel)];
 
-        const serviceTemplateGenerated = `/**                                                                               
+        const serviceTemplateGenerated = `/**
     **********************************************
     This script was generated automatically by CMMV.
-    It is recommended not to modify this file manually, 
+    It is recommended not to modify this file manually,
     as it may be overwritten by the application.
     **********************************************
 **/
 
-import { validate } from 'class-validator';
-import { instanceToPlain, plainToClass } from 'class-transformer';
-import { AbstractService, Service } from '@cmmv/core';
+import {
+    AbstractService, Service, validate,
+    instanceToPlain, plainToClass
+} from '@cmmv/core';
 
-import { 
-    ${modelName}, 
+import {
+    ${modelName},
     ${modelInterfaceName},${importsFromModel.join(', \n   ')}
 } from "${this.getImportPath(contract, 'models', modelName.toLowerCase() + '.model', '@models')}";
 
@@ -83,9 +84,9 @@ export class ${serviceName}Generated extends AbstractService {
     async getById(id: string, req?: any) {
         const item = this.items.find(i => i.id === id);
 
-        if (item) 
+        if (item)
             return item;
-        
+
         throw new Error('Item not found');
     }
 
@@ -93,8 +94,8 @@ export class ${serviceName}Generated extends AbstractService {
         return new Promise((resolve, reject) => {
             item['id'] = this.items.length + 1;
 
-            const newItem = plainToClass(${modelName}, item, { 
-                excludeExtraneousValues: true 
+            const newItem = plainToClass(${modelName}, item, {
+                excludeExtraneousValues: true
             });
 
             validate(newItem, { skipMissingProperties: true }).then(err => {
@@ -105,7 +106,7 @@ export class ${serviceName}Generated extends AbstractService {
                 else{
                     reject(err);
                 }
-            });            
+            });
         });
     }
 
@@ -117,21 +118,21 @@ export class ${serviceName}Generated extends AbstractService {
                 let itemRaw = instanceToPlain(this.items[index]);
                 let updateItem = { ...itemRaw, ...item };
 
-                const editedItem = plainToClass(${modelName}, updateItem, { 
-                    excludeExtraneousValues: true 
+                const editedItem = plainToClass(${modelName}, updateItem, {
+                    excludeExtraneousValues: true
                 });
-                
+
                 validate(editedItem, { skipMissingProperties: true }).then(err => {
                     if(!err){
                         this.items[index] = editedItem;
                         resolve(editedItem);
-                    } 
+                    }
                     else reject(err);
-                }); 
+                });
             }
             else{
                 reject('Item not found');
-            }                        
+            }
         });
     }
 
@@ -142,7 +143,7 @@ export class ${serviceName}Generated extends AbstractService {
             this.items.splice(index, 1);
             return { success: true, affected: 1 };
         }
-                    
+
         throw new Error('Item not found');
     }
 
@@ -172,8 +173,8 @@ export class ${serviceName}Generated extends AbstractService {
         //Service
         const serviceTemplate = `import { Service } from '@cmmv/core';
 
-import { 
-   ${serviceName}Generated 
+import {
+   ${serviceName}Generated
 } from "${this.getImportPath(contract, 'services', contract.controllerName.toLowerCase() + '.service', '@generated/services')}";
 
 @Service("${contract.controllerName.toLowerCase()}")
@@ -247,10 +248,10 @@ ${contract.services
 
         importsFromModel = [...new Set(importsFromModel)];
 
-        let controllerTemplateGenerated = `/**                                                                               
+        let controllerTemplateGenerated = `/**
     **********************************************
     This script was generated automatically by CMMV.
-    It is recommended not to modify this file manually, 
+    It is recommended not to modify this file manually,
     as it may be overwritten by the application.
     **********************************************
 **/
@@ -258,18 +259,18 @@ ${contract.services
 import { Telemetry } from "@cmmv/core";${hasCache ? `\nimport { Cache, CacheService } from "@cmmv/cache";` : ''}
 ${authRouter ? `import { Auth } from "@cmmv/auth";` : ''}
 
-import { 
-   Controller, Get, Post, Put, Delete, 
+import {
+   Controller, Get, Post, Put, Delete,
    Queries, Param, Body, Req
 } from "@cmmv/http";
 
-import { 
-   ${contract.controllerName}, 
+import {
+   ${contract.controllerName},
    ${contract.controllerName}FastSchema, ${importsFromModel.join(', \n   ')}
 } from "${this.getImportPath(contract, 'models', contract.controllerName.toLowerCase() + '.model', '@models')}";
 
-import { 
-   ${serviceName} 
+import {
+   ${serviceName}
 } from "${this.getImportPath(contract, 'services', contract.controllerName.toLowerCase() + '.service', '@services')}";
 
 @Controller('${controllerPath}')
@@ -346,12 +347,12 @@ ${contract.services
             'utf8',
         );
 
-        const controllerTemplate = `import { 
+        const controllerTemplate = `import {
    Controller
 } from "@cmmv/http";
 
-import { 
-    ${controllerName}Generated 
+import {
+    ${controllerName}Generated
 } from "@generated/controllers${contract.subPath}/${contract.controllerName.toLowerCase()}.controller"; ${this.importServices(importsFromModel, contract)}
 
 @Controller('${controllerPath}')
