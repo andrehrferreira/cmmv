@@ -29,16 +29,16 @@ export class ApplicationTranspile
         )
             includeId = `${Config.get('repository.type') === 'mongodb' ? '    _id?: ObjectId' : '    id?: any'};\n`;
 
-        const modelTemplate = `/**                                                                               
+        const modelTemplate = `/**
     **********************************************
     This script was generated automatically by CMMV.
-    It is recommended not to modify this file manually, 
+    It is recommended not to modify this file manually,
     as it may be overwritten by the application.
     **********************************************
 **/
 
 ${this.generateClassImports(contract, modelInterfaceName, outputFilePath)}
-        
+
 export interface ${modelInterfaceName} {
 ${includeId}${contract.fields
             ?.map((field: any) => {
@@ -59,7 +59,7 @@ ${includeId}${contract.fields
 
 //Model
 export class ${modelName} implements ${modelInterfaceName} {
-${includeId ? '    @Expose()\n    @IsOptional()\n' + includeId + '\n' : ''}    @Expose({ toClassOnly: true })
+${includeId === '_id' ? '    @Expose()\n    @IsOptional()\n' + includeId + '\n' : ''}    @Expose({ toClassOnly: true })
     @IsOptional()
     id: string;
 
@@ -99,9 +99,9 @@ export const ${modelName}FastSchemaStructure = {
     title: "${modelName} Schema",
     type: "object",
     properties: {
-        id: { 
+        id: {
             type: "string",
-            nullable: false 
+            nullable: false
         },
 ${contract.fields?.map((field: any) => `        ${field.propertyKey}: ${this.generateJsonSchemaField(field)}`).join(',\n')}
     },
@@ -175,8 +175,8 @@ ${this.generateDTOs(contract)}
 
         importStatements.push(
             `
-import { 
-    ${imports.join(', ')} 
+import {
+    ${imports.join(', ')}
 } from "@cmmv/core";\n`,
         );
 
@@ -228,8 +228,8 @@ import {
         if (validationImports.size > 0) {
             importStatements.push(
                 `
-import { 
-    ${Array.from(validationImports).join(', ')} 
+import {
+    ${Array.from(validationImports).join(', ')}
 } from "@cmmv/core"; \n`,
             );
         }
@@ -237,8 +237,8 @@ import {
         if (importEntitiesList.length > 0) {
             importEntitiesList.map(importEntity => {
                 importStatements.push(
-                    `import { 
-    ${importEntity.entityName} 
+                    `import {
+    ${importEntity.entityName}
 } from "${importEntity.path}"; \n`,
                 );
             });
@@ -429,8 +429,8 @@ import {
             }
         }
 
-        return `{ 
-            ${parts.join(',\n        ')} 
+        return `{
+            ${parts.join(',\n        ')}
         }`;
     }
 
