@@ -68,9 +68,7 @@
 		]
 	},
 	"devDependencies": {
-		"@cmmv/morgan": "^0.0.2",
-		"@cmmv/plugin-vite": "^0.0.4",
-		"@cmmv/view": "^0.8.18",
+		"@cmmv/view": "^0.8.19",
 		"@codechecks/client": "^0.0.50",
 		"@commitlint/cli": "^19.7.1",
 		"@commitlint/config-angular": "^19.7.1",
@@ -140,7 +138,7 @@
 		"vite-plugin-eslint": "^1.8.1",
 		"vitest": "^2.1.9",
 		"vue-eslint-parser": "^9.4.3",
-		"ws": "^8.18.0"
+		"ws": "^8.18.1"
 	},
 	"dependencies": {
 		"@cmmv/body-parser": "^0.8.7",
