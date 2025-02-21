@@ -1,6 +1,6 @@
 {
     "name": "@cmmv/testing",
-    "version": "0.8.19",
+    "version": "0.8.20",
     "description": "Module testing module and application for CMMV",
     "keywords": [
         "cmmv",
@@ -21,6 +21,6 @@
     },
     "homepage": "https://cmmv.io",
     "dependencies": {
-        "@cmmv/core": "0.8.19"
+        "@cmmv/core": "0.8.20"
     }
 }
