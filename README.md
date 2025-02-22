@@ -52,7 +52,7 @@ This command will walk you through a guided setup process, asking about your pre
 If you prefer to set up the project manually, you can still install the necessary modules individually:
 
 ```bash
-$ pnpm add @cmmv/core @cmmv/http @cmmv/view reflect-metadata class-validator class-transformer fast-json-stringify
+$ pnpm add @cmmv/core @cmmv/http @cmmv/view reflect-metadata fast-json-stringify
 ```
 
 ## Quick Start
